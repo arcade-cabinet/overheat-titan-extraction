@@ -1,3 +1,11 @@
+---
+title: Standards
+doc_type: standards
+status: active
+owner: engineering
+last_updated: 2026-04-09
+---
+
 # STANDARDS.md — OVERHEAT: Titan Extraction
 > Code quality, brand, and design standards.  
 > This document is part of the DRY documentation chain:  

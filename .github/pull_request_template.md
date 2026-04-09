@@ -1,12 +1,13 @@
 ## PR checklist
 
-> See `AGENTS.md` for full context and `docs/STANDARDS.md` for all standards.
+> See `AGENTS.md` for full context, `docs/README.md` for the documentation map, and `docs/STANDARDS.md` for all standards.
 
 ### Before opening a PR
 
 - [ ] `npm run build` passes with zero errors
 - [ ] No `node_modules/`, `dist/`, or `.env` files committed
 - [ ] `docs/HANDOFF.md` updated to reflect what this PR completes
+- [ ] `docs/README.md` updated if new docs were added or reorganized
 - [ ] New components follow naming conventions in `docs/STANDARDS.md`
 - [ ] No new state management added outside `src/store.js`
 - [ ] No Cannon.js, no React Context for game loop

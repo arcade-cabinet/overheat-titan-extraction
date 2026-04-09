@@ -9,10 +9,12 @@
 
 ```
 1. Read this file (AGENTS.md) completely.
-2. Read docs/HANDOFF.md  — tells you exactly what is done and what is next.
-3. Read docs/STANDARDS.md — non-negotiable code, design, and audio rules.
-4. Run:  npm install && npm run build   to verify the tree is healthy before touching anything.
-5. Run:  npm run dev                    to preview in-browser.
+2. Read docs/README.md    — overview of the full documentation set by domain.
+3. Read docs/HANDOFF.md  — tells you exactly what is done and what is next.
+4. Read docs/STANDARDS.md — non-negotiable code, design, and audio rules.
+5. If you are editing docs, read docs/AGENTS.md for frontmatter and organization rules.
+6. Run:  npm install && npm run build   to verify the tree is healthy before touching anything.
+7. Run:  npm run dev                    to preview in-browser.
 ```
 
 If the build fails, fix it before writing new features.  
@@ -59,7 +61,6 @@ Never leave the tree in a failing build state at the end of a session.
 /
 ├── AGENTS.md                      ← you are here (master instructions)
 ├── CLAUDE.md                      ← Claude entry point → defers to AGENTS.md
-├── HANDOFF.md                     ← symlink alias (see docs/HANDOFF.md)
 ├── README.md
 ├── .gitignore
 ├── index.html
@@ -71,8 +72,21 @@ Never leave the tree in a failing build state at the end of a session.
 │   └── pull_request_template.md  ← PR checklist
 │
 ├── docs/
+│   ├── README.md                  ← documentation index by domain
+│   ├── AGENTS.md                  ← documentation-specific authoring instructions
 │   ├── HANDOFF.md                 ← Implementation state + next-steps
 │   └── STANDARDS.md               ← All code, design, and audio standards
+│   ├── architecture/
+│   │   ├── overview.md
+│   │   └── runtime-systems.md
+│   ├── gameplay/
+│   │   └── loop-and-progression.md
+│   ├── design/
+│   │   └── visual-audio-direction.md
+│   ├── lore/
+│   │   └── world-primer.md
+│   └── operations/
+│       └── roadmap.md
 │
 └── src/
     ├── main.jsx

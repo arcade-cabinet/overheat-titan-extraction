@@ -11,17 +11,21 @@
 ```
 CLAUDE.md  (you are here)
     └── AGENTS.md              ← master instructions, architecture, tech stack, rules
+            ├── docs/README.md     ← documentation index by domain
             ├── docs/HANDOFF.md    ← current implementation state + next steps
-            └── docs/STANDARDS.md  ← code quality, brand, and design standards
+            ├── docs/STANDARDS.md  ← code quality, brand, and design standards
+            └── docs/AGENTS.md     ← documentation-specific guidance
 ```
 
 ## First actions for any Claude session
 
 1. `cat AGENTS.md` — read all sections
-2. `cat docs/HANDOFF.md` — understand exactly what is built and what is next
-3. `cat docs/STANDARDS.md` — internalize non-negotiable rules
-4. `npm install && npm run build` — confirm healthy tree
-5. Only then begin work
+2. `cat docs/README.md` — understand the documentation layout by domain
+3. `cat docs/HANDOFF.md` — understand exactly what is built and what is next
+4. `cat docs/STANDARDS.md` — internalize non-negotiable rules
+5. If touching docs, read `docs/AGENTS.md`
+6. `npm install && npm run build` — confirm healthy tree
+7. Only then begin work
 
 ## Claude-specific reminders
 

@@ -11,17 +11,21 @@
 ```
 .github/copilot-instructions.md  (you are here)
     └── AGENTS.md                     ← master instructions, architecture, tech stack, rules
+            ├── docs/README.md            ← documentation index by domain
             ├── docs/HANDOFF.md           ← current implementation state + next steps
-            └── docs/STANDARDS.md         ← code quality, brand, and design standards
+            ├── docs/STANDARDS.md         ← code quality, brand, and design standards
+            └── docs/AGENTS.md            ← documentation-specific guidance
 ```
 
 ## First actions for any Copilot session
 
 1. Read `AGENTS.md` completely — architecture, tech stack, state machine, physics rules, audio contract.
-2. Read `docs/HANDOFF.md` — understand what is built (`[x]`) and what is next (`[ ]`).
-3. Read `docs/STANDARDS.md` — color palette, component patterns, shader rules, no-go list.
-4. Run `npm install && npm run build` — confirm the tree is healthy before touching anything.
-5. Only then implement the next items from `docs/HANDOFF.md`.
+2. Read `docs/README.md` — understand the documentation set by domain.
+3. Read `docs/HANDOFF.md` — understand what is built (`[x]`) and what is next (`[ ]`).
+4. Read `docs/STANDARDS.md` — color palette, component patterns, shader rules, no-go list.
+5. If touching docs, read `docs/AGENTS.md`.
+6. Run `npm install && npm run build` — confirm the tree is healthy before touching anything.
+7. Only then implement the next items from `docs/HANDOFF.md`.
 
 ## Copilot-specific behaviour
 

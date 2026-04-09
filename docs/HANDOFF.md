@@ -1,3 +1,11 @@
+---
+title: Handoff
+doc_type: handoff
+status: active
+owner: engineering
+last_updated: 2026-04-09
+---
+
 # HANDOFF.md — OVERHEAT: Titan Extraction
 > Implementation state for the current agent session hand-off.  
 > Maintained by every agent. Update before every commit.  
@@ -30,6 +38,8 @@
 | Settings menu (volume, sensitivity, CRT) | ✅ Complete |
 | Meltdown at heat 120 + report screen | ✅ Complete |
 | Upgrades terminal (cap / pow / cool) | ✅ Complete |
+| Domain-organized docs directory + index | ✅ Complete |
+| Docs-specific `docs/AGENTS.md` guidance | ✅ Complete |
 | Tractor Beam (Spring Joint drag + throw) | ❌ Not implemented |
 | Debris instancing (InstancedRigidBodies) | ❌ Not implemented |
 | Spark emitter on grind contact | ❌ Not implemented |
@@ -461,3 +471,4 @@ Cross-reference with the master problem statement sections.
 |---|---|---|
 | 2026-04-09 | copilot-swe | Initial project scaffold — all core components, store, audio engine, full component tree built and building clean |
 | 2026-04-09 | copilot-swe | Documentation infrastructure — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, .github/pull_request_template.md, docs/HANDOFF.md, docs/STANDARDS.md |
+| 2026-04-09 | copilot-swe | Expanded docs set — docs/README.md index, docs/AGENTS.md guidance, and domain docs for architecture, gameplay, design, lore, and operations |
