@@ -35,6 +35,7 @@ export function Player() {
   const coolDown = useGameStore((s) => s.coolDown)
   const getCoolingRate = useGameStore((s) => s.getCoolingRate)
   const isMelting = useGameStore((s) => s.isMelting)
+  const lookSensitivity = useGameStore((s) => s.settings.lookSensitivity)
 
   const yawRef = useRef(0)
   const pitchRef = useRef(0)
@@ -43,14 +44,14 @@ export function Player() {
   useEffect(() => {
     const onMove = (e) => {
       if (phase !== 'gameplay' || isPaused) return
-      const sens = 0.002
+      const sens = 0.002 * lookSensitivity
       yawRef.current -= e.movementX * sens
       pitchRef.current -= e.movementY * sens
       pitchRef.current = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, pitchRef.current))
     }
     document.addEventListener('mousemove', onMove)
     return () => document.removeEventListener('mousemove', onMove)
-  }, [phase, isPaused])
+  }, [phase, isPaused, lookSensitivity])
 
   useFrame(({ clock }, delta) => {
     if (!bodyRef.current) return
