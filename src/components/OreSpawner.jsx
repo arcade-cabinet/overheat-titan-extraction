@@ -62,6 +62,10 @@ export function OreSpawner({ onSparkTrigger }) {
   const oreScaleRefs = useRef({})
   const removeDebrisTimeout = useRef({})
 
+  // Pending state mutations from useFrame — flushed via setTimeout to stay outside render
+  const pendingActionsRef = useRef([])
+  const flushScheduledRef = useRef(false)
+
   // Cleanup all pending timeouts on unmount to prevent memory leaks
   useEffect(() => {
     return () => {
@@ -72,30 +76,48 @@ export function OreSpawner({ onSparkTrigger }) {
     }
   }, [])
 
-  const spawnDebris = useCallback((pos, count = MAX_DEBRIS) => {
-    const debrisId = `debris-${nextDebrisIdRef.current++}`
-    const positions = []
-    const impulses = []
-    for (let i = 0; i < count; i++) {
-      const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5
-      const r = 0.5 + Math.random()
-      positions.push([
-        pos[0] + Math.cos(angle) * r,
-        pos[1] + 0.5 + Math.random(),
-        pos[2] + Math.sin(angle) * r,
-      ])
-      impulses.push([
-        Math.cos(angle) * (2 + Math.random() * 3),
-        3 + Math.random() * 4,
-        Math.sin(angle) * (2 + Math.random() * 3),
-      ])
+  // Queue a setState action for deferred execution (out of useFrame render cycle)
+  const scheduleAction = useCallback((fn) => {
+    pendingActionsRef.current.push(fn)
+    if (!flushScheduledRef.current) {
+      flushScheduledRef.current = true
+      setTimeout(() => {
+        const actions = pendingActionsRef.current.splice(0)
+        for (const action of actions) action()
+        flushScheduledRef.current = false
+      }, 0)
     }
-    setDebris((prev) => [...prev, { id: debrisId, positions, impulses }])
-    removeDebrisTimeout.current[debrisId] = setTimeout(() => {
-      setDebris((prev) => prev.filter((d) => d.id !== debrisId))
-      delete removeDebrisTimeout.current[debrisId]
-    }, 4000)
   }, [])
+
+  const spawnDebris = useCallback(
+    (pos, count = MAX_DEBRIS) => {
+      const debrisId = `debris-${nextDebrisIdRef.current++}`
+      const positions = []
+      const impulses = []
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5
+        const r = 0.5 + Math.random()
+        positions.push([
+          pos[0] + Math.cos(angle) * r,
+          pos[1] + 0.5 + Math.random(),
+          pos[2] + Math.sin(angle) * r,
+        ])
+        impulses.push([
+          Math.cos(angle) * (2 + Math.random() * 3),
+          3 + Math.random() * 4,
+          Math.sin(angle) * (2 + Math.random() * 3),
+        ])
+      }
+      scheduleAction(() => {
+        setDebris((prev) => [...prev, { id: debrisId, positions, impulses }])
+        removeDebrisTimeout.current[debrisId] = setTimeout(() => {
+          setDebris((prev) => prev.filter((d) => d.id !== debrisId))
+          delete removeDebrisTimeout.current[debrisId]
+        }, 4000)
+      })
+    },
+    [scheduleAction]
+  )
 
   useFrame(({ camera }, delta) => {
     if (phase !== 'gameplay' || isPaused) return
@@ -119,7 +141,7 @@ export function OreSpawner({ onSparkTrigger }) {
             alive: true,
             respawnAt: null,
           }
-          setOreRevision((r) => r + 1)
+          scheduleAction(() => setOreRevision((r) => r + 1))
         }
         continue
       }
@@ -177,7 +199,7 @@ export function OreSpawner({ onSparkTrigger }) {
             oreStateRef.current[id].alive = false
             oreStateRef.current[id].respawnAt = now + ORE_RESPAWN_DELAY_MS
             spawnDebris(pos)
-            setOreRevision((r) => r + 1)
+            scheduleAction(() => setOreRevision((r) => r + 1))
           }
         }
       }
@@ -215,11 +237,13 @@ export function OreSpawner({ onSparkTrigger }) {
         camera.position.y,
         camera.position.z + (Math.random() - 0.5) * 4,
       ]
-      setCubes((prev) => [
-        ...prev,
-        { id: Date.now(), position: cubePos, isRare: hasRare, value: hasRare ? 2500 : 50 },
-      ])
-      ejectCube()
+      scheduleAction(() => {
+        setCubes((prev) => [
+          ...prev,
+          { id: Date.now(), position: cubePos, isRare: hasRare, value: hasRare ? 2500 : 50 },
+        ])
+        ejectCube()
+      })
     }
   })
 
