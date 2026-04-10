@@ -53,7 +53,11 @@ last_updated: 2026-04-10
 | maath/random for spores (official inSphere) | ✅ Complete |
 | Framer-motion UI transitions (all overlay screens) | ✅ Complete |
 | Rare isotopes (15%, magenta, 3× heat, $2500 cube) | ✅ Complete |
-| Diegetic menu raycast (shoot dashboard to select) | ❌ Not implemented |
+| Rare sell audio (dissonant chord + thump) | ✅ Complete (PR #13) |
+| Spark emitter — instanced CPU sim, hot-white→orange fade | ✅ Complete (PR #13) |
+| Dashboard heat bar 0-120°C + overheat marker | ✅ Complete (PR #13) |
+| OreSpawner setState deferred out of useFrame | ✅ Complete (PR #14) |
+| Diegetic pause button on dashboard (UV raycast) | ✅ Complete (PR #15) |
 
 ---
 
@@ -110,42 +114,25 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-All Stream A deliverables are shipped and merged. Remaining work:
+All immediate priorities shipped. Remaining work (deferred or low priority):
 
-### Priority 1 — OreSpawner `setState` inside `useFrame` (tech debt)
+### Priority 1 — Meltdown radial impulse (deferred)
 
-**File:** `src/components/OreSpawner.jsx`
-
-`setOreRevision`, `setDebris`, and `setCubes` are called inside `useFrame`. These should be buffered in refs and flushed from a `useEffect` with a throttle to avoid React scheduler pressure during render:
-
-```js
-const pendingCubesRef = useRef([])
-// In useFrame: push to pendingCubesRef.current instead of calling setCubes
-// In useEffect: flush pending with setCubes every ~100ms
-```
-
-### Priority 2 — Diegetic menu raycast (dashboard as interactive surface)
-
-**File:** `src/components/Dashboard.jsx`
-
-The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. Currently using Html overlay which works but breaks diegetic immersion.
-
-Implementation:
-1. Add `onPointerDown` handler to the dashboard mesh.
-2. Read UV coordinates from the intersection event (`event.uv`).
-3. Map UV → menu option and call appropriate store action.
-
-### Priority 3 — Meltdown radial impulse
-
-**File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
+**File:** New `MeltdownExplosion.jsx`
 
 At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
 
-### Priority 4 — Ore grind physics contact (quality)
+### Priority 2 — Ore grind physics contact (low priority)
 
 **File:** `src/components/OreSpawner.jsx`
 
-Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Low priority — current approach is stable and unnoticeable to players.
+Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Current approach is stable and unnoticeable to players.
+
+### Priority 3 — Dashboard UV calibration (follow-up)
+
+**File:** `src/components/Dashboard.jsx`
+
+The pause button UV zone was calculated from BoxGeometry +Y face UV theory. Playtest to verify the click zone aligns with the drawn button. If off, adjust `PAUSE_UV` constants — the canvas pixel positions are the source of truth, UV mapping derives from them.
 
 ---
 
@@ -195,16 +182,16 @@ Cross-reference with the master problem statement sections.
 - [x] Forced cooling after overheat
 - [x] Hopper fills up
 - [x] Ejected compressed cube on hopper full
-- [ ] Tractor beam to drag cubes (§4, §13)
-- [ ] Reel-in mechanic (depth reduction)
-- [ ] Throw by flicking cursor
+- [x] Tractor beam to drag cubes (§4, §13) — TractorBeam.jsx spring joint
+- [x] Reel-in mechanic (depth reduction) — mouse wheel adjusts depth
+- [x] Throw by flicking cursor — pointer-up velocity applied
 - [x] Silo beam sell mechanic
 
 ### From §6 Coding Patterns
 - [x] Zustand store (§6.1)
 - [x] Rapier player movement (§6.2)
-- [x] Diegetic CanvasTexture dashboard (§6.3)
-- [ ] Tractor beam spring joint (§6.4)
+- [x] Diegetic CanvasTexture dashboard (§6.3) — pause button via UV raycast (PR #15)
+- [x] Tractor beam spring joint (§6.4)
 - [x] AudioEngine (§6.5 — Web Audio API equivalent)
 
 ### From §7 Visuals
@@ -217,7 +204,7 @@ Cross-reference with the master problem statement sections.
 ### From §8 Game Feel
 - [x] Camera shake scaled by heat (§8.1)
 - [x] Dash FOV burst (§8.2)
-- [x] Spark emitter on grind (§8.3) — physics Sparks.jsx, TTL cleanup, max 5/s throttle
+- [x] Spark emitter on grind (§8.3) — instanced mesh CPU sim (PR #13), hot-white→orange fade, max 5/s throttle
 
 ### From §10 Expanded Tech Stack (Supplemental)
 - [x] @react-three/postprocessing (§10)
