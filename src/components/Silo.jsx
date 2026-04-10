@@ -25,7 +25,7 @@ export function Silo() {
       otherObject.userData = { ...otherObject.userData, sold: true }
     }
 
-    addCredits(50)
+    addCredits(otherUserData.sellValue ?? 50)
     audioManager.playSell()
 
     if (typeof otherUserData.onSell === 'function') {
