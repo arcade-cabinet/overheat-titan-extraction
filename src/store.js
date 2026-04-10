@@ -33,8 +33,7 @@ export const useGameStore = create(
 
       // Computed
       getMaxOre: () =>
-        mech.hopper.baseCapacity +
-        (get().upgrades.cap - 1) * mech.hopper.capacityPerUpgrade,
+        mech.hopper.baseCapacity + (get().upgrades.cap - 1) * mech.hopper.capacityPerUpgrade,
 
       getGrindDps: () =>
         mech.grind.baseDps * (1 + (get().upgrades.pow - 1) * mech.grind.dpsPerUpgrade),

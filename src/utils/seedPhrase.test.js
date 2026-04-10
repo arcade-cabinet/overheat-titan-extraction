@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  generateSeedPhrase,
-  isValidPhrase,
-  oreVariantFromPhrase,
-  phraseToRng,
-} from './seedPhrase'
+import { generateSeedPhrase, isValidPhrase, oreVariantFromPhrase, phraseToRng } from './seedPhrase'
 
 describe('generateSeedPhrase', () => {
   it('generates a valid adjective-adjective-noun phrase', () => {

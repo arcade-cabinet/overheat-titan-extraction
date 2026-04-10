@@ -1,7 +1,7 @@
 import { gameConfig } from '../config'
 import { Debris, Heat, Hopper, MechStats, OreNode, VFXEmitter } from './traits'
 
-const { mech, ore, economy } = gameConfig
+const { mech, ore } = gameConfig
 
 /**
  * HeatSystem — updates heat value, sets overheated/melting flags.
@@ -30,8 +30,7 @@ export function HeatSystem(world, delta, { isGrinding, grindIsRare, upgradeCool 
       }
     } else if (!isGrinding) {
       const coolingRate =
-        mech.heat.baseCoolingRate *
-        (1 + (upgradeCool - 1) * mech.heat.coolingRatePerUpgrade)
+        mech.heat.baseCoolingRate * (1 + (upgradeCool - 1) * mech.heat.coolingRatePerUpgrade)
       heat.value = Math.max(0, heat.value - coolingRate * delta)
       if (heat.overheated && heat.value < mech.heat.coolingSafeThreshold) {
         heat.overheated = false
@@ -52,8 +51,7 @@ export function HeatSystem(world, delta, { isGrinding, grindIsRare, upgradeCool 
 export function GrindingSystem(world, delta, { playerPos, upgradePow, isOverheated }) {
   if (isOverheated) return { grindingCount: 0, grindingRare: false }
 
-  const grindDps =
-    mech.grind.baseDps * (1 + (upgradePow - 1) * mech.grind.dpsPerUpgrade)
+  const grindDps = mech.grind.baseDps * (1 + (upgradePow - 1) * mech.grind.dpsPerUpgrade)
 
   let grindingCount = 0
   let grindingRare = false
@@ -61,7 +59,7 @@ export function GrindingSystem(world, delta, { playerPos, upgradePow, isOverheat
   const oreEntities = world.query(OreNode)
   for (const entity of oreEntities) {
     const node = entity.get(OreNode)
-    if (!node || !node.alive) continue
+    if (!node?.alive) continue
     const dx = playerPos.x - node.posX
     const dz = playerPos.z - node.posZ
     const distSq = dx * dx + dz * dz
@@ -90,10 +88,8 @@ export function HopperSystem(world, delta, { grindingCount, upgradePow, upgradeC
   for (const entity of hopperEntities) {
     const hopper = entity.get(Hopper)
     if (!hopper || grindingCount === 0) continue
-    const grindDps =
-      mech.grind.baseDps * (1 + (upgradePow - 1) * mech.grind.dpsPerUpgrade)
-    const maxOre =
-      mech.hopper.baseCapacity + (upgradeCap - 1) * mech.hopper.capacityPerUpgrade
+    const grindDps = mech.grind.baseDps * (1 + (upgradePow - 1) * mech.grind.dpsPerUpgrade)
+    const maxOre = mech.hopper.baseCapacity + (upgradeCap - 1) * mech.hopper.capacityPerUpgrade
     hopper.max = maxOre
     hopper.current = Math.min(maxOre, hopper.current + grindDps * delta * grindingCount)
   }

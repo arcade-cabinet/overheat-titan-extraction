@@ -1,20 +1,71 @@
 // Word pools — industrial/alien theming matching game identity
 const ADJECTIVES_1 = [
-  'molten', 'frozen', 'volatile', 'dense', 'radiant', 'toxic', 'corroded',
-  'inert', 'fused', 'brittle', 'glowing', 'hollow', 'cracked', 'charged',
-  'buried', 'jagged', 'seared', 'warped', 'silent', 'orbital',
+  'molten',
+  'frozen',
+  'volatile',
+  'dense',
+  'radiant',
+  'toxic',
+  'corroded',
+  'inert',
+  'fused',
+  'brittle',
+  'glowing',
+  'hollow',
+  'cracked',
+  'charged',
+  'buried',
+  'jagged',
+  'seared',
+  'warped',
+  'silent',
+  'orbital',
 ]
 
 const ADJECTIVES_2 = [
-  'crater', 'vein', 'shard', 'core', 'node', 'seam', 'pulse', 'mass',
-  'rift', 'cluster', 'layer', 'drift', 'field', 'peak', 'trench',
-  'shelf', 'basin', 'ridge', 'fault', 'lode',
+  'crater',
+  'vein',
+  'shard',
+  'core',
+  'node',
+  'seam',
+  'pulse',
+  'mass',
+  'rift',
+  'cluster',
+  'layer',
+  'drift',
+  'field',
+  'peak',
+  'trench',
+  'shelf',
+  'basin',
+  'ridge',
+  'fault',
+  'lode',
 ]
 
 const NOUNS = [
-  'titan', 'raptor', 'anvil', 'forge', 'silo', 'mech', 'drill', 'vault',
-  'beacon', 'hatch', 'core', 'pylon', 'vent', 'slag', 'chassis',
-  'turbine', 'reactor', 'conduit', 'hopper', 'grinder',
+  'titan',
+  'raptor',
+  'anvil',
+  'forge',
+  'silo',
+  'mech',
+  'drill',
+  'vault',
+  'beacon',
+  'hatch',
+  'core',
+  'pylon',
+  'vent',
+  'slag',
+  'chassis',
+  'turbine',
+  'reactor',
+  'conduit',
+  'hopper',
+  'grinder',
 ]
 
 /**
@@ -42,7 +93,7 @@ function hashString(str) {
   let hash = 0x811c9dc5
   for (let i = 0; i < str.length; i++) {
     hash ^= str.charCodeAt(i)
-    hash = (Math.imul(hash, 0x01000193)) >>> 0
+    hash = Math.imul(hash, 0x01000193) >>> 0
   }
   return hash
 }

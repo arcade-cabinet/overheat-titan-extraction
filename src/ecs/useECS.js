@@ -17,7 +17,7 @@ import { ecsWorld } from './world'
  * @param {object} upgrades - current upgrade levels from Zustand store
  * @returns {React.RefObject} ref to the mech entity
  */
-export function useECSSetup(upgrades) {
+export function useECSSetup(_upgrades) {
   const mechEntityRef = useRef(null)
 
   useEffect(() => {

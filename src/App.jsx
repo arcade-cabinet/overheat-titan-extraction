@@ -1,5 +1,4 @@
-import { useFrame } from '@react-three/fiber'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Suspense, useRef } from 'react'
 import { AmbientSpores } from './components/AmbientSpores'
