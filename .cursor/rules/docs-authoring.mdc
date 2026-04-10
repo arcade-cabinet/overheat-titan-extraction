@@ -1,0 +1,43 @@
+---
+description: Documentation authoring rules for OVERHEAT — frontmatter, structure, and update responsibilities. Auto-attached when editing docs/.
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# Documentation Authoring Rules
+
+## Frontmatter required on all docs
+
+```yaml
+---
+title: Human-readable title
+doc_type: architecture|gameplay|design|lore|operations|handoff|standards|index
+status: active|draft|deprecated
+owner: engineering|design|narrative
+last_updated: YYYY-MM-DD
+---
+```
+
+## Update responsibilities
+
+| After doing... | Update these files |
+|---|---|
+| Implementing a feature | `docs/HANDOFF.md` — mark `[x]`, add to session log |
+| Establishing a new pattern | `docs/STANDARDS.md` |
+| Making a pivotal technical decision | `docs/architecture/decisions.md` |
+| Adding a new mechanic | `docs/gameplay/loop-and-progression.md` |
+| Changing visual/audio direction | `docs/design/visual-audio-direction.md` |
+| Adding a new doc | `docs/README.md` domain map |
+
+## Source-of-truth hierarchy
+
+1. `AGENTS.md` — global contract. Never contradicted by domain docs.
+2. `docs/STANDARDS.md` — immutable standards. Domain docs align to this.
+3. `docs/HANDOFF.md` — live status. Always current.
+4. Domain docs — explain intent. Should not contradict the above.
+
+## DRY rule
+
+Never duplicate information across docs. Cross-reference instead:
+- ✅ "See `docs/STANDARDS.md §4` for post-processing settings"
+- ❌ Copy-pasting the same code block into multiple docs

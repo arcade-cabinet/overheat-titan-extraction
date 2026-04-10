@@ -1,0 +1,61 @@
+name: Feature Request
+description: Propose a new mechanic, system, or improvement for OVERHEAT.
+title: "feat: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before proposing a feature, check `docs/HANDOFF.md` and `docs/operations/roadmap.md`
+        to see if it's already planned.
+
+  - type: dropdown
+    id: milestone
+    attributes:
+      label: Target milestone
+      description: Which milestone does this belong to?
+      options:
+        - M1 — Core Architecture (Koota ECS, Zod config, Rapier cleanup)
+        - M2 — Core Loop (onboarding, contracts, rare isotopes)
+        - M3 — Mobile/Capacitor (touch controls, iOS/Android)
+        - M4 — Visual/Audio Polish (post-FX, audio mixing)
+        - M5 — Content/Progression (upgrade tree, biomes)
+        - M6 — Telemetry/Balancing (analytics, live config)
+        - Undetermined
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What problem does this solve? What does the player feel?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe the feature. How does it fit the creative pillars (Tactile Weight, Diegetic Cockpit, Heat as Drama, Vertical Loop)?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you considered and why you chose this one.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Architectural constraints checked
+      options:
+        - label: No new state in Zustand (M1+ entities → Koota traits)
+        - label: No DOM overlays for game instruments (use CanvasTexture)
+        - label: No Cannon.js or convex hull colliders
+        - label: Audio routed through AudioEngine.js
+        - label: Config values in src/config.json (no magic numbers)

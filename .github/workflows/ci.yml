@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main, copilot/**]
+  pull_request:
+
+jobs:
+  ci:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        # actions/checkout v6.0.2
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+
+      - name: Setup pnpm
+        # pnpm/action-setup v5.0.0
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        # actions/setup-node v6.3.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm run check
+
+      - name: Build
+        run: pnpm run build
