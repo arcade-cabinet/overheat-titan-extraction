@@ -10,7 +10,11 @@ export async function loadApp() {
 /** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
   await page.evaluate((p) => {
-    const store = (window as unknown as { __ZUSTAND_STORE__: { getState: () => { setPhase: (phase: string) => void } } }).__ZUSTAND_STORE__
+    const store = (
+      window as unknown as {
+        __ZUSTAND_STORE__: { getState: () => { setPhase: (phase: string) => void } }
+      }
+    ).__ZUSTAND_STORE__
     store.getState().setPhase(p)
   }, phase)
   await page.waitForTimeout(400) // wait for framer-motion transition
@@ -19,7 +23,11 @@ export async function setPhase(phase: string) {
 /** Set multiple store keys at once (for meltdown etc.) */
 export async function patchStore(patch: Record<string, unknown>) {
   await page.evaluate((p) => {
-    const store = (window as unknown as { __ZUSTAND_STORE__: { setState: (patch: Record<string, unknown>) => void } }).__ZUSTAND_STORE__
+    const store = (
+      window as unknown as {
+        __ZUSTAND_STORE__: { setState: (patch: Record<string, unknown>) => void }
+      }
+    ).__ZUSTAND_STORE__
     store.setState(p)
   }, patch)
   await page.waitForTimeout(400)

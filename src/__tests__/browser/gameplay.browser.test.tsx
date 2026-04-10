@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { page } from '@vitest/browser/context'
-import { loadApp, setPhase, screenshot } from './helpers'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { loadApp, screenshot, setPhase } from './helpers'
 
 describe('Gameplay phase', () => {
   beforeEach(async () => {
@@ -18,7 +18,7 @@ describe('Gameplay phase', () => {
   })
 
   it('canvas element is present and visible', async () => {
-    const canvas = page.getByRole('img').or(page.locator('canvas'))
+    const _canvas = page.getByRole('img').or(page.locator('canvas'))
     // R3F renders into a canvas — verify it exists
     const canvasEl = page.locator('canvas')
     await expect.element(canvasEl).toBeVisible()

@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { page } from '@vitest/browser/context'
-import { loadApp, patchStore, setPhase, screenshot } from './helpers'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { loadApp, patchStore, screenshot, setPhase } from './helpers'
 
 describe('MeltdownScreen phase', () => {
   beforeEach(async () => {

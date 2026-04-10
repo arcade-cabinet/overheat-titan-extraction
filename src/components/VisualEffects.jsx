@@ -1,13 +1,22 @@
 import { useFrame } from '@react-three/fiber'
-import { Bloom, ChromaticAberration, EffectComposer, Glitch, HueSaturation, Vignette } from '@react-three/postprocessing'
-import { wrapEffect } from '@react-three/postprocessing'
+import {
+  Bloom,
+  ChromaticAberration,
+  EffectComposer,
+  Glitch,
+  HueSaturation,
+  Vignette,
+  wrapEffect,
+} from '@react-three/postprocessing'
 import { BlendFunction, Effect, GlitchMode } from 'postprocessing'
 import { useRef } from 'react'
 import { useGameStore } from '../store'
 
 class CRTEffectImpl extends Effect {
   constructor() {
-    super('CRTEffect', `
+    super(
+      'CRTEffect',
+      `
       uniform float uTime;
       void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
         // Barrel distortion
@@ -28,9 +37,11 @@ class CRTEffectImpl extends Effect {
         vec4 color = texture2D(inputBuffer, distortedUv);
         outputColor = vec4(color.rgb * scanline, color.a);
       }
-    `, {
-      uniforms: new Map([['uTime', { value: 0 }]])
-    })
+    `,
+      {
+        uniforms: new Map([['uTime', { value: 0 }]]),
+      }
+    )
   }
 }
 
@@ -74,9 +85,7 @@ export function VisualEffects() {
         darkness={isMelting ? 1.5 : isOverheated ? 1.3 : 1.1}
         blendFunction={BlendFunction.NORMAL}
       />
-      {isPaused && (
-        <HueSaturation saturation={-1.0} blendFunction={BlendFunction.NORMAL} />
-      )}
+      {isPaused && <HueSaturation saturation={-1.0} blendFunction={BlendFunction.NORMAL} />}
       {isMelting && (
         <Glitch
           delay={[0.0, 0.08]}

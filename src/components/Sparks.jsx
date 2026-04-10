@@ -12,11 +12,7 @@ export function useSparks() {
     const id = nextIdRef.current++
     const angle = Math.random() * Math.PI * 2
     const spread = 1.5 + Math.random() * 2
-    const impulse = [
-      Math.cos(angle) * spread,
-      4 + Math.random() * 4,
-      Math.sin(angle) * spread,
-    ]
+    const impulse = [Math.cos(angle) * spread, 4 + Math.random() * 4, Math.sin(angle) * spread]
     setSparks((prev) => {
       const next = [...prev, { id, position: [...position], impulse }]
       return next.length > MAX_SPARKS ? next.slice(next.length - MAX_SPARKS) : next

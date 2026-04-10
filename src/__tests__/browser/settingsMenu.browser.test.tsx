@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { page } from '@vitest/browser/context'
-import { loadApp, setPhase, screenshot } from './helpers'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { loadApp, screenshot, setPhase } from './helpers'
 
 describe('SettingsMenu phase', () => {
   beforeEach(async () => {

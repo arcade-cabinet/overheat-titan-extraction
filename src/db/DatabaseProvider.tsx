@@ -1,9 +1,9 @@
-import React, { createContext, useEffect, useState, ReactNode } from 'react';
-import { createDbClient, DbClient } from './client';
-import { profiles, settings } from './schema';
-import { sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm'
+import { createContext, type ReactNode, useEffect, useState } from 'react'
+import { createDbClient, type DbClient } from './client'
+import { profiles, settings } from './schema'
 
-export const DbContext = createContext<DbClient | null>(null);
+export const DbContext = createContext<DbClient | null>(null)
 
 async function runMigrations(db: DbClient) {
   await db.run(sql`CREATE TABLE IF NOT EXISTS profiles (
@@ -11,7 +11,7 @@ async function runMigrations(db: DbClient) {
     credits INTEGER NOT NULL DEFAULT 0,
     upgrades TEXT NOT NULL DEFAULT '{"cap":1,"pow":1,"cool":1}',
     updated_at INTEGER NOT NULL
-  )`);
+  )`)
 
   await db.run(sql`CREATE TABLE IF NOT EXISTS settings (
     id TEXT PRIMARY KEY DEFAULT 'default',
@@ -19,7 +19,7 @@ async function runMigrations(db: DbClient) {
     sensitivity REAL NOT NULL DEFAULT 0.002,
     crt_overlays INTEGER NOT NULL DEFAULT 0,
     updated_at INTEGER NOT NULL
-  )`);
+  )`)
 
   await db.run(sql`CREATE TABLE IF NOT EXISTS run_history (
     id TEXT PRIMARY KEY,
@@ -28,51 +28,53 @@ async function runMigrations(db: DbClient) {
     seed_phrase TEXT NOT NULL,
     result TEXT NOT NULL,
     created_at INTEGER NOT NULL
-  )`);
+  )`)
 }
 
 async function seedDefaults(db: DbClient) {
-  const now = new Date();
+  const now = new Date()
   await db
     .insert(profiles)
     .values({ id: 'default', credits: 0, updatedAt: now })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
   await db
     .insert(settings)
     .values({ id: 'default', volume: 0.5, sensitivity: 0.002, crtOverlays: false, updatedAt: now })
-    .onConflictDoNothing();
+    .onConflictDoNothing()
 }
 
 interface DatabaseProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function DatabaseProvider({ children }: DatabaseProviderProps) {
-  const [db, setDb] = useState<DbClient | null>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [db, setDb] = useState<DbClient | null>(null)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     async function init() {
       try {
-        const client = await createDbClient();
-        await runMigrations(client);
-        await seedDefaults(client);
-        if (!cancelled) setDb(client);
+        const client = await createDbClient()
+        await runMigrations(client)
+        await seedDefaults(client)
+        if (!cancelled) setDb(client)
       } catch (err) {
-        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)));
+        if (!cancelled) setError(err instanceof Error ? err : new Error(String(err)))
       }
     }
-    init();
-    return () => { cancelled = true; };
-  }, []);
+    init()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   if (error) {
     return (
       <div style={{ color: '#ff3b1f', fontFamily: 'monospace', padding: 20 }}>
         DB INIT FAILED: {error.message}
       </div>
-    );
+    )
   }
 
   if (!db) {
@@ -80,8 +82,8 @@ export function DatabaseProvider({ children }: DatabaseProviderProps) {
       <div style={{ color: '#00ffcc', fontFamily: 'monospace', padding: 20 }}>
         INITIALIZING DATABASE...
       </div>
-    );
+    )
   }
 
-  return <DbContext.Provider value={db}>{children}</DbContext.Provider>;
+  return <DbContext.Provider value={db}>{children}</DbContext.Provider>
 }

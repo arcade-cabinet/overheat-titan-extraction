@@ -5,11 +5,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useGameStore } from '../store'
 
-const REEL_SPEED = 8   // units/s reel-in
+const REEL_SPEED = 8 // units/s reel-in
 const SPRING_STIFFNESS = 60
 const SPRING_DAMPING = 8
 const SPRING_REST = 0
-const MIN_DEPTH = 1.5  // closest the anchor gets
+const MIN_DEPTH = 1.5 // closest the anchor gets
 
 function SpringJoint({ anchorRef, targetRef }) {
   useSpringJoint(anchorRef, targetRef, [
@@ -28,9 +28,9 @@ export function TractorBeam() {
   const isPaused = useGameStore((s) => s.isPaused)
 
   const anchorRef = useRef()
-  const grabbedRef = useRef(null)   // Rapier RigidBody of grabbed cube
+  const grabbedRef = useRef(null) // Rapier RigidBody of grabbed cube
   const [grabbed, setGrabbed] = useState(false)
-  const depthRef = useRef(6)        // current reel depth
+  const depthRef = useRef(6) // current reel depth
   const beamStartRef = useRef(new THREE.Vector3())
   const beamEndRef = useRef(new THREE.Vector3())
   const [beamPoints, setBeamPoints] = useState(null)
@@ -115,13 +115,7 @@ export function TractorBeam() {
 
       {/* Beam visual */}
       {beamPoints && (
-        <Line
-          points={beamPoints}
-          color="#00ffcc"
-          lineWidth={1.5}
-          transparent
-          opacity={0.7}
-        />
+        <Line points={beamPoints} color="#00ffcc" lineWidth={1.5} transparent opacity={0.7} />
       )}
     </>
   )
