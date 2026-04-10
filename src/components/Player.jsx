@@ -9,6 +9,10 @@ const SPEED = 8
 const DASH_SPEED = 20
 const keys = {}
 
+// Module-scope reusable objects — avoid per-frame allocations (GC pressure)
+const _euler = new THREE.Euler(0, 0, 0, 'YXZ')
+const _dir = new THREE.Vector3()
+
 function useKeys() {
   useEffect(() => {
     const down = (e) => (keys[e.code] = true)
@@ -88,9 +92,9 @@ export function Player() {
       coolDown(getCoolingRate() * delta)
     }
 
-    // Camera rotation
-    const euler = new THREE.Euler(pitchRef.current, yawRef.current, 0, 'YXZ')
-    camera.quaternion.setFromEuler(euler)
+    // Camera rotation — mutate module-scope Euler, no allocation per frame
+    _euler.set(pitchRef.current, yawRef.current, 0)
+    camera.quaternion.setFromEuler(_euler)
 
     // Movement
     const forward = keys.KeyW || keys.ArrowUp ? 1 : 0
@@ -99,15 +103,15 @@ export function Player() {
     const right = keys.KeyD || keys.ArrowRight ? 1 : 0
     const dash = !!(keys.ShiftLeft || keys.ShiftRight)
 
-    const dir = new THREE.Vector3(right - left, 0, backward - forward)
-    if (dir.length() > 0.01) dir.normalize()
-    dir.applyQuaternion(camera.quaternion)
-    dir.y = 0
+    _dir.set(right - left, 0, backward - forward)
+    if (_dir.length() > 0.01) _dir.normalize()
+    _dir.applyQuaternion(camera.quaternion)
+    _dir.y = 0
 
     const speed = dash ? DASH_SPEED : SPEED
     const vel = bodyRef.current.linvel()
     bodyRef.current.wakeUp()
-    bodyRef.current.setLinvel({ x: dir.x * speed, y: vel.y, z: dir.z * speed }, true)
+    bodyRef.current.setLinvel({ x: _dir.x * speed, y: vel.y, z: _dir.z * speed }, true)
 
     // Sync camera to body
     const pos = bodyRef.current.translation()
