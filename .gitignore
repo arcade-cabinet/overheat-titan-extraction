@@ -151,3 +151,4 @@ vite.config.ts.timestamp-*
 # Claude Code runtime artifacts (ephemeral — not planning docs)
 .claude/state/
 .claude/worktrees/
+.vitest-attachments/

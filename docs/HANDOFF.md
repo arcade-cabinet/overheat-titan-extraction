@@ -60,7 +60,7 @@ last_updated: 2026-04-10
 | All OreSpawner constants wired to config.json | ✅ Complete |
 | Diegetic pause button (UV raycast on dashboard mesh) | ✅ Complete |
 | All Player/TractorBeam/Silo constants wired to config.json | ✅ Complete |
-| Diegetic menu raycast (upgrade/sell terminal interaction) | ❌ Not implemented |
+| Diegetic upgrade console (3D terminal, UV raycast, range gate) | ✅ Complete |
 
 ---
 
@@ -140,7 +140,13 @@ At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by
 
 **File:** `src/components/OreSpawner.jsx`
 
-Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Low priority — current approach is stable and unnoticeable to players.
+Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Current approach is stable and unnoticeable to players.
+
+### Priority 3 — Dashboard UV calibration (follow-up)
+
+**File:** `src/components/Dashboard.jsx`
+
+The pause button UV zone was calculated from BoxGeometry +Y face UV theory. Playtest to verify the click zone aligns with the drawn button. If off, adjust `PAUSE_UV` constants — the canvas pixel positions are the source of truth, UV mapping derives from them.
 
 ### Deferred — CodeRabbit open items on PR #13 (pending re-review)
 
@@ -199,16 +205,16 @@ Cross-reference with the master problem statement sections.
 - [x] Forced cooling after overheat
 - [x] Hopper fills up
 - [x] Ejected compressed cube on hopper full
-- [ ] Tractor beam to drag cubes (§4, §13)
-- [ ] Reel-in mechanic (depth reduction)
-- [ ] Throw by flicking cursor
+- [x] Tractor beam to drag cubes (§4, §13) — TractorBeam.jsx spring joint
+- [x] Reel-in mechanic (depth reduction) — mouse wheel adjusts depth
+- [x] Throw by flicking cursor — pointer-up velocity applied
 - [x] Silo beam sell mechanic
 
 ### From §6 Coding Patterns
 - [x] Zustand store (§6.1)
 - [x] Rapier player movement (§6.2)
-- [x] Diegetic CanvasTexture dashboard (§6.3)
-- [ ] Tractor beam spring joint (§6.4)
+- [x] Diegetic CanvasTexture dashboard (§6.3) — pause button via UV raycast (PR #15)
+- [x] Tractor beam spring joint (§6.4)
 - [x] AudioEngine (§6.5 — Web Audio API equivalent)
 
 ### From §7 Visuals
@@ -221,7 +227,7 @@ Cross-reference with the master problem statement sections.
 ### From §8 Game Feel
 - [x] Camera shake scaled by heat (§8.1)
 - [x] Dash FOV burst (§8.2)
-- [x] Spark emitter on grind (§8.3) — physics Sparks.jsx, TTL cleanup, max 5/s throttle
+- [x] Spark emitter on grind (§8.3) — instanced mesh CPU sim (PR #13), hot-white→orange fade, max 5/s throttle
 
 ### From §10 Expanded Tech Stack (Supplemental)
 - [x] @react-three/postprocessing (§10)
