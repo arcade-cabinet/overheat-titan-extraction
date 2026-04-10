@@ -12,7 +12,7 @@
       "meltdownThreshold": 120,
       "baseCoolingRate": 20,
       "coolingSafeThreshold": 20,
-      "coolingRatePerUpgrade": 0.5,
+      "coolingRatePerUpgrade": 0.75,
       "cameraShakeMaxScale": 0.03
     },
     "hopper": {
@@ -90,7 +90,14 @@
     "normalFilterHz": 20000,
     "thrusterNoiseLevel": 0.08,
     "thrusterGainLevel": 0.06,
-    "thrusterSmoothTime": 0.05
+    "thrusterSmoothTime": 0.05,
+    "rareSell": {
+      "oscillators": [
+        { "frequency": 1320, "gain": 0.25, "duration": 0.6 },
+        { "frequency": 1396, "gain": 0.15, "duration": 0.6 },
+        { "frequency": 110, "gain": 0.3, "duration": 0.25 }
+      ]
+    }
   },
   "hitStop": {
     "durationMs": 50

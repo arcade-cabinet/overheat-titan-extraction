@@ -13,8 +13,9 @@ import { PauseMenu } from './components/PauseMenu'
 import { Player } from './components/Player'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Silo } from './components/Silo'
-import { Sparks, useSparks } from './components/Sparks'
+import { Sparks } from './components/Sparks'
 import { Terrain } from './components/Terrain'
+import { UpgradeConsole } from './components/UpgradeConsole'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
 import { useECSFrame, useECSSetup } from './ecs/useECS'
@@ -26,7 +27,7 @@ function Scene() {
   const isMelting = useGameStore((s) => s.isMelting)
   const isOverheated = useGameStore((s) => s.isOverheated)
   const upgrades = useGameStore((s) => s.upgrades)
-  const { sparks, spawnSpark } = useSparks()
+  const sparkTriggerRef = useRef(null)
 
   // ECS setup — creates mech + silo entities on mount
   useECSSetup(upgrades)
@@ -51,18 +52,19 @@ function Scene() {
     <>
       <Environment />
       <AmbientSpores />
+      <UpgradeConsole />
       <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
         {(phase === 'gameplay' || isMelting) && (
           <>
-            <OreSpawner onSparkTrigger={spawnSpark} />
+            <OreSpawner onSparkTrigger={(pos) => sparkTriggerRef.current?.(pos)} />
             <Player />
-            <Sparks sparks={sparks} />
           </>
         )}
       </Physics>
       {phase === 'gameplay' && <Cockpit />}
+      <Sparks triggerRef={sparkTriggerRef} />
       <VisualEffects />
 
       {/* UI Overlays — conditionally rendered so AnimatePresence sees true mount/unmount */}

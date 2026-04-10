@@ -3,6 +3,7 @@ import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
+import gameConfig from '../config.json'
 import { useGameStore } from '../store'
 
 const SILO_POSITION = new THREE.Vector3(0, 0, 0)
@@ -46,9 +47,13 @@ export function Silo() {
       otherObject.userData = { ...otherObject.userData, sold: true }
     }
 
-    const value = otherUserData.value ?? 50
+    const value = otherUserData.value ?? gameConfig.economy.cubeValue
     addCredits(value)
-    audioManager.playSell()
+    if (otherUserData.isRare) {
+      audioManager.playRareSell()
+    } else {
+      audioManager.playSell()
+    }
 
     if (typeof otherUserData.onSell === 'function') {
       otherUserData.onSell()

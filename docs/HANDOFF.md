@@ -53,11 +53,14 @@ last_updated: 2026-04-10
 | maath/random for spores (official inSphere) | ✅ Complete |
 | Framer-motion UI transitions (all overlay screens) | ✅ Complete |
 | Rare isotopes (15%, magenta, 3× heat, $2500 cube) | ✅ Complete |
-| Rare sell audio (dissonant chord + thump) | ✅ Complete (PR #13) |
-| Spark emitter — instanced CPU sim, hot-white→orange fade | ✅ Complete (PR #13) |
-| Dashboard heat bar 0-120°C + overheat marker | ✅ Complete (PR #13) |
-| OreSpawner setState deferred out of useFrame | ✅ Complete (PR #14) |
-| Diegetic pause button on dashboard (UV raycast) | ✅ Complete (PR #15) |
+| Instanced spark particle system (CPU sim, no Rapier bodies) | ✅ Complete |
+| Rare sell audio (dissonant chord via config oscillators) | ✅ Complete |
+| Dashboard danger zone (overheat marker + 120°C scale) | ✅ Complete |
+| OreSpawner setState deferred via scheduleAction pattern | ✅ Complete |
+| All OreSpawner constants wired to config.json | ✅ Complete |
+| Diegetic pause button (UV raycast on dashboard mesh) | ✅ Complete |
+| All Player/TractorBeam/Silo constants wired to config.json | ✅ Complete |
+| Diegetic upgrade console (3D terminal, UV raycast, range gate) | ✅ Complete |
 
 ---
 
@@ -114,15 +117,26 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-All immediate priorities shipped. Remaining work (deferred or low priority):
+Stream A gameplay polish, OreSpawner tech debt, diegetic pause button, and config wire-up are all shipped and merged (PRs #13–#17). PRs #13 and #15 are open pending CodeRabbit re-review after remediation commits. Remaining work:
 
-### Priority 1 — Meltdown radial impulse (deferred)
+### Priority 1 — Diegetic upgrade/sell menu (dashboard as interactive surface)
 
-**File:** New `MeltdownExplosion.jsx`
+**File:** `src/components/Dashboard.jsx` and overlay screens
+
+The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. The **pause button** is now diegetic (UV raycast on dashboard mesh, PR #15). The next step is to do the same for the **upgrade terminal** and **silo sell confirmation** — replacing or augmenting the Html overlay screens with 3D-surface interaction.
+
+Implementation:
+1. Extend the dashboard UV hit zone to cover upgrade/sell buttons.
+2. Map UV regions → store actions (`openUpgrades`, `confirmSell`, etc.).
+3. Render upgrade options directly on the CanvasTexture rather than Html overlay.
+
+### Priority 2 — Meltdown radial impulse
+
+**File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
 
 At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
 
-### Priority 2 — Ore grind physics contact (low priority)
+### Priority 3 — Ore grind physics contact (quality)
 
 **File:** `src/components/OreSpawner.jsx`
 
@@ -133,6 +147,15 @@ Currently uses camera proximity (distance < 5) for grind detection. Should use R
 **File:** `src/components/Dashboard.jsx`
 
 The pause button UV zone was calculated from BoxGeometry +Y face UV theory. Playtest to verify the click zone aligns with the drawn button. If off, adjust `PAUSE_UV` constants — the canvas pixel positions are the source of truth, UV mapping derives from them.
+
+### Deferred — CodeRabbit open items on PR #13 (pending re-review)
+
+After remediation commit (d710b46), CodeRabbit needs to re-review:
+- ✅ Pos normalization (array vs object) — fixed
+- ✅ Unified lifetime so `ttl === life` at spawn — fixed
+- ✅ Phase/isPaused guard in `useFrame` — fixed
+- ✅ `playRareSell` oscillator params from config — fixed
+- ✅ `DISPLAY_MAX_HEAT` and overheat marker from config — fixed
 
 ---
 
