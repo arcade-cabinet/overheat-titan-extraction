@@ -3,13 +3,14 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, useSpringJoint } from '@react-three/rapier'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import gameConfig from '../config.json'
 import { useGameStore } from '../store'
 
-const REEL_SPEED = 8 // units/s reel-in
-const SPRING_STIFFNESS = 60
-const SPRING_DAMPING = 8
+const REEL_SPEED = gameConfig.tractor.reelSpeed
+const SPRING_STIFFNESS = gameConfig.tractor.springStiffness
+const SPRING_DAMPING = gameConfig.tractor.springDamping
 const SPRING_REST = 0
-const MIN_DEPTH = 1.5 // closest the anchor gets
+const MIN_DEPTH = gameConfig.tractor.minDepth
 
 function SpringJoint({ anchorRef, targetRef }) {
   useSpringJoint(anchorRef, targetRef, [
@@ -30,7 +31,7 @@ export function TractorBeam() {
   const anchorRef = useRef()
   const grabbedRef = useRef(null) // Rapier RigidBody of grabbed cube
   const [grabbed, setGrabbed] = useState(false)
-  const depthRef = useRef(6) // current reel depth
+  const depthRef = useRef(gameConfig.tractor.defaultDepth) // current reel depth
 
   // Beam points updated via ref to avoid state allocation every frame
   const beamStartRef = useRef(new THREE.Vector3())
