@@ -243,7 +243,12 @@ export function OreSpawner({ onSparkTrigger }) {
       scheduleAction(() => {
         setCubes((prev) => [
           ...prev,
-          { id: Date.now(), position: cubePos, isRare: hasRare, value: hasRare ? 2500 : 50 },
+          {
+            id: Date.now(),
+            position: cubePos,
+            isRare: hasRare,
+            value: hasRare ? gameConfig.economy.rareCubeValue : gameConfig.economy.cubeValue,
+          },
         ])
         ejectCube()
       })
