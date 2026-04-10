@@ -1,13 +1,14 @@
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { AnimatePresence } from 'framer-motion'
-import { Suspense, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { AmbientSpores } from './components/AmbientSpores'
 import { BootScreen } from './components/BootScreen'
 import { Cockpit } from './components/Cockpit'
 import { Environment } from './components/Environment'
 import { MainMenu } from './components/MainMenu'
 import { MeltdownScreen } from './components/MeltdownScreen'
+import { MobileControls } from './components/MobileControls'
 import { OreSpawner } from './components/OreSpawner'
 import { PauseMenu } from './components/PauseMenu'
 import { Player } from './components/Player'
@@ -19,7 +20,15 @@ import { UpgradeConsole } from './components/UpgradeConsole'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
 import { useECSFrame, useECSSetup } from './ecs/useECS'
+import { initDesktopInput, resetFrameEvents } from './input/InputService'
 import { useGameStore } from './store'
+
+function FrameResetter() {
+  useFrame(() => {
+    resetFrameEvents()
+  }, 999) // run at end of frame
+  return null
+}
 
 function Scene() {
   const phase = useGameStore((s) => s.phase)
@@ -84,20 +93,27 @@ function Scene() {
 }
 
 export default function App() {
+  const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
+
+  useEffect(() => {
+    return initDesktopInput()
+  }, [])
+
   return (
-    <Canvas
-      shadows
-      camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
-      style={{ background: '#020406' }}
-      gl={{ antialias: true, toneMapping: 0 }}
-    >
-      <Suspense fallback={null}>
-        <Scene />
-      </Suspense>
-    </Canvas>
-  )
-}
-     </Suspense>
-    </Canvas>
+    <>
+      <Canvas
+        shadows
+        camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
+        style={{ background: '#020406', touchAction: 'none' }}
+        gl={{ antialias: true, toneMapping: 0 }}
+      >
+        <FrameResetter />
+        <Suspense fallback={null}>
+          <Scene />
+        </Suspense>
+      </Canvas>
+      {phase === 'gameplay' && !isPaused && <MobileControls />}
+    </>
   )
 }

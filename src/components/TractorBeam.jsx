@@ -1,9 +1,10 @@
 import { Line } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, useSpringJoint } from '@react-three/rapier'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import gameConfig from '../config.json'
+import { inputState } from '../input/InputService'
 import { useGameStore } from '../store'
 
 const REEL_SPEED = gameConfig.tractor.reelSpeed
@@ -53,58 +54,47 @@ export function TractorBeam() {
     setBeamVisible(false)
   }, [grabbed, phase, isPaused])
 
-  // Grab on pointer-down — raycast along camera forward direction
-  const onPointerDown = useCallback(() => {
-    if (phase !== 'gameplay' || isPaused || grabbed) return
-
-    raycaster.current.setFromCamera({ x: 0, y: 0 }, camera)
-    const hits = raycaster.current.intersectObjects(scene.children, true)
-
-    for (const hit of hits) {
-      let obj = hit.object
-      while (obj) {
-        if (obj.userData?.type === 'cube' && obj.userData?.rigidBodyRef) {
-          // Prefer explicit ref stored in userData by the cube component
-          grabbedRef.current = obj.userData.rigidBodyRef
-          depthRef.current = hit.distance
-          setGrabbed(true)
-          setBeamVisible(true)
-          return
-        }
-        // Fallback: walk parent chain for userData.type === 'cube'
-        // and grab the THREE.Group's rigid body via rapier
-        if (obj.userData?.type === 'cube' && obj.rigidBody) {
-          grabbedRef.current = obj.rigidBody
-          depthRef.current = hit.distance
-          setGrabbed(true)
-          setBeamVisible(true)
-          return
-        }
-        obj = obj.parent
-      }
-    }
-  }, [phase, isPaused, grabbed, camera, scene])
-
-  // Release on pointer-up — cube keeps its current velocity (throw)
-  const onPointerUp = useCallback(() => {
-    if (!grabbed) return
-    grabbedRef.current = null
-    setGrabbed(false)
-    setBeamVisible(false)
-  }, [grabbed])
-
-  useEffect(() => {
-    window.addEventListener('pointerdown', onPointerDown)
-    window.addEventListener('pointerup', onPointerUp)
-    return () => {
-      window.removeEventListener('pointerdown', onPointerDown)
-      window.removeEventListener('pointerup', onPointerUp)
-    }
-  }, [onPointerDown, onPointerUp])
-
   useFrame((_, delta) => {
     if (!anchorRef.current) return
     if (phase !== 'gameplay' || isPaused) return
+
+    // Check inputState for grab/release
+    if (inputState.tractorDownThisFrame && !grabbed) {
+      raycaster.current.setFromCamera({ x: 0, y: 0 }, camera)
+      const hits = raycaster.current.intersectObjects(scene.children, true)
+
+      for (const hit of hits) {
+        let obj = hit.object
+        let found = false
+        while (obj) {
+          if (obj.userData?.type === 'cube' && obj.userData?.rigidBodyRef) {
+            grabbedRef.current = obj.userData.rigidBodyRef
+            depthRef.current = hit.distance
+            setGrabbed(true)
+            setBeamVisible(true)
+            found = true
+            break
+          }
+          if (obj.userData?.type === 'cube' && obj.rigidBody) {
+            grabbedRef.current = obj.rigidBody
+            depthRef.current = hit.distance
+            setGrabbed(true)
+            setBeamVisible(true)
+            found = true
+            break
+          }
+          obj = obj.parent
+        }
+        if (found) break
+      }
+    }
+
+    if (inputState.tractorUpThisFrame && grabbed) {
+      grabbedRef.current = null
+      setGrabbed(false)
+      setBeamVisible(false)
+    }
+
     if (!grabbed || !grabbedRef.current) return
 
     // Reel in: reduce depth each frame

@@ -4,39 +4,18 @@ import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import gameConfig from '../config.json'
+import { inputState } from '../input/InputService'
 import { useGameStore } from '../store'
 
 const SPEED = gameConfig.mech.baseSpeed
 const DASH_SPEED = gameConfig.mech.dashSpeed
-const keys = {}
 
 // Module-scope reusable objects — avoid per-frame allocations (GC pressure)
 const _euler = new THREE.Euler(0, 0, 0, 'YXZ')
 const _dir = new THREE.Vector3()
 
-function useKeys() {
-  useEffect(() => {
-    const down = (e) => (keys[e.code] = true)
-    const up = (e) => (keys[e.code] = false)
-    const blur = () =>
-      Object.keys(keys).forEach((k) => {
-        delete keys[k]
-      })
-    window.addEventListener('keydown', down)
-    window.addEventListener('keyup', up)
-    window.addEventListener('blur', blur)
-    return () => {
-      window.removeEventListener('keydown', down)
-      window.removeEventListener('keyup', up)
-      window.removeEventListener('blur', blur)
-    }
-  }, [])
-  return keys
-}
-
 export function Player() {
   const bodyRef = useRef()
-  useKeys()
   const { camera } = useThree()
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
@@ -65,18 +44,6 @@ export function Player() {
     }
   }, [isPaused, phase])
 
-  useEffect(() => {
-    const onMove = (e) => {
-      if (phase !== 'gameplay' || isPaused) return
-      const sens = 0.002 * lookSensitivity
-      yawRef.current -= e.movementX * sens
-      pitchRef.current -= e.movementY * sens
-      pitchRef.current = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, pitchRef.current))
-    }
-    document.addEventListener('mousemove', onMove)
-    return () => document.removeEventListener('mousemove', onMove)
-  }, [phase, isPaused, lookSensitivity])
-
   useFrame(({ clock: _clock }, delta) => {
     if (!bodyRef.current) return
 
@@ -88,6 +55,19 @@ export function Player() {
 
     if (isPaused || phase !== 'gameplay') return
 
+    // Mouse look and touch look
+    const sens = 0.002 * lookSensitivity
+    if (inputState.pointerLook.x !== 0 || inputState.pointerLook.y !== 0) {
+      yawRef.current -= inputState.pointerLook.x * sens
+      pitchRef.current -= inputState.pointerLook.y * sens
+    }
+    // Joystick look (mobile)
+    if (inputState.look.x !== 0 || inputState.look.y !== 0) {
+      yawRef.current -= inputState.look.x * sens * 20 // scale up for stick
+      pitchRef.current -= inputState.look.y * sens * 20
+    }
+    pitchRef.current = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, pitchRef.current))
+
     // Cooling when overheated
     if (isOverheated) {
       coolDown(getCoolingRate() * delta)
@@ -98,18 +78,17 @@ export function Player() {
     camera.quaternion.setFromEuler(_euler)
 
     // Movement
-    const forward = keys.KeyW || keys.ArrowUp ? 1 : 0
-    const backward = keys.KeyS || keys.ArrowDown ? 1 : 0
-    const left = keys.KeyA || keys.ArrowLeft ? 1 : 0
-    const right = keys.KeyD || keys.ArrowRight ? 1 : 0
-    const dash = !!(keys.ShiftLeft || keys.ShiftRight)
+    _dir.set(inputState.move.x, 0, inputState.move.y)
+    if (_dir.lengthSq() > 0.01) {
+      // Don't normalize here because it might be an analog stick value <= 1
+      _dir.applyQuaternion(camera.quaternion)
+      _dir.y = 0
+      // Normalizing after rotation, then scaling by analog stick magnitude
+      const mag = Math.min(1, Math.sqrt(inputState.move.x ** 2 + inputState.move.y ** 2))
+      _dir.normalize().multiplyScalar(mag)
+    }
 
-    _dir.set(right - left, 0, backward - forward)
-    if (_dir.length() > 0.01) _dir.normalize()
-    _dir.applyQuaternion(camera.quaternion)
-    _dir.y = 0
-
-    const speed = dash ? DASH_SPEED : SPEED
+    const speed = inputState.dash ? DASH_SPEED : SPEED
     const vel = bodyRef.current.linvel()
     bodyRef.current.wakeUp()
     bodyRef.current.setLinvel({ x: _dir.x * speed, y: vel.y, z: _dir.z * speed }, true)
@@ -128,13 +107,13 @@ export function Player() {
     }
 
     // FOV transitions
-    const targetFov = dash ? gameConfig.mech.dashFov : gameConfig.mech.normalFov
+    const targetFov = inputState.dash ? gameConfig.mech.dashFov : gameConfig.mech.normalFov
     camera.fov += (targetFov - camera.fov) * Math.min(1, delta * gameConfig.mech.dash.fovLerpSpeed)
     camera.updateProjectionMatrix()
 
     // Footstep sounds
     stepTimer.current += delta
-    const moving = forward || backward || left || right
+    const moving = inputState.move.x !== 0 || inputState.move.y !== 0
     if (moving && stepTimer.current > gameConfig.mech.dash.stepIntervalS) {
       stepTimer.current = 0
       audioManager.playMechStep()
