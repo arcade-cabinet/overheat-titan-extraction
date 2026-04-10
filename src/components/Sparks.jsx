@@ -2,6 +2,7 @@ import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import gameConfig from '../config.json'
+import { useGameStore } from '../store'
 
 const MAX_SPARKS = gameConfig.sparks.maxLive
 const TTL = gameConfig.sparks.ttlMs / 1000
@@ -26,25 +27,32 @@ function randVel() {
 export function Sparks({ triggerRef }) {
   const meshRef = useRef()
   const sparks = useRef([]) // { pos: THREE.Vector3, vel: THREE.Vector3, ttl: number, life: number }
+  const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
 
   // Expose spawn function via ref — called from OreSpawner during grind
   useEffect(() => {
     if (!triggerRef) return
     triggerRef.current = (pos) => {
+      // Accept both array [x,y,z] and object {x,y,z}
+      const px = Array.isArray(pos) ? pos[0] : pos.x
+      const py = Array.isArray(pos) ? pos[1] : pos.y
+      const pz = Array.isArray(pos) ? pos[2] : pos.z
       const count = 4 + Math.floor(Math.random() * 5) // 4-8 sparks per burst
       for (let i = 0; i < count; i++) {
         if (sparks.current.length >= MAX_SPARKS) {
           sparks.current.shift() // drop oldest
         }
+        const lifetime = TTL * (0.5 + Math.random() * 0.5)
         sparks.current.push({
           pos: new THREE.Vector3(
-            pos.x + (Math.random() - 0.5) * 0.5,
-            pos.y + Math.random() * 0.5,
-            pos.z + (Math.random() - 0.5) * 0.5
+            px + (Math.random() - 0.5) * 0.5,
+            py + Math.random() * 0.5,
+            pz + (Math.random() - 0.5) * 0.5
           ),
           vel: new THREE.Vector3(randVel(), Math.random() * MAX_IMPULSE, randVel()),
-          ttl: TTL * (0.5 + Math.random() * 0.5),
-          life: TTL * (0.5 + Math.random() * 0.5),
+          ttl: lifetime,
+          life: lifetime,
         })
       }
     }
@@ -54,7 +62,7 @@ export function Sparks({ triggerRef }) {
   }, [triggerRef])
 
   useFrame((_, delta) => {
-    if (!meshRef.current) return
+    if (!meshRef.current || phase !== 'gameplay' || isPaused) return
 
     // Age and move sparks
     sparks.current = sparks.current.filter((s) => {
