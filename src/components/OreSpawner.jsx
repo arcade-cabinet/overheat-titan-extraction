@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { BallCollider, InstancedRigidBodies, RigidBody } from '@react-three/rapier'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
@@ -54,9 +54,20 @@ export function OreSpawner({ onSparkTrigger }) {
   const lastGrindSoundAtRef = useRef(0)
   const ejectionPendingRef = useRef(false)
   const hitStopRef = useRef(false)
+  const hitStopTimerRef = useRef(null)
   const wasGrindingRef = useRef(false)
   const oreScaleRefs = useRef({})
   const removeDebrisTimeout = useRef({})
+
+  // Cleanup all pending timeouts on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (hitStopTimerRef.current) clearTimeout(hitStopTimerRef.current)
+      for (const id of Object.keys(removeDebrisTimeout.current)) {
+        clearTimeout(removeDebrisTimeout.current[id])
+      }
+    }
+  }, [])
 
   const spawnDebris = useCallback((pos, count = MAX_DEBRIS) => {
     const debrisId = Date.now()
@@ -124,8 +135,10 @@ export function OreSpawner({ onSparkTrigger }) {
     // Hit-stop on leading edge of grind
     if (isGrinding && !wasGrindingRef.current) {
       hitStopRef.current = true
-      setTimeout(() => {
+      if (hitStopTimerRef.current) clearTimeout(hitStopTimerRef.current)
+      hitStopTimerRef.current = setTimeout(() => {
         hitStopRef.current = false
+        hitStopTimerRef.current = null
       }, 50)
       wasGrindingRef.current = true
     } else if (!isGrinding) {

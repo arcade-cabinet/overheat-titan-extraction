@@ -18,6 +18,9 @@ export function Silo() {
       audioManager.initSiloHum()
       audioManager.initThruster()
     }
+    return () => {
+      audioManager.stopSiloHum()
+    }
   }, [phase])
 
   useFrame(() => {

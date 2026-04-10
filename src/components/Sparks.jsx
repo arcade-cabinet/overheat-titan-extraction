@@ -1,5 +1,5 @@
 import { RigidBody } from '@react-three/rapier'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 const MAX_SPARKS = 30
 const SPARK_TTL_MS = 1200
@@ -7,6 +7,7 @@ const SPARK_TTL_MS = 1200
 export function useSparks() {
   const [sparks, setSparks] = useState([])
   const nextIdRef = useRef(0)
+  const timerRefs = useRef({})
 
   const spawnSpark = useCallback((position) => {
     const id = nextIdRef.current++
@@ -17,9 +18,19 @@ export function useSparks() {
       const next = [...prev, { id, position: [...position], impulse }]
       return next.length > MAX_SPARKS ? next.slice(next.length - MAX_SPARKS) : next
     })
-    setTimeout(() => {
+    timerRefs.current[id] = setTimeout(() => {
       setSparks((prev) => prev.filter((s) => s.id !== id))
+      delete timerRefs.current[id]
     }, SPARK_TTL_MS)
+  }, [])
+
+  // Clean up all pending TTL timers on unmount
+  useEffect(() => {
+    return () => {
+      for (const id of Object.keys(timerRefs.current)) {
+        clearTimeout(timerRefs.current[id])
+      }
+    }
   }, [])
 
   return { sparks, spawnSpark }
@@ -37,6 +48,16 @@ export function Sparks({ sparks }) {
 
 function SparkBody({ spark }) {
   const bodyRef = useRef()
+
+  // Apply impulse once on mount so sparks actually fly outward
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.applyImpulse(
+        { x: spark.impulse[0], y: spark.impulse[1], z: spark.impulse[2] },
+        true
+      )
+    }
+  }, [spark.impulse])
 
   return (
     <RigidBody

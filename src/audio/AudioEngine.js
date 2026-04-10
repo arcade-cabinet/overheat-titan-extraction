@@ -158,6 +158,26 @@ class AudioEngine {
     this._thrusterLevel = normalizedSpeed * 0.08
     this._thrusterGain.gain.setTargetAtTime(normalizedSpeed * 0.06, this.ctx.currentTime, 0.05)
   }
+
+  stopSiloHum() {
+    if (!this._siloHum) return
+    try {
+      this._siloHum.osc.stop()
+    } catch (_) {
+      // already stopped
+    }
+    this._siloHum.gain.disconnect()
+    this._siloHum = null
+  }
+
+  stopThruster() {
+    if (!this._thrusterNode) return
+    this._thrusterNode.disconnect()
+    this._thrusterGain?.disconnect()
+    this._thrusterNode = null
+    this._thrusterGain = null
+    this._thrusterLevel = 0
+  }
 }
 
 export const audioManager = new AudioEngine()
