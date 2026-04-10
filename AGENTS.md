@@ -310,3 +310,47 @@ At the end of every agent session:
 - ❌ Do not add new Zustand simulation state after M1 — new entities go in Koota traits.
 - ❌ Do not use `framer-motion-3d` — not maintained; use `react-spring` / `@react-spring/three`.
 - ❌ Do not use magic numbers — reference `gameConfig.*` from `src/config.json`.
+
+---
+
+## Cursor Cloud specific instructions
+
+This section is for Cloud Agents launched in the VM with the update script already run.
+
+### Available toolchain
+
+| Tool | Version | Notes |
+|---|---|---|
+| Node.js | 22.x (via nvm) | |
+| pnpm | 10.33.0 (corepack) | Lockfile: `pnpm-lock.yaml` |
+| Biome | 2.4.11 | Lint/format — `pnpm run check` |
+| Vitest | 4.x | `@vitest/browser` installed for future browser-mode tests |
+| Playwright | 1.x | Chromium browser installed; system deps present |
+| Maestro | 2.x | `$HOME/.maestro/bin` — add to `PATH` if needed |
+| xvfb | installed | `xvfb-run` available for headless browser testing |
+| Google Chrome | installed | `/usr/local/bin/google-chrome` |
+| Chromium | installed | `/usr/bin/chromium-browser` |
+
+### Running the dev server
+
+```bash
+pnpm run dev --host 0.0.0.0
+```
+
+Serves on `http://localhost:5173/`. Pass `--host` to expose on all interfaces for browser testing.
+
+### Key commands
+
+See `docs/STANDARDS.md §12` for the full table. Quick reference:
+
+- **Build:** `pnpm run build`
+- **Lint + format check:** `pnpm run check`
+- **Dev server:** `pnpm run dev`
+
+### Gotchas
+
+- This is a **zero-backend, client-only WebGL game**. The only service is the Vite dev server.
+- The Zustand store uses `persist` middleware writing to `localStorage`. If the game gets stuck in a bad state during browser testing, clear localStorage and hard-refresh.
+- Console warnings about "Converting circular structure to JSON" from React DevTools inspecting Three.js objects are non-blocking noise — ignore them.
+- No automated tests exist yet. Vitest + `@vitest/browser` (Playwright) are installed and ready for when tests are added.
+- Maestro is installed at `$HOME/.maestro/bin/maestro`. You may need `export PATH="$PATH:$HOME/.maestro/bin"` if it's not on your PATH.
