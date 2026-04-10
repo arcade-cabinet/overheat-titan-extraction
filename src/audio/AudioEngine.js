@@ -1,3 +1,7 @@
+import gameConfig from '../config.json'
+
+const { silo: siloConfig, audio: audioConfig } = gameConfig
+
 class AudioEngine {
   constructor() {
     this._initialized = false
@@ -106,14 +110,14 @@ class AudioEngine {
     const humOsc = this.ctx.createOscillator()
     const humGain = this.ctx.createGain()
     humOsc.type = 'sine'
-    humOsc.frequency.value = 58
-    humGain.gain.value = 0.05
+    humOsc.frequency.value = siloConfig.humBaseFrequency
+    humGain.gain.value = siloConfig.humBaseGain
 
     // Slow LFO for organic pulsing
     const lfo = this.ctx.createOscillator()
     const lfoGain = this.ctx.createGain()
-    lfo.frequency.value = 0.3
-    lfoGain.gain.value = 0.02
+    lfo.frequency.value = siloConfig.humLfoFrequency
+    lfoGain.gain.value = siloConfig.humLfoGain
     lfo.connect(lfoGain)
     lfoGain.connect(humGain.gain)
 
@@ -126,8 +130,8 @@ class AudioEngine {
 
   setSiloHumDistance(distance) {
     if (!this._siloHum) return
-    // Attenuate by distance — full at 0, silent at 80
-    const vol = Math.max(0, 1 - distance / 80) * 0.07
+    // Attenuate by distance — full at 0, silent at humMaxDistance
+    const vol = Math.max(0, 1 - distance / siloConfig.humMaxDistance) * siloConfig.humMaxVol
     this._siloHum.gain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.3)
   }
 
@@ -160,8 +164,12 @@ class AudioEngine {
 
   setThrusterVolume(normalizedSpeed) {
     if (!this._thrusterGain) return
-    this._thrusterLevel = normalizedSpeed * 0.08
-    this._thrusterGain.gain.setTargetAtTime(normalizedSpeed * 0.06, this.ctx.currentTime, 0.05)
+    this._thrusterLevel = normalizedSpeed * audioConfig.thrusterNoiseLevel
+    this._thrusterGain.gain.setTargetAtTime(
+      normalizedSpeed * audioConfig.thrusterGainLevel,
+      this.ctx.currentTime,
+      audioConfig.thrusterSmoothTime
+    )
   }
 
   stopSiloHum() {

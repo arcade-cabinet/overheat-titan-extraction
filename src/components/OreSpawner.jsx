@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber'
 import { BallCollider, InstancedRigidBodies, RigidBody } from '@react-three/rapier'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
@@ -53,14 +53,27 @@ export function OreSpawner({ onSparkTrigger }) {
 
   const oreStateRef = useRef(buildOreState())
   const lastGrindSoundAtRef = useRef(0)
+  const lastSparkAtRef = useRef(0)
+  const nextDebrisIdRef = useRef(0)
   const ejectionPendingRef = useRef(false)
   const hitStopRef = useRef(false)
+  const hitStopTimerRef = useRef(null)
   const wasGrindingRef = useRef(false)
   const oreScaleRefs = useRef({})
   const removeDebrisTimeout = useRef({})
 
+  // Cleanup all pending timeouts on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (hitStopTimerRef.current) clearTimeout(hitStopTimerRef.current)
+      for (const id of Object.keys(removeDebrisTimeout.current)) {
+        clearTimeout(removeDebrisTimeout.current[id])
+      }
+    }
+  }, [])
+
   const spawnDebris = useCallback((pos, count = MAX_DEBRIS) => {
-    const debrisId = Date.now()
+    const debrisId = `debris-${nextDebrisIdRef.current++}`
     const positions = []
     const impulses = []
     for (let i = 0; i < count; i++) {
@@ -125,8 +138,10 @@ export function OreSpawner({ onSparkTrigger }) {
     // Hit-stop on leading edge of grind
     if (isGrinding && !wasGrindingRef.current) {
       hitStopRef.current = true
-      setTimeout(() => {
+      if (hitStopTimerRef.current) clearTimeout(hitStopTimerRef.current)
+      hitStopTimerRef.current = setTimeout(() => {
         hitStopRef.current = false
+        hitStopTimerRef.current = null
       }, 50)
       wasGrindingRef.current = true
     } else if (!isGrinding) {
@@ -147,7 +162,9 @@ export function OreSpawner({ onSparkTrigger }) {
           const drain = getGrindDps() * delta
           oreStateRef.current[id].health -= drain
 
-          if (onSparkTrigger) {
+          // Throttle spark spawns — max 5 per second to avoid timer flood
+          if (onSparkTrigger && now - lastSparkAtRef.current >= 200) {
+            lastSparkAtRef.current = now
             onSparkTrigger([pos[0], pos[1] + 1, pos[2]])
           }
 
@@ -206,9 +223,6 @@ export function OreSpawner({ onSparkTrigger }) {
     }
   })
 
-  // oreRevision used as a dependency to force re-render of ore meshes
-  void oreRevision
-
   return (
     <>
       {ORE_POSITIONS.map(({ id, pos }) => {
@@ -264,6 +278,8 @@ export function OreSpawner({ onSparkTrigger }) {
             key: `d-${d.id}-${i}`,
             position: pos,
             rotation: [0, 0, 0],
+            // Pass initial linvel via linearVelocity — applied by Rapier on spawn
+            linearVelocity: d.impulses[i] ?? [0, 0, 0],
           }))}
           colliders="ball"
         >
