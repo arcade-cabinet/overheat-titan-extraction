@@ -2,6 +2,10 @@ import { useMemo, useEffect } from 'react'
 import { useGameStore } from '../store'
 import * as THREE from 'three'
 
+const HOPPER_BAR = { x: 44, y: 74, width: 392, height: 20 }
+const HEAT_BAR = { x: 44, y: 167, width: 392, height: 20 }
+const DISPLAY_MAX_HEAT = 100
+
 export function Dashboard() {
   const rawOre = useGameStore((s) => s.rawOre)
   const heat = useGameStore((s) => s.heat)
@@ -33,7 +37,7 @@ export function Dashboard() {
     ctx.lineWidth = 3
     ctx.strokeRect(40, 70, 400, 28)
     ctx.fillStyle = '#00ffcc'
-    ctx.fillRect(44, 74, 392 * (pct / 100), 20)
+    ctx.fillRect(HOPPER_BAR.x, HOPPER_BAR.y, HOPPER_BAR.width * (pct / 100), HOPPER_BAR.height)
 
     ctx.fillStyle = isOverheated ? '#ff0000' : '#ff4400'
     ctx.font = 'bold 36px monospace'
@@ -42,7 +46,12 @@ export function Dashboard() {
     ctx.lineWidth = 3
     ctx.strokeRect(40, 163, 400, 28)
     ctx.fillStyle = isOverheated ? '#ff0000' : '#ff4400'
-    ctx.fillRect(44, 167, 392 * Math.min(1, heat / 100), 20)
+    ctx.fillRect(
+      HEAT_BAR.x,
+      HEAT_BAR.y,
+      HEAT_BAR.width * Math.min(1, heat / DISPLAY_MAX_HEAT),
+      HEAT_BAR.height
+    )
 
     ctx.textAlign = 'right'
     ctx.fillStyle = '#ffaa00'

@@ -16,10 +16,10 @@ export function Silo() {
     const otherUserData = other.userData || otherObject?.userData || {}
     if (otherUserData.type !== 'cube') return
 
-    const bodyId = other.handle ?? otherUserData.id
-    if (otherUserData.sold || soldBodiesRef.current.has(bodyId)) return
+    const deduplicationKey = other.handle ?? otherUserData.id
+    if (otherUserData.sold || soldBodiesRef.current.has(deduplicationKey)) return
 
-    soldBodiesRef.current.add(bodyId)
+    soldBodiesRef.current.add(deduplicationKey)
     other.userData = { ...otherUserData, sold: true }
     if (otherObject) {
       otherObject.userData = { ...otherObject.userData, sold: true }

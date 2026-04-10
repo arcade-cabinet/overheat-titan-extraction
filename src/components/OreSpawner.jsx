@@ -25,7 +25,7 @@ export function OreSpawner() {
   useFrame(({ camera }, delta) => {
     if (phase !== 'gameplay') return
 
-    let nearbyOreCount = 0
+    let grindingOreCount = 0
 
     ORE_POSITIONS.forEach((orePos) => {
       const dx = camera.position.x - orePos[0]
@@ -33,13 +33,13 @@ export function OreSpawner() {
       const dist = Math.sqrt(dx * dx + dz * dz)
 
       if (dist < 5 && !isOverheated) {
-        nearbyOreCount += 1
+        grindingOreCount += 1
       }
     })
 
-    if (nearbyOreCount > 0) {
-      addOre(getGrindDps() * delta * nearbyOreCount)
-      addHeat(15 * delta * nearbyOreCount)
+    if (grindingOreCount > 0) {
+      addOre(getGrindDps() * delta * grindingOreCount)
+      addHeat(15 * delta * grindingOreCount)
 
       const now = performance.now()
       if (now - lastGrindSoundAtRef.current >= 100) {
