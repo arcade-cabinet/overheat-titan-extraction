@@ -15,6 +15,7 @@ import { SettingsMenu } from './components/SettingsMenu'
 import { Silo } from './components/Silo'
 import { Sparks, useSparks } from './components/Sparks'
 import { Terrain } from './components/Terrain'
+import { UpgradeConsole } from './components/UpgradeConsole'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
 import { useECSFrame, useECSSetup } from './ecs/useECS'
@@ -51,6 +52,7 @@ function Scene() {
     <>
       <Environment />
       <AmbientSpores />
+      <UpgradeConsole />
       <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
