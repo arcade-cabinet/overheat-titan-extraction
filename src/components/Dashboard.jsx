@@ -4,7 +4,8 @@ import { useGameStore } from '../store'
 
 const HOPPER_BAR = { x: 44, y: 74, width: 392, height: 20 }
 const HEAT_BAR = { x: 44, y: 167, width: 392, height: 20 }
-const DISPLAY_MAX_HEAT = 100
+// Show full range up to meltdown threshold so players see the 100-120 danger zone
+const DISPLAY_MAX_HEAT = 120
 
 export function Dashboard() {
   const rawOre = useGameStore((s) => s.rawOre)
@@ -58,6 +59,14 @@ export function Dashboard() {
       HEAT_BAR.width * Math.min(1, heat / DISPLAY_MAX_HEAT),
       HEAT_BAR.height
     )
+    // Overheat threshold marker at 100/120 = 83.3%
+    const overheatMarkerX = HEAT_BAR.x + HEAT_BAR.width * (100 / DISPLAY_MAX_HEAT)
+    ctx.strokeStyle = '#ff8800'
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(overheatMarkerX, HEAT_BAR.y - 2)
+    ctx.lineTo(overheatMarkerX, HEAT_BAR.y + HEAT_BAR.height + 2)
+    ctx.stroke()
 
     ctx.textAlign = 'right'
     ctx.fillStyle = '#ffaa00'

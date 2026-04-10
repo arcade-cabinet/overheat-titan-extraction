@@ -48,7 +48,11 @@ export function Silo() {
 
     const value = otherUserData.value ?? 50
     addCredits(value)
-    audioManager.playSell()
+    if (otherUserData.isRare) {
+      audioManager.playRareSell()
+    } else {
+      audioManager.playSell()
+    }
 
     if (typeof otherUserData.onSell === 'function') {
       otherUserData.onSell()
