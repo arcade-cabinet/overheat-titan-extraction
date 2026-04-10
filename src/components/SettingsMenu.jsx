@@ -1,4 +1,5 @@
 import { Html } from '@react-three/drei'
+import { motion } from 'framer-motion'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 
@@ -13,78 +14,93 @@ export function SettingsMenu() {
 
   const back = () => {
     audioManager.playBlip()
-    setPhase(isPaused ? 'gameplay' : 'menu')
+    if (isPaused) {
+      setPhase('gameplay')
+      // Re-request pointer lock when returning to active gameplay
+      document.body.requestPointerLock?.()
+    } else {
+      setPhase('menu')
+    }
   }
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: '20px',
-          background: 'rgba(0,5,10,0.85)',
-          pointerEvents: 'all',
-        }}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        style={{ width: '100%', height: '100%' }}
       >
         <div
+          data-testid="settings-menu"
           style={{
-            color: '#ffaa00',
-            fontFamily: 'monospace',
-            fontSize: '22px',
-            letterSpacing: '0.3em',
-            marginBottom: '10px',
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '20px',
+            background: 'rgba(0,5,10,0.85)',
+            pointerEvents: 'all',
           }}
         >
-          OS CONFIG
-        </div>
-
-        <label style={labelStyle}>
-          <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>MASTER VOLUME</span>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.05"
-            value={settings.masterVolume}
-            onChange={(e) => {
-              updateSetting('masterVolume', parseFloat(e.target.value))
-              audioManager.setVolume(parseFloat(e.target.value))
+          <div
+            style={{
+              color: '#ffaa00',
+              fontFamily: 'monospace',
+              fontSize: '22px',
+              letterSpacing: '0.3em',
+              marginBottom: '10px',
             }}
-            style={{ accentColor: '#00ffcc' }}
-          />
-        </label>
+          >
+            OS CONFIG
+          </div>
 
-        <label style={labelStyle}>
-          <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>LOOK SENSITIVITY</span>
-          <input
-            type="range"
-            min="0.2"
-            max="3"
-            step="0.1"
-            value={settings.lookSensitivity}
-            onChange={(e) => updateSetting('lookSensitivity', parseFloat(e.target.value))}
-            style={{ accentColor: '#00ffcc' }}
-          />
-        </label>
+          <label style={labelStyle}>
+            <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>MASTER VOLUME</span>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={settings.masterVolume}
+              onChange={(e) => {
+                updateSetting('masterVolume', parseFloat(e.target.value))
+                audioManager.setVolume(parseFloat(e.target.value))
+              }}
+              style={{ accentColor: '#00ffcc' }}
+            />
+          </label>
 
-        <label style={{ ...labelStyle, flexDirection: 'row', gap: '12px' }}>
-          <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>CRT OVERLAYS</span>
-          <input
-            type="checkbox"
-            checked={settings.crtOverlays}
-            onChange={(e) => updateSetting('crtOverlays', e.target.checked)}
-          />
-        </label>
+          <label style={labelStyle}>
+            <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>LOOK SENSITIVITY</span>
+            <input
+              type="range"
+              min="0.2"
+              max="3"
+              step="0.1"
+              value={settings.lookSensitivity}
+              onChange={(e) => updateSetting('lookSensitivity', parseFloat(e.target.value))}
+              style={{ accentColor: '#00ffcc' }}
+            />
+          </label>
 
-        <button type="button" onClick={back} style={btnStyle}>
-          [ BACK ]
-        </button>
-      </div>
+          <label style={{ ...labelStyle, flexDirection: 'row', gap: '12px' }}>
+            <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>CRT OVERLAYS</span>
+            <input
+              type="checkbox"
+              checked={settings.crtOverlays}
+              onChange={(e) => updateSetting('crtOverlays', e.target.checked)}
+            />
+          </label>
+
+          <button type="button" onClick={back} style={btnStyle}>
+            [ BACK ]
+          </button>
+        </div>
+      </motion.div>
     </Html>
   )
 }
