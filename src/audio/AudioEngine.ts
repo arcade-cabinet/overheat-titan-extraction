@@ -33,32 +33,32 @@ class AudioEngine {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
     this.ctx = new AudioContextClass()
 
-    this.masterGain = (this.ctx as any).createGain()
+    this.masterGain = this.ctx!.createGain()
     this.masterGain!.gain.value = 0.7
 
     // Background bus for ducking
-    this.bgBus = (this.ctx as any).createGain()
+    this.bgBus = this.ctx!.createGain()
     this.bgBus!.gain.value = 1.0
     this.bgBus!.connect(this.masterGain!)
 
-    this.filterNode = (this.ctx as any).createBiquadFilter()
+    this.filterNode = this.ctx!.createBiquadFilter()
     this.filterNode!.type = 'lowpass'
     this.filterNode!.frequency.value = 20000
 
     this.masterGain!.connect(this.filterNode!)
-    this.filterNode!.connect((this.ctx as any).destination)
+    this.filterNode!.connect(this.ctx!.destination)
     this._initialized = true
   }
 
   setVolume(v: number) {
     if (!this._initialized || !this.masterGain || !this.ctx) return
-    this.masterGain.gain.setTargetAtTime(v, (this.ctx as any).currentTime, 0.1)
+    this.masterGain.gain.setTargetAtTime(v, this.ctx!.currentTime, 0.1)
   }
 
   setPauseFilter(paused: boolean) {
     if (!this._initialized || !this.filterNode || !this.ctx) return
     const freq = paused ? 300 : 20000
-    this.filterNode.frequency.setTargetAtTime(freq, (this.ctx as any).currentTime, 0.3)
+    this.filterNode.frequency.setTargetAtTime(freq, this.ctx!.currentTime, 0.3)
   }
 
   _makeOsc(
@@ -71,22 +71,22 @@ class AudioEngine {
     if (!this._initialized || !this.ctx) return
     const bus = destBus || this.bgBus
     if (!bus) return
-    const osc = (this.ctx as any).createOscillator()
-    const gain = (this.ctx as any).createGain()
+    const osc = this.ctx!.createOscillator()
+    const gain = this.ctx!.createGain()
     osc.type = type
     osc.frequency.value = freq
 
     const attack = Math.min(0.02, duration * 0.1)
     const release = duration - attack
 
-    gain.gain.setValueAtTime(0.001, (this.ctx as any).currentTime)
-    gain.gain.exponentialRampToValueAtTime(gainVal, (this.ctx as any).currentTime + attack)
-    gain.gain.exponentialRampToValueAtTime(0.001, (this.ctx as any).currentTime + attack + release)
+    gain.gain.setValueAtTime(0.001, this.ctx!.currentTime)
+    gain.gain.exponentialRampToValueAtTime(gainVal, this.ctx!.currentTime + attack)
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + attack + release)
 
     osc.connect(gain)
     gain.connect(bus)
     osc.start()
-    osc.stop((this.ctx as any).currentTime + duration + 0.1)
+    osc.stop(this.ctx!.currentTime + duration + 0.1)
   }
 
   playMechStep() {
@@ -118,8 +118,8 @@ class AudioEngine {
 
   playPowerUp() {
     if (!this._initialized || !this.ctx || !this.masterGain) return
-    const osc = (this.ctx as any).createOscillator()
-    const gain = (this.ctx as any).createGain()
+    const osc = this.ctx!.createOscillator()
+    const gain = this.ctx!.createGain()
     osc.type = 'sine'
     osc.frequency.setValueAtTime(110, this.ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 1.5)
@@ -135,7 +135,7 @@ class AudioEngine {
   playMeltdown() {
     if (!this._initialized || !this.ctx || !this.masterGain) return
     const osc = this.ctx.createOscillator()
-    const gain = (this.ctx as any).createGain()
+    const gain = this.ctx!.createGain()
     osc.type = 'square'
     osc.frequency.setValueAtTime(440, this.ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 2)
@@ -163,22 +163,22 @@ class AudioEngine {
     if (!this._initialized || this._siloHum) return
 
     // Low sine oscillator for hum
-    const humOsc = (this.ctx as any).createOscillator()
-    const humGain = (this.ctx as any).createGain()
+    const humOsc = this.ctx!.createOscillator()
+    const humGain = this.ctx!.createGain()
     humOsc.type = 'sine'
     humOsc.frequency.value = siloConfig.humBaseFrequency
     humGain.gain.value = siloConfig.humBaseGain
 
     // Slow LFO for organic pulsing
-    const lfo = (this.ctx as any).createOscillator()
-    const lfoGain = (this.ctx as any).createGain()
+    const lfo = this.ctx!.createOscillator()
+    const lfoGain = this.ctx!.createGain()
     lfo.frequency.value = siloConfig.humLfoFrequency
     lfoGain.gain.value = siloConfig.humLfoGain
     lfo.connect(lfoGain)
     lfoGain.connect(humGain.gain)
 
     humOsc.connect(humGain)
-    humGain.connect(this.bgBus)
+    humGain.connect(this.bgBus!)
     humOsc.start()
     lfo.start()
     this._siloHum = { osc: humOsc, gain: humGain, lfo, lfoGain }
@@ -196,7 +196,7 @@ class AudioEngine {
     const bufferSize = 4096
     // createScriptProcessor is deprecated but widely supported; use AudioWorklet in M2
     // eslint-disable-next-line no-undef
-    const node = (this.ctx as any).createScriptProcessor(bufferSize, 1, 1)
+    const node = this.ctx!.createScriptProcessor(bufferSize, 1, 1)
     node.onaudioprocess = (e: any) => {
       const output = e.outputBuffer.getChannelData(0)
       const level = this._thrusterLevel || 0
@@ -212,7 +212,7 @@ class AudioEngine {
     const gain = this.ctx.createGain()
     gain.gain.value = 0
     node.connect(gain)
-    gain.connect(this.bgBus as any)
+    gain.connect(this.bgBus!)
     this._thrusterGain = gain
     this._thrusterNode = node as any
     this._thrusterLevel = 0

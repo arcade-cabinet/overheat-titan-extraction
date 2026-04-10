@@ -133,7 +133,7 @@ export const useGameStore = create<GameState>()(
 
       buyUpgrade: (type, cost) =>
         set((state) => {
-          if (!(type in state.upgrades)) return state
+          if (!Object.hasOwn(state.upgrades, type)) return state
           if (state.credits < cost) return state
           return {
             credits: state.credits - cost,

@@ -2,7 +2,10 @@ import { Capacitor } from '@capacitor/core'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 
 function canVibrate() {
-  return Capacitor.isNativePlatform() || (typeof navigator !== 'undefined' && navigator.vibrate)
+  return (
+    Capacitor.isNativePlatform() ||
+    (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function')
+  )
 }
 
 export const hapticManager = {
