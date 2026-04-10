@@ -110,222 +110,42 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-Work through these in order. Each is a discrete, shippable unit.
+All Stream A deliverables are shipped and merged. Remaining work:
 
-### Priority 1 — Tractor Beam (most impactful gameplay feature)
-
-**Files to create/modify:**
-- `src/components/TractorBeam.jsx` (new)
-- `src/components/Player.jsx` (add pointer-down/up handlers)
-- `src/components/OreSpawner.jsx` (tag cubes with `userData.type='cube'`)
-
-**Implementation steps:**
-1. Add an invisible `RigidBody type="kinematicPosition"` ref (`tractorAnchorRef`) inside the scene — the "cursor hook".
-2. On `pointerdown`: cast a ray from `camera` position along `camera.getWorldDirection()`. If it hits a `userData.type === 'cube'` RigidBody, capture the ref.
-3. Create a `useSpringJoint(tractorAnchorRef, cubeRef, { stiffness: 40, damping: 0.3, restLength: 0 })`.
-4. Each frame while pointer is down: `tractorAnchor.setNextKinematicTranslation(camera.pos + lookDir * depth)`. Reduce `depth -= delta * 10` (reel-in).
-5. On `pointerup`: read last-frame velocity of cube body → `cubeBody.applyImpulse(throwVelocity)`. Destroy joint by clearing refs.
-6. Visual: a thin cyan `<Line>` from camera center to cube (use `@react-three/drei` `<Line>`).
-
-**Reference:** `AGENTS.md §8 Physics rules`, `AGENTS.md §13`
-
----
-
-### Priority 2 — Headlamp SpotLight + Boot flicker
-
-**File:** `src/components/Player.jsx` or new `src/components/Headlamp.jsx`
-
-```jsx
-// Inside Cockpit or Player camera group:
-<spotLight
-  ref={headlampRef}
-  position={[0, 0, 0]}
-  target-position={[0, 0, -1]}
-  intensity={2}
-  angle={0.4}
-  penumbra={0.3}
-  color="#ffeecc"
-  castShadow
-/>
-```
-
-Boot flicker: in the `boot` phase, run a `useInterval` or `useFrame` for 0.5s that sets `headlampRef.current.intensity = Math.random() * 3` before stabilizing at 2.
-
----
-
-### Priority 3 — Spark emitter on grind contact
-
-**File:** `src/components/Sparks.jsx` (new)
-
-- On each grind tick (while distance < 5 and not overheated), call a `spawnSpark()` function.
-- Each spark: small `<Box args={[0.05,0.05,0.05]}>` with `meshStandardMaterial emissive="#ffaa00" emissiveIntensity={2}` + dynamic Rapier `RigidBody` with upward + random XZ impulse applied immediately after spawn.
-- Each spark has TTL ~1.5s (remove from state after that).
-- Limit: max 30 live sparks at once (drop oldest if exceeded).
-
----
-
-### Priority 4 — Ore destruction + debris
-
-**File:** `src/components/OreSpawner.jsx` (modify)
-
-- Add `health` state to each ore vein (start: 100).
-- Each grind tick reduces ore health by `getGrindDps() * delta`.
-- At health ≤ 0: remove ore vein, spawn 5–8 debris chunks via `InstancedRigidBodies` if count > 20, else individual `RigidBody` balls with radial impulse.
-- Debris chunks are `userData.type = 'debris'` (can be tractor-beamed).
-- Respawn new ore vein at same position after 15s (configurable).
-
----
-
-### Priority 5 — Ore shrink (compatible 3D motion library TBD)
+### Priority 1 — OreSpawner `setState` inside `useFrame` (tech debt)
 
 **File:** `src/components/OreSpawner.jsx`
 
-Replace static ore mesh with a compatible 3D motion primitive once the project adopts a React Three Fiber-compatible animation library:
-```jsx
-// Example shape only — use the chosen compatible 3D motion wrapper once selected.
-<AnimatedOreMesh scale={healthPct} />
-```
-Where `healthPct` goes from `1.0` to `0.0` as ore health drains.
-
----
-
-### Priority 6 — Hit-stop effect
-
-**File:** `src/components/OreSpawner.jsx` or `src/components/Player.jsx`
-
-On the first frame that grinding begins (transition from not-grinding to grinding):
-```js
-// In useFrame, detect leading edge of grind state
-if (justStartedGrinding) {
-  const savedDelta = delta
-  // Freeze movement/physics for 50ms by setting a ref flag
-  hitStopRef.current = true
-  setTimeout(() => { hitStopRef.current = false }, 50)
-}
-// Guard in useFrame:
-if (hitStopRef.current) return
-```
-This creates the "saw teeth biting into rock" kinesthetic impact.
-
----
-
-### Priority 7 — Spatial audio (Silo hum + dash)
-
-**Files:** `src/audio/AudioEngine.js`, `src/components/Silo.jsx`, `src/components/Player.jsx`
-
-All spatial audio must route through the `audioManager` singleton — do not construct `THREE.AudioListener` or `THREE.PositionalAudio` directly in component code. Add methods to `AudioEngine.js`:
+`setOreRevision`, `setDebris`, and `setCubes` are called inside `useFrame`. These should be buffered in refs and flushed from a `useEffect` with a throttle to avoid React scheduler pressure during render:
 
 ```js
-// In AudioEngine.js — add two new methods:
-initSiloHum(siloMesh, camera) {
-  const listener = new THREE.AudioListener()
-  camera.add(listener)
-  const sound = new THREE.PositionalAudio(listener)
-  // low freq ~60Hz sine connected to positional audio
-  siloMesh.add(sound)
-  this._siloSound = sound
-}
-
-setThrusterVolume(normalizedSpeed) {
-  // normalizedSpeed: 0.0 → 1.0 mapped from linvel magnitude
-  if (this._thrusterGain) this._thrusterGain.gain.setTargetAtTime(normalizedSpeed, this.ctx.currentTime, 0.05)
-}
+const pendingCubesRef = useRef([])
+// In useFrame: push to pendingCubesRef.current instead of calling setCubes
+// In useEffect: flush pending with setCubes every ~100ms
 ```
 
-Then call `audioManager.initSiloHum(siloMeshRef.current, camera)` from `Silo.jsx` once after `audioManager.init()`.
-
-Dash thruster volume (in `Player.jsx` `useFrame`):
-```js
-const vel = bodyRef.current.linvel()
-const speed = Math.sqrt(vel.x**2 + vel.y**2 + vel.z**2)
-audioManager.setThrusterVolume(speed / DASH_SPEED)
-```
-
----
-
-### Priority 8 — Pause grayscale/wireframe pass
-
-**File:** `src/components/VisualEffects.jsx`
-
-Add a `HueSaturation` effect from `@react-three/postprocessing` and set `saturation=-1.0` when `isPaused`.
-The "glowing cyan wireframe" is harder — deferred to later (requires a custom render pass or outline effect).
-
----
-
-### Priority 9 — Meltdown glitch shader
-
-**File:** `src/components/VisualEffects.jsx`
-
-> No new dependencies required — `GlitchEffect` is part of the already-approved `postprocessing` package.
-
-Use `GlitchEffect` from `postprocessing` package:
-```jsx
-import { Glitch } from '@react-three/postprocessing'
-import { GlitchMode } from 'postprocessing'
-
-{isMelting && (
-  <Glitch delay={[0.0, 0.1]} duration={[0.1, 0.3]} strength={[0.3, 1.0]} mode={GlitchMode.CONSTANT_WILD} />
-)}
-```
-
----
-
-### Priority 10 — CRT shader (scanlines + barrel)
-
-**File:** `src/components/VisualEffects.jsx`
-
-> No new dependencies required — `@react-three/postprocessing` and `postprocessing` are already approved.
-
-Conditionally render when `settings.crtOverlays === true`. Requires a custom `ShaderPass` with:
-- Scanline darkening: `color *= 1.0 - 0.15 * mod(vUv.y * screenHeight, 2.0)`
-- Barrel distortion: radial uv warping
-
-Can also use `@react-three/postprocessing`'s `PixelationEffect` as a simpler substitute.
-
----
-
-### Priority 11 — Diegetic menu raycast (dashboard as interactive surface)
+### Priority 2 — Diegetic menu raycast (dashboard as interactive surface)
 
 **File:** `src/components/Dashboard.jsx`
 
-The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items.
+The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. Currently using Html overlay which works but breaks diegetic immersion.
 
 Implementation:
-1. In Dashboard canvas, render clickable regions for `[ NEW EXCAVATION ]` and `[ OS CONFIG ]` during `menu` phase.
-2. Add a `onPointerDown` handler to the dashboard mesh.
-3. Read UV coordinates from the intersection event (`event.uv`).
-4. Map UV → menu option (NEW EXCAVATION: uv.y < 0.5; OS CONFIG: uv.y >= 0.5).
-5. Call appropriate action.
+1. Add `onPointerDown` handler to the dashboard mesh.
+2. Read UV coordinates from the intersection event (`event.uv`).
+3. Map UV → menu option and call appropriate store action.
 
----
+### Priority 3 — Meltdown radial impulse
 
-### Priority 12 — framer-motion UI panel transitions
+**File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
 
-**File:** All `*Menu.jsx` overlays
+At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
 
-Wrap HTML overlay content in `<motion.div>` from `framer-motion`:
-```jsx
-<motion.div
-  initial={{ opacity: 0, y: -20 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: 20 }}
-  transition={{ duration: 0.3, ease: 'easeOut' }}
->
-```
-Requires wrapping the phase-conditional render in `<AnimatePresence>` in `App.jsx` / `Scene`.
+### Priority 4 — Ore grind physics contact (quality)
 
----
+**File:** `src/components/OreSpawner.jsx`
 
-### Priority 13 — maath/random for spores
-
-**File:** `src/components/AmbientSpores.jsx`
-
-Replace current custom `inSphere()` with official maath:
-```js
-import * as random from 'maath/random/dist/maath-random.esm'
-const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 150 }))
-```
-(Currently using a custom equivalent because of ESM import complexity — fix once maath import is confirmed working in the build.)
+Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Low priority — current approach is stable and unnoticeable to players.
 
 ---
 
