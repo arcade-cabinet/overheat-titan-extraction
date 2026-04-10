@@ -10,9 +10,10 @@ export function BootScreen() {
   const bootTimerRef = useRef()
 
   useEffect(() => {
+    if (phase !== 'powered_down') return
     const interval = setInterval(() => setBlink((b) => !b), 500)
     return () => clearInterval(interval)
-  }, [])
+  }, [phase])
 
   useEffect(() => () => clearTimeout(bootTimerRef.current), [])
 
