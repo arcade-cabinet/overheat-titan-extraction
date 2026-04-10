@@ -13,7 +13,13 @@ export function SettingsMenu() {
 
   const back = () => {
     audioManager.playBlip()
-    setPhase(isPaused ? 'gameplay' : 'menu')
+    if (isPaused) {
+      setPhase('gameplay')
+      // Re-request pointer lock when returning to active gameplay
+      document.body.requestPointerLock?.()
+    } else {
+      setPhase('menu')
+    }
   }
 
   return (
