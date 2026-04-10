@@ -1,3 +1,6 @@
+import { Capacitor } from '@capacitor/core'
+import { ScreenOrientation } from '@capacitor/screen-orientation'
+import { StatusBar } from '@capacitor/status-bar'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { AnimatePresence } from 'framer-motion'
@@ -97,6 +100,10 @@ export default function App() {
   const isPaused = useGameStore((s) => s.isPaused)
 
   useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      StatusBar.hide().catch(console.warn)
+      ScreenOrientation.lock({ orientation: 'landscape' }).catch(console.warn)
+    }
     return initDesktopInput()
   }, [])
 
