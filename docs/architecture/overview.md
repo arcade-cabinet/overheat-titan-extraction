@@ -75,6 +75,53 @@ import rawConfig from './config.json'
 export const gameConfig = GameConfigSchema.parse(rawConfig)
 ```
 
+## Koota ECS entity model (M1+ target)
+
+### Traits (data components)
+
+| Trait | Fields | Used by |
+|---|---|---|
+| `MechStats` | `speed`, `dashMultiplier` | MovementSystem |
+| `Heat` | `value: number`, `overheated: boolean` | HeatSystem, AudioSystem, VFXSystem |
+| `Hopper` | `current: number`, `max: number` | GrindingSystem, CubeEjectionSystem |
+| `Position` | `x, y, z` | All spatial systems |
+| `Velocity` | `x, y, z` | MovementSystem |
+| `Input` | `move: {x,y}`, `look: {x,y}`, `grind`, `dash`, `tractor` | MovementSystem, GrindingSystem |
+| `OreNode` | `health`, `isRare`, `worldPos` | GrindingSystem |
+| `Debris` | `type: 'ore'\|'cube'` | PhysicsSync |
+| `Cube` | `isRare`, `value` | EconomySystem |
+| `AudioEmitter` | `type`, `positional: boolean` | AudioSystem |
+| `VFXEmitter` | `type`, `ttl` | VFXSystem |
+
+### Systems (behavior)
+
+- `MovementSystem` — reads `Input`, writes `Velocity`, syncs to Rapier kinematic body
+- `HeatSystem` — reads grind state, writes `Heat`, emits `MechOverheated` / `MechRecovered`
+- `GrindingSystem` — proximity to `OreNode` → writes `Hopper`, feeds `HeatSystem`
+- `CubeEjectionSystem` — hopper full → spawns `Cube` entity with Rapier dynamic body
+- `EconomySystem` — `Cube` enters silo sensor → awards credits, emits `CubeSold`
+- `AudioSystem` — listens to world events, calls `audioManager` methods
+- `VFXSystem` — manages particle/spark emitter TTL and spawn
+
+### R3F binding pattern
+
+R3F components are thin views over Koota entities — they read trait state in `useFrame` and sync to Three.js objects:
+
+```tsx
+function MechRig({ entityId }: { entityId: string }) {
+  const ref = useRef<THREE.Group>(null!)
+  const world = useKootaWorld()
+
+  useFrame(() => {
+    const pos = world.getTrait(entityId, 'Position')
+    if (!pos) return
+    ref.current.position.set(pos.x, pos.y, pos.z)
+  })
+
+  return <group ref={ref}><Cockpit entityId={entityId} /></group>
+}
+```
+
 ## Phase flow
 
 ```mermaid
