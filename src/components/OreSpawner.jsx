@@ -32,7 +32,7 @@ function buildOreState() {
   return state
 }
 
-export function OreSpawner() {
+export function OreSpawner({ sparkTriggerRef }) {
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
   const isOverheated = useGameStore((s) => s.isOverheated)
@@ -45,6 +45,7 @@ export function OreSpawner() {
   const ejectCube = useGameStore((s) => s.ejectCube)
   const [cubes, setCubes] = useState([])
   const lastGrindSoundAtRef = useRef(0)
+  const lastSparkAtRef = useRef(0)
   const ejectionPendingRef = useRef(false)
   // Rare ore state — re-randomised each session (module-level buildOreState call)
   const oreStateRef = useRef(buildOreState())
@@ -82,6 +83,11 @@ export function OreSpawner() {
       if (now - lastGrindSoundAtRef.current >= 100) {
         audioManager.playGrind(Math.min(100, heat))
         lastGrindSoundAtRef.current = now
+      }
+      // Fire spark burst every ~80ms while grinding
+      if (sparkTriggerRef?.current && now - lastSparkAtRef.current >= 80) {
+        lastSparkAtRef.current = now
+        sparkTriggerRef.current(camera.position)
       }
     }
 

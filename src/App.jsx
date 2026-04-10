@@ -12,6 +12,7 @@ import { PauseMenu } from './components/PauseMenu'
 import { Player } from './components/Player'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Silo } from './components/Silo'
+import { Sparks } from './components/Sparks'
 import { Terrain } from './components/Terrain'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
@@ -30,6 +31,7 @@ function Scene() {
 
   // Track camera position each frame for proximity queries (avoids Zustand subscription overhead)
   const playerPosRef = useRef({ x: 0, z: 0 })
+  const sparkTriggerRef = useRef(null)
 
   useFrame(({ camera }) => {
     playerPosRef.current.x = camera.position.x
@@ -53,12 +55,13 @@ function Scene() {
         <Silo />
         {(phase === 'gameplay' || isMelting) && (
           <>
-            <OreSpawner />
+            <OreSpawner sparkTriggerRef={sparkTriggerRef} />
             <Player />
           </>
         )}
       </Physics>
       {phase === 'gameplay' && <Cockpit />}
+      <Sparks triggerRef={sparkTriggerRef} />
       <VisualEffects />
 
       {/* UI Overlays */}
