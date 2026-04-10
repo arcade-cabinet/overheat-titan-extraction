@@ -3,13 +3,14 @@ import { BallCollider, InstancedRigidBodies, RigidBody } from '@react-three/rapi
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
+import gameConfig from '../config.json'
 import { useGameStore } from '../store'
 
-const RARE_SPAWN_CHANCE = 0.15
-const MAX_ORE_HEALTH = 100
-const ORE_RESPAWN_DELAY_MS = 15000
-const GRIND_RADIUS = 5
-const MAX_DEBRIS = 6
+const RARE_SPAWN_CHANCE = gameConfig.ore.rareSpawnChance
+const MAX_ORE_HEALTH = gameConfig.ore.maxHealth
+const ORE_RESPAWN_DELAY_MS = gameConfig.ore.respawnDelayMs
+const GRIND_RADIUS = gameConfig.ore.grindRadius
+const MAX_DEBRIS = gameConfig.debris.count
 
 const ORE_POSITIONS = [
   { id: 'ore-0', pos: [15, 0, 15] },
@@ -113,7 +114,7 @@ export function OreSpawner({ onSparkTrigger }) {
         removeDebrisTimeout.current[debrisId] = setTimeout(() => {
           setDebris((prev) => prev.filter((d) => d.id !== debrisId))
           delete removeDebrisTimeout.current[debrisId]
-        }, 4000)
+        }, gameConfig.debris.ttlMs)
       })
     },
     [scheduleAction]
@@ -204,7 +205,7 @@ export function OreSpawner({ onSparkTrigger }) {
         }
       }
 
-      if (now - lastGrindSoundAtRef.current >= 100) {
+      if (now - lastGrindSoundAtRef.current >= gameConfig.mech.grind.soundIntervalMs) {
         audioManager.playGrind(Math.min(100, heat))
         lastGrindSoundAtRef.current = now
       }
@@ -218,7 +219,9 @@ export function OreSpawner({ onSparkTrigger }) {
         const dz = camera.position.z - pos[2]
         const dist = Math.sqrt(dx * dx + dz * dz)
         if (dist < GRIND_RADIUS) {
-          heatRate += oreStateRef.current[id].isRare ? 45 : 15
+          heatRate += oreStateRef.current[id].isRare
+            ? gameConfig.mech.heat.perSecondGrinding * gameConfig.mech.heat.rareMultiplier
+            : gameConfig.mech.heat.perSecondGrinding
         }
       }
       addHeat(heatRate * delta)
