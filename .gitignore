@@ -151,3 +151,9 @@ vite.config.ts.timestamp-*
 # Claude Code runtime artifacts (ephemeral — not planning docs)
 .claude/state/
 .claude/worktrees/
+
+# Vitest browser screenshot attachments (test run artifacts)
+.vitest-attachments/
+
+# Superpowers session planning docs (session-scoped, not canonical)
+docs/superpowers/plans/

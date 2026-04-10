@@ -1,0 +1,1 @@
+{"blocked": [".env", ".env.local", ".env.production", ".env.staging"], "allowed": [".env.example"], "message": "BLOCKED: Edit .env.example instead."}

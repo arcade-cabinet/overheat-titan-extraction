@@ -1,0 +1,1 @@
+{"max_lines": 300, "linter": "pnpm biome check --fix --no-errors-on-unmatched"}
