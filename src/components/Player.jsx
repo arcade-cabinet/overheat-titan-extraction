@@ -119,6 +119,11 @@ export function Player() {
       stepTimer.current = 0
       audioManager.playMechStep()
     }
+
+    // Thruster spatial audio — volume proportional to horizontal speed
+    const linvel = bodyRef.current.linvel()
+    const horzSpeed = Math.sqrt(linvel.x ** 2 + linvel.z ** 2)
+    audioManager.setThrusterVolume(Math.min(1, horzSpeed / 20))
   })
 
   return (

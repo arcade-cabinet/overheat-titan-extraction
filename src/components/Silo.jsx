@@ -1,12 +1,30 @@
+import { useFrame, useThree } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 
+const SILO_POSITION = new THREE.Vector3(0, 0, 0)
+
 export function Silo() {
   const addCredits = useGameStore((s) => s.addCredits)
+  const phase = useGameStore((s) => s.phase)
   const soldBodiesRef = useRef(new Set())
+  const { camera } = useThree()
+
+  useEffect(() => {
+    if (phase === 'gameplay' && audioManager._initialized) {
+      audioManager.initSiloHum()
+      audioManager.initThruster()
+    }
+  }, [phase])
+
+  useFrame(() => {
+    if (!audioManager._initialized) return
+    const dist = camera.position.distanceTo(SILO_POSITION)
+    audioManager.setSiloHumDistance(dist)
+  })
 
   const handleIntersect = (e) => {
     const other = e.other.rigidBody
