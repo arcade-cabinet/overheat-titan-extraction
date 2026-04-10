@@ -117,45 +117,9 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-Stream A gameplay polish, OreSpawner tech debt, diegetic pause button, and config wire-up are all shipped and merged (PRs #13–#17). PRs #13 and #15 are open pending CodeRabbit re-review after remediation commits. Remaining work:
+All outstanding priorities (Diegetic Upgrade Menu, Meltdown Radial Impulse, Dashboard UV calibration, and Ore Grind physics contact) have been addressed and shipped.
 
-### Priority 1 — Diegetic upgrade/sell menu (dashboard as interactive surface)
-
-**File:** `src/components/Dashboard.jsx` and overlay screens
-
-The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. The **pause button** is now diegetic (UV raycast on dashboard mesh, PR #15). The next step is to do the same for the **upgrade terminal** and **silo sell confirmation** — replacing or augmenting the Html overlay screens with 3D-surface interaction.
-
-Implementation:
-1. Extend the dashboard UV hit zone to cover upgrade/sell buttons.
-2. Map UV regions → store actions (`openUpgrades`, `confirmSell`, etc.).
-3. Render upgrade options directly on the CanvasTexture rather than Html overlay.
-
-### Priority 2 — Meltdown radial impulse
-
-**File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
-
-At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
-
-### Priority 3 — Ore grind physics contact (quality)
-
-**File:** `src/components/OreSpawner.jsx`
-
-Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Current approach is stable and unnoticeable to players.
-
-### Priority 3 — Dashboard UV calibration (follow-up)
-
-**File:** `src/components/Dashboard.jsx`
-
-The pause button UV zone was calculated from BoxGeometry +Y face UV theory. Playtest to verify the click zone aligns with the drawn button. If off, adjust `PAUSE_UV` constants — the canvas pixel positions are the source of truth, UV mapping derives from them.
-
-### Deferred — CodeRabbit open items on PR #13 (pending re-review)
-
-After remediation commit (d710b46), CodeRabbit needs to re-review:
-- ✅ Pos normalization (array vs object) — fixed
-- ✅ Unified lifetime so `ttl === life` at spawn — fixed
-- ✅ Phase/isPaused guard in `useFrame` — fixed
-- ✅ `playRareSell` oscillator params from config — fixed
-- ✅ `DISPLAY_MAX_HEAT` and overheat marker from config — fixed
+The project is currently stable. Any future tasks will be driven by new feature requests or architectural changes.
 
 ---
 

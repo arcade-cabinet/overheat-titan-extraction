@@ -56,6 +56,7 @@ function Scene() {
       <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
+        <MeltdownExplosion />
         {(phase === 'gameplay' || isMelting) && (
           <>
             <OreSpawner onSparkTrigger={(pos) => sparkTriggerRef.current?.(pos)} />
@@ -93,6 +94,10 @@ export default function App() {
       <Suspense fallback={null}>
         <Scene />
       </Suspense>
+    </Canvas>
+  )
+}
+     </Suspense>
     </Canvas>
   )
 }
