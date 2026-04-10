@@ -3,10 +3,11 @@ import { RigidBody } from '@react-three/rapier'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
+import gameConfig from '../config.json'
 import { useGameStore } from '../store'
 
-const SPEED = 8
-const DASH_SPEED = 20
+const SPEED = gameConfig.mech.baseSpeed
+const DASH_SPEED = gameConfig.mech.dashSpeed
 const keys = {}
 
 // Module-scope reusable objects — avoid per-frame allocations (GC pressure)
@@ -115,25 +116,26 @@ export function Player() {
 
     // Sync camera to body
     const pos = bodyRef.current.translation()
-    camera.position.set(pos.x, pos.y + 1.6, pos.z)
+    camera.position.set(pos.x, pos.y + gameConfig.mech.eyeHeight, pos.z)
 
     // Camera shake when grinding close to ore
     if (!isOverheated) {
-      const shakeScale = (heat / 100) * 0.03
+      const shakeScale =
+        (heat / gameConfig.mech.heat.overheatThreshold) * gameConfig.mech.heat.cameraShakeMaxScale
       camera.position.x += (Math.random() - 0.5) * shakeScale
       camera.position.y += (Math.random() - 0.5) * shakeScale
       camera.position.z += (Math.random() - 0.5) * shakeScale
     }
 
     // FOV transitions
-    const targetFov = dash ? 100 : 75
-    camera.fov += (targetFov - camera.fov) * Math.min(1, delta * 6)
+    const targetFov = dash ? gameConfig.mech.dashFov : gameConfig.mech.normalFov
+    camera.fov += (targetFov - camera.fov) * Math.min(1, delta * gameConfig.mech.dash.fovLerpSpeed)
     camera.updateProjectionMatrix()
 
     // Footstep sounds
     stepTimer.current += delta
     const moving = forward || backward || left || right
-    if (moving && stepTimer.current > 0.4) {
+    if (moving && stepTimer.current > gameConfig.mech.dash.stepIntervalS) {
       stepTimer.current = 0
       audioManager.playMechStep()
     }
