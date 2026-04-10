@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
+import { AnimatePresence } from 'framer-motion'
 import { Suspense } from 'react'
 import { AmbientSpores } from './components/AmbientSpores'
 import { BootScreen } from './components/BootScreen'
@@ -12,6 +13,7 @@ import { PauseMenu } from './components/PauseMenu'
 import { Player } from './components/Player'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Silo } from './components/Silo'
+import { Sparks, useSparks } from './components/Sparks'
 import { Terrain } from './components/Terrain'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
@@ -21,6 +23,7 @@ function Scene() {
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
   const isMelting = useGameStore((s) => s.isMelting)
+  const { sparks, spawnSpark } = useSparks()
 
   return (
     <>
@@ -31,21 +34,24 @@ function Scene() {
         <Silo />
         {(phase === 'gameplay' || isMelting) && (
           <>
-            <OreSpawner />
+            <OreSpawner onSparkTrigger={spawnSpark} />
             <Player />
+            <Sparks sparks={sparks} />
           </>
         )}
       </Physics>
       {phase === 'gameplay' && <Cockpit />}
       <VisualEffects />
 
-      {/* UI Overlays */}
-      <BootScreen />
-      <MainMenu />
-      <PauseMenu />
-      <SettingsMenu />
-      <MeltdownScreen />
-      <UpgradesTerminal />
+      {/* UI Overlays with framer-motion transitions */}
+      <AnimatePresence mode="wait">
+        <BootScreen key="boot" />
+        <MainMenu key="menu" />
+        <PauseMenu key="pause" />
+        <SettingsMenu key="settings" />
+        <MeltdownScreen key="meltdown" />
+        <UpgradesTerminal key="upgrades" />
+      </AnimatePresence>
     </>
   )
 }
