@@ -1,7 +1,7 @@
 import { Line } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, useSpringJoint } from '@react-three/rapier'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useGameStore } from '../store'
 
@@ -31,11 +31,26 @@ export function TractorBeam() {
   const grabbedRef = useRef(null) // Rapier RigidBody of grabbed cube
   const [grabbed, setGrabbed] = useState(false)
   const depthRef = useRef(6) // current reel depth
+
+  // Beam points updated via ref to avoid state allocation every frame
   const beamStartRef = useRef(new THREE.Vector3())
   const beamEndRef = useRef(new THREE.Vector3())
-  const [beamPoints, setBeamPoints] = useState(null)
+  const lineRef = useRef()
+  const [beamVisible, setBeamVisible] = useState(false)
+
   const raycaster = useRef(new THREE.Raycaster())
   const dir = useRef(new THREE.Vector3())
+  const beamPoints = useMemo(() => [new THREE.Vector3(), new THREE.Vector3()], [])
+
+  // Auto-release when game is paused or phase leaves gameplay
+  useEffect(() => {
+    if (!grabbed) return
+    if (phase === 'gameplay' && !isPaused) return
+    // Release cube
+    grabbedRef.current = null
+    setGrabbed(false)
+    setBeamVisible(false)
+  }, [grabbed, phase, isPaused])
 
   // Grab on pointer-down — raycast along camera forward direction
   const onPointerDown = useCallback(() => {
@@ -47,10 +62,21 @@ export function TractorBeam() {
     for (const hit of hits) {
       let obj = hit.object
       while (obj) {
-        if (obj.userData?.type === 'cube' && obj.__rapierRigidBody) {
-          grabbedRef.current = obj.__rapierRigidBody
+        if (obj.userData?.type === 'cube' && obj.userData?.rigidBodyRef) {
+          // Prefer explicit ref stored in userData by the cube component
+          grabbedRef.current = obj.userData.rigidBodyRef
           depthRef.current = hit.distance
           setGrabbed(true)
+          setBeamVisible(true)
+          return
+        }
+        // Fallback: walk parent chain for userData.type === 'cube'
+        // and grab the THREE.Group's rigid body via rapier
+        if (obj.userData?.type === 'cube' && obj.rigidBody) {
+          grabbedRef.current = obj.rigidBody
+          depthRef.current = hit.distance
+          setGrabbed(true)
+          setBeamVisible(true)
           return
         }
         obj = obj.parent
@@ -63,7 +89,7 @@ export function TractorBeam() {
     if (!grabbed) return
     grabbedRef.current = null
     setGrabbed(false)
-    setBeamPoints(null)
+    setBeamVisible(false)
   }, [grabbed])
 
   useEffect(() => {
@@ -77,6 +103,7 @@ export function TractorBeam() {
 
   useFrame((_, delta) => {
     if (!anchorRef.current) return
+    if (phase !== 'gameplay' || isPaused) return
     if (!grabbed || !grabbedRef.current) return
 
     // Reel in: reduce depth each frame
@@ -87,11 +114,15 @@ export function TractorBeam() {
     const anchorPos = camera.position.clone().addScaledVector(dir.current, depthRef.current)
     anchorRef.current.setNextKinematicTranslation(anchorPos)
 
-    // Update beam visual
+    // Update beam visual via ref (no state update = no re-render)
     beamStartRef.current.copy(camera.position)
     const cubeT = grabbedRef.current.translation()
     beamEndRef.current.set(cubeT.x, cubeT.y, cubeT.z)
-    setBeamPoints([beamStartRef.current.clone(), beamEndRef.current.clone()])
+    beamPoints[0].copy(beamStartRef.current)
+    beamPoints[1].copy(beamEndRef.current)
+    if (lineRef.current) {
+      lineRef.current.geometry.setFromPoints(beamPoints)
+    }
   })
 
   return (
@@ -113,9 +144,16 @@ export function TractorBeam() {
         <SpringJoint anchorRef={anchorRef} targetRef={grabbedRef} />
       )}
 
-      {/* Beam visual */}
-      {beamPoints && (
-        <Line points={beamPoints} color="#00ffcc" lineWidth={1.5} transparent opacity={0.7} />
+      {/* Beam visual — updated via geometry ref, no state each frame */}
+      {beamVisible && (
+        <Line
+          ref={lineRef}
+          points={beamPoints}
+          color="#00ffcc"
+          lineWidth={1.5}
+          transparent
+          opacity={0.7}
+        />
       )}
     </>
   )

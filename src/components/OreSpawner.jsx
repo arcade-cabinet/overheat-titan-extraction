@@ -52,6 +52,8 @@ export function OreSpawner({ onSparkTrigger }) {
 
   const oreStateRef = useRef(buildOreState())
   const lastGrindSoundAtRef = useRef(0)
+  const lastSparkAtRef = useRef(0)
+  const nextDebrisIdRef = useRef(0)
   const ejectionPendingRef = useRef(false)
   const hitStopRef = useRef(false)
   const hitStopTimerRef = useRef(null)
@@ -70,7 +72,7 @@ export function OreSpawner({ onSparkTrigger }) {
   }, [])
 
   const spawnDebris = useCallback((pos, count = MAX_DEBRIS) => {
-    const debrisId = Date.now()
+    const debrisId = `debris-${nextDebrisIdRef.current++}`
     const positions = []
     const impulses = []
     for (let i = 0; i < count; i++) {
@@ -159,7 +161,9 @@ export function OreSpawner({ onSparkTrigger }) {
           const drain = getGrindDps() * delta
           oreStateRef.current[id].health -= drain
 
-          if (onSparkTrigger) {
+          // Throttle spark spawns — max 5 per second to avoid timer flood
+          if (onSparkTrigger && now - lastSparkAtRef.current >= 200) {
+            lastSparkAtRef.current = now
             onSparkTrigger([pos[0], pos[1] + 1, pos[2]])
           }
 
@@ -218,9 +222,6 @@ export function OreSpawner({ onSparkTrigger }) {
     }
   })
 
-  // oreRevision used as a dependency to force re-render of ore meshes
-  void oreRevision
-
   return (
     <>
       {ORE_POSITIONS.map(({ id, pos }) => {
@@ -276,6 +277,8 @@ export function OreSpawner({ onSparkTrigger }) {
             key: `d-${d.id}-${i}`,
             position: pos,
             rotation: [0, 0, 0],
+            // Pass initial linvel via linearVelocity — applied by Rapier on spawn
+            linearVelocity: d.impulses[i] ?? [0, 0, 0],
           }))}
           colliders="ball"
         >
