@@ -103,6 +103,14 @@ class AudioEngine {
     this._makeOsc('sine', 800, 0.1, 0.05)
   }
 
+  // Dissonant chord — rare isotope sell confirmation (tunable via config.audio.rareSell)
+  playRareSell() {
+    if (!this._initialized) return
+    for (const osc of audioConfig.rareSell.oscillators) {
+      this._makeOsc('sine', osc.frequency, osc.gain, osc.duration)
+    }
+  }
+
   initSiloHum() {
     if (!this._initialized || this._siloHum) return
 

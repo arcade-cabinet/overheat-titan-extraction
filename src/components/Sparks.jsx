@@ -1,80 +1,110 @@
-import { RigidBody } from '@react-three/rapier'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { useEffect, useRef } from 'react'
+import * as THREE from 'three'
+import gameConfig from '../config.json'
+import { useGameStore } from '../store'
 
-const MAX_SPARKS = 30
-const SPARK_TTL_MS = 1200
+const MAX_SPARKS = gameConfig.sparks.maxLive
+const TTL = gameConfig.sparks.ttlMs / 1000
+const MIN_IMPULSE = gameConfig.sparks.minImpulse
+const MAX_IMPULSE = gameConfig.sparks.maxImpulse
 
-export function useSparks() {
-  const [sparks, setSparks] = useState([])
-  const nextIdRef = useRef(0)
-  const timerRefs = useRef({})
+// Module-scope reusable objects — no per-frame allocation, no re-render allocation
+const _dummy = new THREE.Object3D()
+const _color = new THREE.Color()
+const _boxGeo = new THREE.BoxGeometry(1, 1, 1)
 
-  const spawnSpark = useCallback((position) => {
-    const id = nextIdRef.current++
-    const angle = Math.random() * Math.PI * 2
-    const spread = 1.5 + Math.random() * 2
-    const impulse = [Math.cos(angle) * spread, 4 + Math.random() * 4, Math.sin(angle) * spread]
-    setSparks((prev) => {
-      const next = [...prev, { id, position: [...position], impulse }]
-      return next.length > MAX_SPARKS ? next.slice(next.length - MAX_SPARKS) : next
-    })
-    timerRefs.current[id] = setTimeout(() => {
-      setSparks((prev) => prev.filter((s) => s.id !== id))
-      delete timerRefs.current[id]
-    }, SPARK_TTL_MS)
-  }, [])
-
-  // Clean up all pending TTL timers on unmount
-  useEffect(() => {
-    return () => {
-      for (const id of Object.keys(timerRefs.current)) {
-        clearTimeout(timerRefs.current[id])
-      }
-    }
-  }, [])
-
-  return { sparks, spawnSpark }
-}
-
-export function Sparks({ sparks }) {
+function randVel() {
   return (
-    <>
-      {sparks.map((spark) => (
-        <SparkBody key={spark.id} spark={spark} />
-      ))}
-    </>
+    (Math.random() - 0.5) * (MAX_IMPULSE - MIN_IMPULSE) +
+    MIN_IMPULSE * Math.sign(Math.random() - 0.5)
   )
 }
 
-function SparkBody({ spark }) {
-  const bodyRef = useRef()
+/**
+ * Instanced spark particle system — no physics bodies, pure CPU simulation.
+ * Call triggerRef.current(pos) to emit a burst of sparks at a world position.
+ */
+export function Sparks({ triggerRef }) {
+  const meshRef = useRef()
+  const sparks = useRef([]) // { pos: THREE.Vector3, vel: THREE.Vector3, ttl: number, life: number }
+  const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
 
-  // Apply impulse once on mount so sparks actually fly outward
+  // Expose spawn function via ref — called from OreSpawner during grind
   useEffect(() => {
-    if (bodyRef.current) {
-      bodyRef.current.applyImpulse(
-        { x: spark.impulse[0], y: spark.impulse[1], z: spark.impulse[2] },
-        true
-      )
+    if (!triggerRef) return
+    triggerRef.current = (pos) => {
+      // Accept both array [x,y,z] and object {x,y,z}
+      const px = Array.isArray(pos) ? pos[0] : pos.x
+      const py = Array.isArray(pos) ? pos[1] : pos.y
+      const pz = Array.isArray(pos) ? pos[2] : pos.z
+      const count = 4 + Math.floor(Math.random() * 5) // 4-8 sparks per burst
+      for (let i = 0; i < count; i++) {
+        if (sparks.current.length >= MAX_SPARKS) {
+          sparks.current.shift() // drop oldest
+        }
+        const lifetime = TTL * (0.5 + Math.random() * 0.5)
+        sparks.current.push({
+          pos: new THREE.Vector3(
+            px + (Math.random() - 0.5) * 0.5,
+            py + Math.random() * 0.5,
+            pz + (Math.random() - 0.5) * 0.5
+          ),
+          vel: new THREE.Vector3(randVel(), Math.random() * MAX_IMPULSE, randVel()),
+          ttl: lifetime,
+          life: lifetime,
+        })
+      }
     }
-  }, [spark.impulse])
+    return () => {
+      triggerRef.current = null
+    }
+  }, [triggerRef])
+
+  useFrame((_, delta) => {
+    if (!meshRef.current || phase !== 'gameplay' || isPaused) return
+
+    // Age and move sparks
+    sparks.current = sparks.current.filter((s) => {
+      s.ttl -= delta
+      s.vel.y -= 9.81 * delta // gravity
+      s.pos.addScaledVector(s.vel, delta)
+      return s.ttl > 0
+    })
+
+    // Update instanced mesh
+    const count = sparks.current.length
+    for (let i = 0; i < MAX_SPARKS; i++) {
+      if (i < count) {
+        const s = sparks.current[i]
+        _dummy.position.copy(s.pos)
+        const scale = (s.ttl / s.life) * 0.08 + 0.01
+        _dummy.scale.setScalar(scale)
+        _dummy.updateMatrix()
+        meshRef.current.setMatrixAt(i, _dummy.matrix)
+        // Hot white → orange fade
+        const t = s.ttl / s.life
+        _color.setRGB(1, 0.3 + 0.5 * t, 0.05 * t)
+        meshRef.current.setColorAt(i, _color)
+      } else {
+        // Hide unused slots by placing far below scene
+        _dummy.position.set(0, -1000, 0)
+        _dummy.scale.setScalar(0)
+        _dummy.updateMatrix()
+        meshRef.current.setMatrixAt(i, _dummy.matrix)
+      }
+    }
+
+    meshRef.current.instanceMatrix.needsUpdate = true
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true
+    }
+  })
 
   return (
-    <RigidBody
-      ref={bodyRef}
-      colliders="ball"
-      position={spark.position}
-      gravityScale={1.5}
-      onCollisionEnter={() => {
-        if (bodyRef.current) {
-          bodyRef.current.setLinvel({ x: 0, y: 0, z: 0 }, true)
-        }
-      }}
-    >
-      <mesh>
-        <boxGeometry args={[0.06, 0.06, 0.06]} />
-        <meshStandardMaterial color="#ffaa00" emissive="#ff6600" emissiveIntensity={2} />
-      </mesh>
-    </RigidBody>
+    <instancedMesh ref={meshRef} args={[_boxGeo, null, MAX_SPARKS]} frustumCulled={false}>
+      <meshBasicMaterial vertexColors toneMapped={false} />
+    </instancedMesh>
   )
 }
