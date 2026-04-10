@@ -1,10 +1,17 @@
 import { Html } from '@react-three/drei'
+import { useEffect, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
+import { generateSeedPhrase } from '../utils/seedPhrase'
 
 export function MainMenu() {
   const phase = useGameStore((s) => s.phase)
   const setPhase = useGameStore((s) => s.setPhase)
+  const [seedPhrase, setSeedPhrase] = useState('')
+
+  useEffect(() => {
+    setSeedPhrase(generateSeedPhrase())
+  }, [])
 
   if (phase !== 'menu') return null
 
@@ -50,6 +57,18 @@ export function MainMenu() {
           }}
         >
           OVERHEAT
+        </div>
+        <div
+          style={{
+            color: '#006655',
+            fontFamily: 'monospace',
+            fontSize: '12px',
+            letterSpacing: '0.15em',
+            marginBottom: '10px',
+            opacity: 0.7,
+          }}
+        >
+          RUN SEED: {seedPhrase}
         </div>
         <button type="button" onClick={startGame} style={btnStyle('#00ffcc')}>
           [ NEW EXCAVATION ]
