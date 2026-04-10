@@ -18,6 +18,8 @@ last_updated: 2026-04-09
 
 ## Core loop
 
+> **Current implementation status:** See [`docs/HANDOFF.md`](../HANDOFF.md) for what is built and what remains.
+
 ```text
 Survey → Approach ore → Grind → Build heat → Fill hopper → Eject cube
       → Transport cube to silo → Sell for credits → Upgrade mech → Repeat

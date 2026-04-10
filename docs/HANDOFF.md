@@ -65,7 +65,7 @@ last_updated: 2026-04-09
 
 ### `src/store.js`
 Full Zustand store with `persist` middleware. Persists: `credits`, `upgrades`, `settings`.
-Phase enum: `powered_down | boot | menu | gameplay | paused | meltdown | report | settings | upgrades`.
+Phase enum: `powered_down | boot | menu | gameplay | settings | upgrades | meltdown | report`. Note: the paused state is `isPaused=true` while `phase='gameplay'` — there is no separate `'paused'` phase value.
 Heat thresholds: 100 = overheat (saw lock), 120 = meltdown trigger.
 All computed getters (`getMaxOre`, `getGrindDps`, `getCoolingRate`) use `get()` — not stored in state.
 
@@ -210,20 +210,30 @@ This creates the "saw teeth biting into rock" kinesthetic impact.
 
 ### Priority 7 — Spatial audio (Silo hum + dash)
 
-**File:** `src/components/Silo.jsx`, `src/components/Player.jsx`
+**Files:** `src/audio/AudioEngine.js`, `src/components/Silo.jsx`, `src/components/Player.jsx`
 
-Silo hum:
+All spatial audio must route through the `audioManager` singleton — do not construct `THREE.AudioListener` or `THREE.PositionalAudio` directly in component code. Add methods to `AudioEngine.js`:
+
 ```js
-// Inside Silo.jsx, after audio init:
-const listener = new THREE.AudioListener()
-camera.add(listener)
-const sound = new THREE.PositionalAudio(listener)
-const analyser = audioManager.ctx.createOscillator()
-// low freq ~60Hz sine, connected to positional audio
-siloMeshRef.current.add(sound)
+// In AudioEngine.js — add two new methods:
+initSiloHum(siloMesh, camera) {
+  const listener = new THREE.AudioListener()
+  camera.add(listener)
+  const sound = new THREE.PositionalAudio(listener)
+  // low freq ~60Hz sine connected to positional audio
+  siloMesh.add(sound)
+  this._siloSound = sound
+}
+
+setThrusterVolume(normalizedSpeed) {
+  // normalizedSpeed: 0.0 → 1.0 mapped from linvel magnitude
+  if (this._thrusterGain) this._thrusterGain.gain.setTargetAtTime(normalizedSpeed, this.ctx.currentTime, 0.05)
+}
 ```
 
-Dash thruster volume:
+Then call `audioManager.initSiloHum(siloMeshRef.current, camera)` from `Silo.jsx` once after `audioManager.init()`.
+
+Dash thruster volume (in `Player.jsx` `useFrame`):
 ```js
 const vel = bodyRef.current.linvel()
 const speed = Math.sqrt(vel.x**2 + vel.y**2 + vel.z**2)
@@ -245,6 +255,8 @@ The "glowing cyan wireframe" is harder — deferred to later (requires a custom 
 
 **File:** `src/components/VisualEffects.jsx`
 
+> No new dependencies required — `GlitchEffect` is part of the already-approved `postprocessing` package.
+
 Use `GlitchEffect` from `postprocessing` package:
 ```jsx
 import { Glitch } from '@react-three/postprocessing'
@@ -260,6 +272,8 @@ import { GlitchMode } from 'postprocessing'
 ### Priority 10 — CRT shader (scanlines + barrel)
 
 **File:** `src/components/VisualEffects.jsx`
+
+> No new dependencies required — `@react-three/postprocessing` and `postprocessing` are already approved.
 
 Conditionally render when `settings.crtOverlays === true`. Requires a custom `ShaderPass` with:
 - Scanline darkening: `color *= 1.0 - 0.15 * mod(vUv.y * screenHeight, 2.0)`

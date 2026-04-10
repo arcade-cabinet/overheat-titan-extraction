@@ -14,8 +14,8 @@ export function Terrain() {
     for (let i = 0; i < size; i++) {
       const row = []
       for (let j = 0; j < size; j++) {
-        const x = (i - size / 2) * scale
-        const z = (j - size / 2) * scale
+        const x = (i - (size - 1) / 2) * scale
+        const z = (j - (size - 1) / 2) * scale
         const y =
           noise2D(x * 0.025, z * 0.025) * 7 +
           noise2D(x * 0.05, z * 0.05) * 3 +
@@ -30,7 +30,7 @@ export function Terrain() {
     const indices = []
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        positions.push((i - size / 2) * scale, heights[i][j], (j - size / 2) * scale)
+        positions.push((i - (size - 1) / 2) * scale, heights[i][j], (j - (size - 1) / 2) * scale)
       }
     }
     for (let i = 0; i < size - 1; i++) {

@@ -40,7 +40,7 @@ export function MoltenSaw() {
 
   useFrame(({ clock }, delta) => {
     if (!matRef.current) return
-    matRef.current.uHeat = heat / 100
+    matRef.current.uHeat = Math.min(1, Math.max(0, heat / 100))
     matRef.current.uTime = clock.elapsedTime
     if (meshRef.current && !isOverheated) {
       meshRef.current.rotation.z += delta * 8

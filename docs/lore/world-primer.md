@@ -27,15 +27,19 @@ You are the pilot of a heavy industrial Titan mech deployed to a hostile extract
 ## Fictional pillars
 
 ### Titan
+
 The Titan is not elegant. It is a mining rig turned walking cockpit: overbuilt, heat-stressed, and one failure away from catastrophic loss.
 
 ### Extraction site
+
 The site should feel partially mapped and partially unknowable: ore hotspots, unstable geology, and extraction infrastructure barely holding together.
 
 ### Silo
+
 The Silo is the economic center of the play space. It is both a physical scoring target and an in-world logistical machine that converts extracted mass into recoverable value.
 
 ### Pilot fantasy
+
 The player is not a soldier or wizard. They are an operator surviving inside a machine with just enough leverage to earn another run.
 
 ## Writing guidance

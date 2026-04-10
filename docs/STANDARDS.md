@@ -29,7 +29,7 @@ last_updated: 2026-04-09
 | `color.sawCold` | `#1a1a1a` | MoltenSaw blade when cool |
 | `color.sawHot` | `#ff3300` | MoltenSaw blade at peak heat |
 
-**Rule:** Avoid introducing new repeated inline hex values in components. The current scaffold still contains some temporary inline colors; when touching those areas, prefer consolidating reused palette values into shared constants instead of adding more one-off literals.
+**Rule (forward-looking):** Do not add new inline hex literals that aren't in the palette above. The existing codebase has inline color strings that match the palette — those are acceptable and do not need to be refactored unless you are already touching the surrounding code. When refactoring or adding new colored elements, extract palette values into a shared constants file rather than duplicating hex strings.
 
 ---
 
@@ -78,7 +78,7 @@ All effects batched in a single `EffectComposer` with `disableNormalPass`:
 **ChromaticAberration offset mapping** (updated every frame in `useFrame`):
 ```js
 const heatFactor = Math.max(0, (heat - 50) / 50)   // activates past 50% heat only
-const pulse = isOverheated ? Math.sin(clock.elapsedTime * 10) * 0.005 : 0
+const pulse = isOverheated ? Math.sin(clock.elapsedTime * Math.PI * 20) * 0.005 : 0
 offset = 0.001 + heatFactor * 0.004 + pulse
 ```
 
@@ -199,7 +199,7 @@ const geometry = useMemo(() => {
 - All physics/movement/animation logic lives in `useFrame`.
 - Always guard: `if (!bodyRef.current) return`.
 - Pause guard: `if (isPaused || phase !== 'gameplay') return`.
-- Never call `setState` or Zustand `set()` inside `useFrame` — use throttled refs and only call store actions at bounded intervals.
+- Minimize Zustand `set()` calls inside `useFrame`. Coalesce state updates with refs where feasible; throttle high-frequency calls to bounded intervals. Avoid calling `set()` every frame for values that can be batched — but bounded additive actions (`addOre`, `addHeat`) are acceptable in `useFrame` as long as they are guarded by the pause/phase checks above.
 
 ### Component structure template
 ```jsx

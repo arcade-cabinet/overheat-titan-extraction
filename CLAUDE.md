@@ -8,7 +8,7 @@
 
 ## Entry chain
 
-```
+```text
 CLAUDE.md  (you are here)
     └── AGENTS.md              ← master instructions, architecture, tech stack, rules
             ├── docs/README.md     ← documentation index by domain

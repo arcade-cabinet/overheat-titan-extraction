@@ -4,7 +4,7 @@
 
 ### Before opening a PR
 
-- [ ] `npm run build` passes with zero errors
+- [ ] `pnpm run build` passes with zero errors
 - [ ] No `node_modules/`, `dist/`, or `.env` files committed
 - [ ] `docs/HANDOFF.md` updated to reflect what this PR completes
 - [ ] `docs/README.md` updated if new docs were added or reorganized

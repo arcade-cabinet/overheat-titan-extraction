@@ -84,10 +84,13 @@ stateDiagram-v2
     boot --> menu : systems online
     menu --> gameplay : new excavation
     menu --> settings : os config
+    menu --> upgrades : upgrades terminal
     settings --> menu : back
+    upgrades --> menu : back
     gameplay --> paused : esc
     paused --> gameplay : resume
     paused --> settings : settings
+    settings --> paused : back (from pause)
     gameplay --> meltdown : heat >= 120
     meltdown --> report : ejection finished
     report --> menu : return to base

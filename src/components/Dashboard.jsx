@@ -23,6 +23,12 @@ export function Dashboard() {
   }, [])
 
   useEffect(() => {
+    return () => {
+      texture.dispose()
+    }
+  }, [texture])
+
+  useEffect(() => {
     if (!ctx) return
 
     ctx.fillStyle = '#050a0f'

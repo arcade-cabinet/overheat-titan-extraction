@@ -106,6 +106,7 @@ All cockpit/dashboard text uses a **monospaced industrial** typeface. IBM Plex M
 ## Shader direction
 
 ### Molten saw
+
 ```glsl
 // uHeat: 0.0 → 1.0 (heat / 100)
 // Cool center mass, hotter outer edge
@@ -118,6 +119,7 @@ finalColor += vec3(pulse);
 Reads like stressed industrial metal, not a fantasy energy weapon.
 
 ### Post-processing
+
 ```jsx
 <EffectComposer disableNormalPass>
   <Bloom luminanceThreshold={0.6} mipmapBlur intensity={1.5} blendFunction={BlendFunction.ADD} />
@@ -157,6 +159,7 @@ As ore health drains, animate ore mesh scale `[1,1,1]` → `[0,0,0]` using react
 The audio is not orchestral. It is procedural, dissonant, industrial, and pressure-driven.
 
 ### Soundscape
+
 - Low, distant rumbles — the planet is dying
 - Occasional metallic creaks of the mech frame
 - Wind and dust in craters
@@ -175,6 +178,7 @@ The audio is not orchestral. It is procedural, dissonant, industrial, and pressu
 | Rare spawn | Dissonant interval — something is different | Two-tone dissonant chord |
 
 ### Mixing hierarchy
+
 Priority (highest to lowest):
 1. **Player feedback**: grind, overheat, cube ejection, sell — player must always hear these
 2. **Alarm states**: overheat alarm, meltdown warning
@@ -184,6 +188,7 @@ Priority (highest to lowest):
 **Dynamic ducking:** When alarm plays, slightly duck ambient (BiquadFilter frequency reduced).
 
 ### Audio routing
+
 All sound goes through `AudioEngine.js` singleton. No hardcoded frequencies in components. No new audio libraries.
 
 See `docs/STANDARDS.md §9` for the full Web Audio graph and sound design spec.

@@ -291,7 +291,7 @@ graph TD
 At the end of every agent session:
 1. Update `docs/HANDOFF.md` — mark completed items `[x]`, update "Current known issues".
 2. Commit with a descriptive message (no "WIP" — always describe what changed).
-3. Run `npm run build` and confirm zero errors before pushing.
+3. Run `pnpm run build` and confirm zero errors before pushing.
 4. If a new architectural pattern is established, add it to `docs/STANDARDS.md`.
 
 ---

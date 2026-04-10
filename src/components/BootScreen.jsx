@@ -1,5 +1,5 @@
 import { Html } from '@react-three/drei'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 
@@ -7,11 +7,14 @@ export function BootScreen() {
   const phase = useGameStore((s) => s.phase)
   const setPhase = useGameStore((s) => s.setPhase)
   const [blink, setBlink] = useState(true)
+  const bootTimerRef = useRef()
 
   useEffect(() => {
     const interval = setInterval(() => setBlink((b) => !b), 500)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => () => clearTimeout(bootTimerRef.current), [])
 
   if (phase !== 'powered_down') return null
 
@@ -19,7 +22,7 @@ export function BootScreen() {
     audioManager.init()
     audioManager.playPowerUp()
     setPhase('boot')
-    setTimeout(() => setPhase('menu'), 2000)
+    bootTimerRef.current = setTimeout(() => setPhase('menu'), 2000)
   }
 
   return (

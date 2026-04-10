@@ -27,26 +27,31 @@ export function OreSpawner() {
   const ejectCube = useGameStore((s) => s.ejectCube)
   const [cubes, setCubes] = useState([])
   const lastGrindSoundAtRef = useRef(0)
+  const ejectionPendingRef = useRef(false)
 
   useFrame(({ camera }, delta) => {
     if (phase !== 'gameplay') return
 
-    let grindingOreCount = 0
+    // Reset ejection guard once rawOre is cleared by ejectCube()
+    if (rawOre === 0) ejectionPendingRef.current = false
+
+    // Count ore veins in grind range — split into two counts so heat
+    // keeps rising even when overheated (enabling the meltdown path at 120).
+    let grindingOreCount = 0 // ore extraction — blocked when overheated
+    let heatOreCount = 0 // heat accumulation — always active near ore
 
     ORE_POSITIONS.forEach(({ pos: orePos }) => {
       const dx = camera.position.x - orePos[0]
       const dz = camera.position.z - orePos[2]
       const dist = Math.sqrt(dx * dx + dz * dz)
-
-      if (dist < 5 && !isOverheated) {
-        grindingOreCount += 1
+      if (dist < 5) {
+        heatOreCount += 1
+        if (!isOverheated) grindingOreCount += 1
       }
     })
 
     if (grindingOreCount > 0) {
       addOre(getGrindDps() * delta * grindingOreCount)
-      addHeat(15 * delta * grindingOreCount)
-
       const now = performance.now()
       if (now - lastGrindSoundAtRef.current >= 100) {
         audioManager.playGrind(Math.min(100, heat))
@@ -54,7 +59,13 @@ export function OreSpawner() {
       }
     }
 
-    if (rawOre >= getMaxOre()) {
+    if (heatOreCount > 0) {
+      addHeat(15 * delta * heatOreCount)
+    }
+
+    // Guard against split-frame double-spawn when rawOre hits the cap
+    if (rawOre >= getMaxOre() && !ejectionPendingRef.current) {
+      ejectionPendingRef.current = true
       const cubePos = [
         camera.position.x + (Math.random() - 0.5) * 4,
         camera.position.y,

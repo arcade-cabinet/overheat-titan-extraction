@@ -13,11 +13,17 @@ function useKeys() {
   useEffect(() => {
     const down = (e) => (keys[e.code] = true)
     const up = (e) => (keys[e.code] = false)
+    const blur = () =>
+      Object.keys(keys).forEach((k) => {
+        delete keys[k]
+      })
     window.addEventListener('keydown', down)
     window.addEventListener('keyup', up)
+    window.addEventListener('blur', blur)
     return () => {
       window.removeEventListener('keydown', down)
       window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', blur)
     }
   }, [])
   return keys
@@ -79,7 +85,7 @@ export function Player() {
     const right = keys.KeyD || keys.ArrowRight ? 1 : 0
     const dash = !!(keys.ShiftLeft || keys.ShiftRight)
 
-    const dir = new THREE.Vector3(left - right, 0, backward - forward)
+    const dir = new THREE.Vector3(right - left, 0, backward - forward)
     if (dir.length() > 0.01) dir.normalize()
     dir.applyQuaternion(camera.quaternion)
     dir.y = 0

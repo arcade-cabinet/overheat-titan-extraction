@@ -11,7 +11,7 @@ export function PauseMenu() {
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.code === 'Escape' && phase === 'gameplay') {
+      if (e.code === 'Escape' && phase === 'gameplay' && !e.repeat) {
         audioManager.playBlip()
         const pausing = !isPaused
         setPaused(pausing)
@@ -22,7 +22,7 @@ export function PauseMenu() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, isPaused])
+  }, [phase, isPaused, setPaused])
 
   if (!isPaused || phase !== 'gameplay') return null
 

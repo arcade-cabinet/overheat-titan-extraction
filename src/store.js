@@ -5,7 +5,7 @@ export const useGameStore = create(
   persist(
     (set, get) => ({
       // Game Phase
-      phase: 'powered_down', // powered_down | boot | menu | gameplay | paused | meltdown | report | settings | upgrades
+      phase: 'powered_down', // powered_down | boot | menu | gameplay | settings | upgrades | meltdown | report
       isPaused: false,
 
       // Economy & Inventory

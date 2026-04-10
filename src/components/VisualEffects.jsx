@@ -12,7 +12,7 @@ export function VisualEffects() {
   useFrame(({ clock }) => {
     if (!chromRef.current) return
     const heatFactor = Math.max(0, (heat - 50) / 50)
-    const pulse = isOverheated ? Math.sin(clock.elapsedTime * 10) * 0.005 : 0
+    const pulse = isOverheated ? Math.sin(clock.elapsedTime * Math.PI * 20) * 0.005 : 0
     const offset = 0.001 + heatFactor * 0.004 + pulse
     chromRef.current.offset.set(offset, offset)
   })
