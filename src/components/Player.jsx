@@ -9,6 +9,11 @@ const SPEED = 8
 const DASH_SPEED = 20
 const keys = {}
 
+// Module-scope reusable objects — avoid per-frame allocations (GC pressure)
+const _euler = new THREE.Euler(0, 0, 0, 'YXZ')
+const _dir = new THREE.Vector3()
+const _forward = new THREE.Vector3()
+
 function useKeys() {
   useEffect(() => {
     const down = (e) => (keys[e.code] = true)
@@ -31,6 +36,8 @@ function useKeys() {
 
 export function Player() {
   const bodyRef = useRef()
+  const spotRef = useRef()
+  const spotTargetRef = useRef()
   useKeys()
   const { camera } = useThree()
   const phase = useGameStore((s) => s.phase)
@@ -45,6 +52,13 @@ export function Player() {
   const yawRef = useRef(0)
   const pitchRef = useRef(0)
   const stepTimer = useRef(0)
+
+  // Wire spotlight target after both refs mount
+  useEffect(() => {
+    if (spotRef.current && spotTargetRef.current) {
+      spotRef.current.target = spotTargetRef.current
+    }
+  }, [])
 
   useEffect(() => {
     const onMove = (e) => {
@@ -74,9 +88,9 @@ export function Player() {
       coolDown(getCoolingRate() * delta)
     }
 
-    // Camera rotation
-    const euler = new THREE.Euler(pitchRef.current, yawRef.current, 0, 'YXZ')
-    camera.quaternion.setFromEuler(euler)
+    // Camera rotation — mutate module-scope Euler, no allocation per frame
+    _euler.set(pitchRef.current, yawRef.current, 0)
+    camera.quaternion.setFromEuler(_euler)
 
     // Movement
     const forward = keys.KeyW || keys.ArrowUp ? 1 : 0
@@ -85,15 +99,15 @@ export function Player() {
     const right = keys.KeyD || keys.ArrowRight ? 1 : 0
     const dash = !!(keys.ShiftLeft || keys.ShiftRight)
 
-    const dir = new THREE.Vector3(right - left, 0, backward - forward)
-    if (dir.length() > 0.01) dir.normalize()
-    dir.applyQuaternion(camera.quaternion)
-    dir.y = 0
+    _dir.set(right - left, 0, backward - forward)
+    if (_dir.length() > 0.01) _dir.normalize()
+    _dir.applyQuaternion(camera.quaternion)
+    _dir.y = 0
 
     const speed = dash ? DASH_SPEED : SPEED
     const vel = bodyRef.current.linvel()
     bodyRef.current.wakeUp()
-    bodyRef.current.setLinvel({ x: dir.x * speed, y: vel.y, z: dir.z * speed }, true)
+    bodyRef.current.setLinvel({ x: _dir.x * speed, y: vel.y, z: _dir.z * speed }, true)
 
     // Sync camera to body
     const pos = bodyRef.current.translation()
@@ -119,13 +133,36 @@ export function Player() {
       stepTimer.current = 0
       audioManager.playMechStep()
     }
+
+    // Headlamp — track camera look direction
+    if (spotRef.current && spotTargetRef.current) {
+      spotRef.current.position.copy(camera.position)
+      // Target is 10 units ahead in look direction
+      _forward.set(0, 0, -1).applyQuaternion(camera.quaternion)
+      spotTargetRef.current.position.copy(camera.position).addScaledVector(_forward, 10)
+      spotTargetRef.current.updateMatrixWorld()
+    }
   })
 
   return (
-    <RigidBody ref={bodyRef} colliders="cuboid" lockRotations mass={100} position={[0, 5, 10]}>
-      <mesh visible={false}>
-        <capsuleGeometry args={[0.4, 1.2]} />
-      </mesh>
-    </RigidBody>
+    <>
+      <RigidBody ref={bodyRef} colliders="cuboid" lockRotations mass={100} position={[0, 5, 10]}>
+        <mesh visible={false}>
+          <capsuleGeometry args={[0.4, 1.2]} />
+        </mesh>
+      </RigidBody>
+      {/* Headlamp — follows camera look direction */}
+      <spotLight
+        ref={spotRef}
+        color="#e8f4ff"
+        intensity={12}
+        angle={0.35}
+        penumbra={0.4}
+        distance={40}
+        decay={2}
+        castShadow={false}
+      />
+      <object3D ref={spotTargetRef} />
+    </>
   )
 }

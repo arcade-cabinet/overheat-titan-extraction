@@ -26,7 +26,11 @@ export function Silo() {
     }
 
     addCredits(otherUserData.sellValue ?? 50)
-    audioManager.playSell()
+    if (otherUserData.isRare) {
+      audioManager.playRareSell()
+    } else {
+      audioManager.playSell()
+    }
 
     if (typeof otherUserData.onSell === 'function') {
       otherUserData.onSell()

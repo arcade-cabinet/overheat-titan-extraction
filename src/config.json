@@ -12,7 +12,7 @@
       "meltdownThreshold": 120,
       "baseCoolingRate": 20,
       "coolingSafeThreshold": 20,
-      "coolingRatePerUpgrade": 0.5,
+      "coolingRatePerUpgrade": 0.75,
       "cameraShakeMaxScale": 0.03
     },
     "hopper": {
