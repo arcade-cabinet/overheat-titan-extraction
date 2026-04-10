@@ -1,22 +1,39 @@
 import { page } from '@vitest/browser/context'
 
-/** Force the Zustand store to a specific phase for testing */
+/** Navigate to the app running in dev/preview mode. */
+export async function loadApp() {
+  await page.goto('http://localhost:5173')
+  // Give Three.js / physics a moment to initialise
+  await page.waitForTimeout(1000)
+}
+
+/** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
   await page.evaluate((p) => {
-    const win = window as typeof window & { __GAME_STORE_SET__?: (phase: string) => void }
-    if (win.__GAME_STORE_SET__) win.__GAME_STORE_SET__(p)
+    const store = (
+      window as unknown as {
+        __ZUSTAND_STORE__: { getState: () => { setPhase: (phase: string) => void } }
+      }
+    ).__ZUSTAND_STORE__
+    store.getState().setPhase(p)
   }, phase)
+  await page.waitForTimeout(400) // wait for framer-motion transition
 }
 
-/** Wait for an element with data-testid to appear */
-export async function waitForTestId(testId: string, timeout = 5000) {
-  await page.getByTestId(testId).waitFor({ timeout })
+/** Set multiple store keys at once (for meltdown etc.) */
+export async function patchStore(patch: Record<string, unknown>) {
+  await page.evaluate((p) => {
+    const store = (
+      window as unknown as {
+        __ZUSTAND_STORE__: { setState: (patch: Record<string, unknown>) => void }
+      }
+    ).__ZUSTAND_STORE__
+    store.setState(p)
+  }, patch)
+  await page.waitForTimeout(400)
 }
 
-/** Take a screenshot and save it to the screenshots directory */
-export async function assertScreenshot(name: string) {
-  await page.screenshot({
-    path: `src/__tests__/browser/screenshots/${name}.png`,
-    fullPage: false,
-  })
+/** Take a named screenshot and return the path. */
+export async function screenshot(name: string) {
+  return page.screenshot({ path: `src/__tests__/browser/screenshots/${name}.png` })
 }

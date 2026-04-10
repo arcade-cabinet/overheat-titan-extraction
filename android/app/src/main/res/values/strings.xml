@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OVERHEAT: Titan Extraction</string>
+    <string name="title_activity_main">OVERHEAT: Titan Extraction</string>
+    <string name="package_name">com.arcadecabinet.overheattitanextraction</string>
+    <string name="custom_url_scheme">com.arcadecabinet.overheattitanextraction</string>
+</resources>

@@ -1,0 +1,41 @@
+appId: com.arcadecabinet.overheattitanextraction
+---
+- launchApp:
+    clearState: true
+
+# Boot to gameplay
+- waitFor:
+    selector:
+      text: "AWAITING PILOT INPUT"
+    timeout: 5000
+- tapOn:
+    point: "50%, 50%"
+- delay: 2000
+- waitFor:
+    selector:
+      text: "NEW EXCAVATION"
+    timeout: 8000
+- tapOn:
+    text: "NEW EXCAVATION"
+- delay: 1000
+- takeScreenshot: meltdown-01-gameplay
+
+# Trigger meltdown via JavaScript bridge (heat to 120)
+- evalScript: |
+    const store = window.__ZUSTAND_STORE__;
+    if (store) {
+      store.setState({ heat: 120, isMelting: true, phase: 'meltdown' });
+    }
+- waitFor:
+    selector:
+      text: "TITAN LOST"
+    timeout: 8000
+- takeScreenshot: meltdown-02-meltdown-screen
+
+# Wait for report phase (auto-transitions after meltdown animation)
+- delay: 3000
+- takeScreenshot: meltdown-03-report-screen
+- waitFor:
+    selector:
+      text: "REBOOTING"
+    timeout: 8000

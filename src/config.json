@@ -62,7 +62,10 @@
   "silo": {
     "position": [0, 0, 0],
     "humBaseFrequency": 58,
+    "humBaseGain": 0.05,
     "humLfoFrequency": 0.3,
+    "humLfoGain": 0.02,
+    "humMaxVol": 0.07,
     "humMaxDistance": 80
   },
   "postFx": {
@@ -84,7 +87,10 @@
   "audio": {
     "defaultMasterVolume": 0.7,
     "pauseFilterHz": 300,
-    "normalFilterHz": 20000
+    "normalFilterHz": 20000,
+    "thrusterNoiseLevel": 0.08,
+    "thrusterGainLevel": 0.06,
+    "thrusterSmoothTime": 0.05
   },
   "hitStop": {
     "durationMs": 50

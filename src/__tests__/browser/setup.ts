@@ -1,2 +1,10 @@
-// Browser test setup — no explicit imports needed for vitest browser matchers
-// They are globally available in browser test context
+// Expose Zustand store on window for Maestro JS injection
+import { useGameStore } from '../../store'
+
+declare global {
+  interface Window {
+    __ZUSTAND_STORE__: typeof useGameStore
+  }
+}
+
+window.__ZUSTAND_STORE__ = useGameStore

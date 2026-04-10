@@ -1,4 +1,5 @@
 import { Html } from '@react-three/drei'
+import { motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
@@ -17,9 +18,8 @@ export function BootScreen() {
 
   useEffect(() => () => clearTimeout(bootTimerRef.current), [])
 
-  if (phase !== 'powered_down') return null
-
   const handleClick = () => {
+    if (phase !== 'powered_down') return
     audioManager.init()
     audioManager.playPowerUp()
     setPhase('boot')
@@ -28,50 +28,64 @@ export function BootScreen() {
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
-      <button
-        type="button"
-        onClick={handleClick}
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          cursor: 'pointer',
-          userSelect: 'none',
-          background: 'rgba(0,0,0,0.85)',
-          border: 'none',
-          padding: 0,
-        }}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        style={{ width: '100%', height: '100%' }}
       >
-        <div
+        <button
+          data-testid="boot-screen"
+          type="button"
+          onClick={handleClick}
           style={{
-            color: '#00ffcc',
-            fontFamily: 'monospace',
-            fontSize: '14px',
-            letterSpacing: '0.2em',
-            marginBottom: '20px',
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            cursor: 'pointer',
+            userSelect: 'none',
+            background: 'rgba(0,0,0,0.85)',
+            border: 'none',
+            padding: 0,
           }}
         >
-          OVERHEAT: TITAN EXTRACTION
-        </div>
-        <div
-          style={{
-            color: '#00ffcc',
-            fontFamily: 'monospace',
-            fontSize: '18px',
-            opacity: blink ? 1 : 0,
-          }}
-        >
-          ▶ AWAITING PILOT INPUT...
-        </div>
-        <div
-          style={{ color: '#006655', fontFamily: 'monospace', fontSize: '11px', marginTop: '40px' }}
-        >
-          CLICK TO INITIALIZE TITAN SYSTEMS
-        </div>
-      </button>
+          <div
+            style={{
+              color: '#00ffcc',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              letterSpacing: '0.2em',
+              marginBottom: '20px',
+            }}
+          >
+            OVERHEAT: TITAN EXTRACTION
+          </div>
+          <div
+            style={{
+              color: '#00ffcc',
+              fontFamily: 'monospace',
+              fontSize: '18px',
+              opacity: blink ? 1 : 0,
+            }}
+          >
+            ▶ AWAITING PILOT INPUT...
+          </div>
+          <div
+            style={{
+              color: '#006655',
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              marginTop: '40px',
+            }}
+          >
+            CLICK TO INITIALIZE TITAN SYSTEMS
+          </div>
+        </button>
+      </motion.div>
     </Html>
   )
 }

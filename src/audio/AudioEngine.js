@@ -1,3 +1,7 @@
+import gameConfig from '../config.json'
+
+const { silo: siloConfig, audio: audioConfig } = gameConfig
+
 class AudioEngine {
   constructor() {
     this._initialized = false
@@ -97,6 +101,105 @@ class AudioEngine {
 
   playBlip() {
     this._makeOsc('sine', 800, 0.1, 0.05)
+  }
+
+  initSiloHum() {
+    if (!this._initialized || this._siloHum) return
+
+    // Low sine oscillator for hum
+    const humOsc = this.ctx.createOscillator()
+    const humGain = this.ctx.createGain()
+    humOsc.type = 'sine'
+    humOsc.frequency.value = siloConfig.humBaseFrequency
+    humGain.gain.value = siloConfig.humBaseGain
+
+    // Slow LFO for organic pulsing
+    const lfo = this.ctx.createOscillator()
+    const lfoGain = this.ctx.createGain()
+    lfo.frequency.value = siloConfig.humLfoFrequency
+    lfoGain.gain.value = siloConfig.humLfoGain
+    lfo.connect(lfoGain)
+    lfoGain.connect(humGain.gain)
+
+    humOsc.connect(humGain)
+    humGain.connect(this.masterGain)
+    humOsc.start()
+    lfo.start()
+    this._siloHum = { osc: humOsc, gain: humGain, lfo, lfoGain }
+  }
+
+  setSiloHumDistance(distance) {
+    if (!this._siloHum) return
+    // Attenuate by distance — full at 0, silent at humMaxDistance
+    const vol = Math.max(0, 1 - distance / siloConfig.humMaxDistance) * siloConfig.humMaxVol
+    this._siloHum.gain.gain.setTargetAtTime(vol, this.ctx.currentTime, 0.3)
+  }
+
+  initThruster() {
+    if (!this._initialized || this._thrusterGain) return
+    const bufferSize = 4096
+    // createScriptProcessor is deprecated but widely supported; use AudioWorklet in M2
+    // eslint-disable-next-line no-undef
+    const node = this.ctx.createScriptProcessor(bufferSize, 1, 1)
+    node.onaudioprocess = (e) => {
+      const output = e.outputBuffer.getChannelData(0)
+      const level = this._thrusterLevel || 0
+      if (level === 0) {
+        // Zero-fill when silent — avoid burning CPU on random() for no output
+        output.fill(0)
+        return
+      }
+      for (let i = 0; i < output.length; i++) {
+        output[i] = (Math.random() * 2 - 1) * level
+      }
+    }
+    const gain = this.ctx.createGain()
+    gain.gain.value = 0
+    node.connect(gain)
+    gain.connect(this.masterGain)
+    this._thrusterGain = gain
+    this._thrusterNode = node
+    this._thrusterLevel = 0
+  }
+
+  setThrusterVolume(normalizedSpeed) {
+    if (!this._thrusterGain) return
+    this._thrusterLevel = normalizedSpeed * audioConfig.thrusterNoiseLevel
+    this._thrusterGain.gain.setTargetAtTime(
+      normalizedSpeed * audioConfig.thrusterGainLevel,
+      this.ctx.currentTime,
+      audioConfig.thrusterSmoothTime
+    )
+  }
+
+  stopSiloHum() {
+    if (!this._siloHum) return
+    try {
+      this._siloHum.osc.stop()
+    } catch (_) {
+      // already stopped
+    }
+    try {
+      this._siloHum.lfo.stop()
+    } catch (_) {
+      // already stopped
+    }
+    try {
+      this._siloHum.lfoGain.disconnect()
+    } catch (_) {
+      // already disconnected
+    }
+    this._siloHum.gain.disconnect()
+    this._siloHum = null
+  }
+
+  stopThruster() {
+    if (!this._thrusterNode) return
+    this._thrusterNode.disconnect()
+    this._thrusterGain?.disconnect()
+    this._thrusterNode = null
+    this._thrusterGain = null
+    this._thrusterLevel = 0
   }
 }
 

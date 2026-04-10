@@ -1,43 +1,34 @@
-/** @vitest-environment browser */
-
-import { cleanup, render } from '@testing-library/react'
-import React from 'react'
+import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
-import App from '../../App'
+import { loadApp, patchStore, screenshot, setPhase } from './helpers'
 
-describe('Meltdown Screen', () => {
-  beforeEach(() => cleanup())
-
-  it('renders meltdown screen in meltdown phase', async () => {
-    render(<App />)
-
-    // Tests run IN the browser — directly access window globals
-    const store = (window as any).__ZUSTAND_STORE__
-    if (store) store.setState({ phase: 'meltdown', heat: 120 })
-
-    const meltdownEl = page.getByTestId('meltdown-screen')
-    await meltdownEl.waitFor({ timeout: 5000 })
-
-    expect(meltdownEl.element()).toBeTruthy()
-
-    await page.screenshot({
-      path: 'src/__tests__/browser/screenshots/meltdown.png',
-    })
+describe('MeltdownScreen phase', () => {
+  beforeEach(async () => {
+    await loadApp()
+    await patchStore({ heat: 120, isMelting: true, phase: 'meltdown' })
   })
 
-  it('renders report screen in report phase', async () => {
-    render(<App />)
+  it('shows meltdown screen in meltdown phase', async () => {
+    const el = page.getByTestId('meltdown-screen')
+    await expect.element(el).toBeInTheDocument()
+    await screenshot('08-meltdown-screen')
+  })
 
-    // Tests run IN the browser — directly access window globals
-    const store = (window as any).__ZUSTAND_STORE__
-    if (store) store.setState({ phase: 'report', credits: 1500 })
+  it('shows TITAN LOST text', async () => {
+    await expect.element(page.getByText(/TITAN LOST/i)).toBeVisible()
+  })
 
-    const meltdownEl = page.getByTestId('meltdown-screen')
-    await meltdownEl.waitFor({ timeout: 5000 })
+  it('shows report screen', async () => {
+    await patchStore({ phase: 'report', isMelting: false })
+    await page.waitForTimeout(600)
+    const el = page.getByTestId('meltdown-screen')
+    await expect.element(el).toBeInTheDocument()
+    await screenshot('09-report-screen')
+  })
 
-    await page.screenshot({
-      path: 'src/__tests__/browser/screenshots/report-screen.png',
-    })
+  it('meltdown screen hidden during menu', async () => {
+    await setPhase('menu')
+    await patchStore({ isMelting: false })
+    await expect.element(page.getByTestId('meltdown-screen')).not.toBeInTheDocument()
   })
 })

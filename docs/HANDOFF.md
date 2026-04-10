@@ -3,7 +3,7 @@ title: Handoff
 doc_type: handoff
 status: active
 owner: engineering
-last_updated: 2026-04-09
+last_updated: 2026-04-10
 ---
 
 # HANDOFF.md — OVERHEAT: Titan Extraction
@@ -40,18 +40,19 @@ last_updated: 2026-04-09
 | Upgrades terminal (cap / pow / cool) | ✅ Complete |
 | Domain-organized docs directory + index | ✅ Complete |
 | Docs-specific `docs/AGENTS.md` guidance | ✅ Complete |
-| Tractor Beam (Spring Joint drag + throw) | ❌ Not implemented |
-| Debris instancing (InstancedRigidBodies) | ❌ Not implemented |
-| Spark emitter on grind contact | ❌ Not implemented |
-| Ore shrink animation (compatible 3D motion library TBD) | ❌ Not implemented |
-| Hit-stop effect (50ms freeze on first contact) | ❌ Not implemented |
-| Spatial / positional audio (THREE.PositionalAudio) | ❌ Not implemented |
-| Headlamp SpotLight (boot flicker + stable beam) | ❌ Not implemented |
-| Grayscale / wireframe pass during pause | ❌ Not implemented |
-| Glitch shader pass during meltdown | ❌ Not implemented |
-| CRT overlay shader (scanlines + barrel) | ❌ Not implemented |
-| maath/random for spores (currently custom impl) | ⚠️ Partial — custom inSphere used |
-| 3D panel transitions pending compatible motion library | ❌ Not implemented |
+| Tractor Beam (Spring Joint drag + throw) | ✅ Complete |
+| Debris instancing (InstancedRigidBodies) | ✅ Complete |
+| Spark emitter on grind contact | ✅ Complete |
+| Ore shrink animation (scaleRef, direct imperative) | ✅ Complete |
+| Hit-stop effect (50ms freeze on first contact) | ✅ Complete |
+| Spatial audio (silo hum + thruster volume) | ✅ Complete |
+| Headlamp SpotLight (boot flicker + stable beam) | ✅ Complete |
+| Grayscale pass during pause (HueSaturation) | ✅ Complete |
+| Glitch shader pass during meltdown | ✅ Complete |
+| CRT overlay shader (scanlines + barrel) | ✅ Complete |
+| maath/random for spores (official inSphere) | ✅ Complete |
+| Framer-motion UI transitions (all overlay screens) | ✅ Complete |
+| Rare isotopes (15%, magenta, 3× heat, $2500 cube) | ✅ Complete |
 | Diegetic menu raycast (shoot dashboard to select) | ❌ Not implemented |
 
 ---
@@ -109,222 +110,42 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-Work through these in order. Each is a discrete, shippable unit.
+All Stream A deliverables are shipped and merged. Remaining work:
 
-### Priority 1 — Tractor Beam (most impactful gameplay feature)
-
-**Files to create/modify:**
-- `src/components/TractorBeam.jsx` (new)
-- `src/components/Player.jsx` (add pointer-down/up handlers)
-- `src/components/OreSpawner.jsx` (tag cubes with `userData.type='cube'`)
-
-**Implementation steps:**
-1. Add an invisible `RigidBody type="kinematicPosition"` ref (`tractorAnchorRef`) inside the scene — the "cursor hook".
-2. On `pointerdown`: cast a ray from `camera` position along `camera.getWorldDirection()`. If it hits a `userData.type === 'cube'` RigidBody, capture the ref.
-3. Create a `useSpringJoint(tractorAnchorRef, cubeRef, { stiffness: 40, damping: 0.3, restLength: 0 })`.
-4. Each frame while pointer is down: `tractorAnchor.setNextKinematicTranslation(camera.pos + lookDir * depth)`. Reduce `depth -= delta * 10` (reel-in).
-5. On `pointerup`: read last-frame velocity of cube body → `cubeBody.applyImpulse(throwVelocity)`. Destroy joint by clearing refs.
-6. Visual: a thin cyan `<Line>` from camera center to cube (use `@react-three/drei` `<Line>`).
-
-**Reference:** `AGENTS.md §8 Physics rules`, `AGENTS.md §13`
-
----
-
-### Priority 2 — Headlamp SpotLight + Boot flicker
-
-**File:** `src/components/Player.jsx` or new `src/components/Headlamp.jsx`
-
-```jsx
-// Inside Cockpit or Player camera group:
-<spotLight
-  ref={headlampRef}
-  position={[0, 0, 0]}
-  target-position={[0, 0, -1]}
-  intensity={2}
-  angle={0.4}
-  penumbra={0.3}
-  color="#ffeecc"
-  castShadow
-/>
-```
-
-Boot flicker: in the `boot` phase, run a `useInterval` or `useFrame` for 0.5s that sets `headlampRef.current.intensity = Math.random() * 3` before stabilizing at 2.
-
----
-
-### Priority 3 — Spark emitter on grind contact
-
-**File:** `src/components/Sparks.jsx` (new)
-
-- On each grind tick (while distance < 5 and not overheated), call a `spawnSpark()` function.
-- Each spark: small `<Box args={[0.05,0.05,0.05]}>` with `meshStandardMaterial emissive="#ffaa00" emissiveIntensity={2}` + dynamic Rapier `RigidBody` with upward + random XZ impulse applied immediately after spawn.
-- Each spark has TTL ~1.5s (remove from state after that).
-- Limit: max 30 live sparks at once (drop oldest if exceeded).
-
----
-
-### Priority 4 — Ore destruction + debris
-
-**File:** `src/components/OreSpawner.jsx` (modify)
-
-- Add `health` state to each ore vein (start: 100).
-- Each grind tick reduces ore health by `getGrindDps() * delta`.
-- At health ≤ 0: remove ore vein, spawn 5–8 debris chunks via `InstancedRigidBodies` if count > 20, else individual `RigidBody` balls with radial impulse.
-- Debris chunks are `userData.type = 'debris'` (can be tractor-beamed).
-- Respawn new ore vein at same position after 15s (configurable).
-
----
-
-### Priority 5 — Ore shrink (compatible 3D motion library TBD)
+### Priority 1 — OreSpawner `setState` inside `useFrame` (tech debt)
 
 **File:** `src/components/OreSpawner.jsx`
 
-Replace static ore mesh with a compatible 3D motion primitive once the project adopts a React Three Fiber-compatible animation library:
-```jsx
-// Example shape only — use the chosen compatible 3D motion wrapper once selected.
-<AnimatedOreMesh scale={healthPct} />
-```
-Where `healthPct` goes from `1.0` to `0.0` as ore health drains.
-
----
-
-### Priority 6 — Hit-stop effect
-
-**File:** `src/components/OreSpawner.jsx` or `src/components/Player.jsx`
-
-On the first frame that grinding begins (transition from not-grinding to grinding):
-```js
-// In useFrame, detect leading edge of grind state
-if (justStartedGrinding) {
-  const savedDelta = delta
-  // Freeze movement/physics for 50ms by setting a ref flag
-  hitStopRef.current = true
-  setTimeout(() => { hitStopRef.current = false }, 50)
-}
-// Guard in useFrame:
-if (hitStopRef.current) return
-```
-This creates the "saw teeth biting into rock" kinesthetic impact.
-
----
-
-### Priority 7 — Spatial audio (Silo hum + dash)
-
-**Files:** `src/audio/AudioEngine.js`, `src/components/Silo.jsx`, `src/components/Player.jsx`
-
-All spatial audio must route through the `audioManager` singleton — do not construct `THREE.AudioListener` or `THREE.PositionalAudio` directly in component code. Add methods to `AudioEngine.js`:
+`setOreRevision`, `setDebris`, and `setCubes` are called inside `useFrame`. These should be buffered in refs and flushed from a `useEffect` with a throttle to avoid React scheduler pressure during render:
 
 ```js
-// In AudioEngine.js — add two new methods:
-initSiloHum(siloMesh, camera) {
-  const listener = new THREE.AudioListener()
-  camera.add(listener)
-  const sound = new THREE.PositionalAudio(listener)
-  // low freq ~60Hz sine connected to positional audio
-  siloMesh.add(sound)
-  this._siloSound = sound
-}
-
-setThrusterVolume(normalizedSpeed) {
-  // normalizedSpeed: 0.0 → 1.0 mapped from linvel magnitude
-  if (this._thrusterGain) this._thrusterGain.gain.setTargetAtTime(normalizedSpeed, this.ctx.currentTime, 0.05)
-}
+const pendingCubesRef = useRef([])
+// In useFrame: push to pendingCubesRef.current instead of calling setCubes
+// In useEffect: flush pending with setCubes every ~100ms
 ```
 
-Then call `audioManager.initSiloHum(siloMeshRef.current, camera)` from `Silo.jsx` once after `audioManager.init()`.
-
-Dash thruster volume (in `Player.jsx` `useFrame`):
-```js
-const vel = bodyRef.current.linvel()
-const speed = Math.sqrt(vel.x**2 + vel.y**2 + vel.z**2)
-audioManager.setThrusterVolume(speed / DASH_SPEED)
-```
-
----
-
-### Priority 8 — Pause grayscale/wireframe pass
-
-**File:** `src/components/VisualEffects.jsx`
-
-Add a `HueSaturation` effect from `@react-three/postprocessing` and set `saturation=-1.0` when `isPaused`.
-The "glowing cyan wireframe" is harder — deferred to later (requires a custom render pass or outline effect).
-
----
-
-### Priority 9 — Meltdown glitch shader
-
-**File:** `src/components/VisualEffects.jsx`
-
-> No new dependencies required — `GlitchEffect` is part of the already-approved `postprocessing` package.
-
-Use `GlitchEffect` from `postprocessing` package:
-```jsx
-import { Glitch } from '@react-three/postprocessing'
-import { GlitchMode } from 'postprocessing'
-
-{isMelting && (
-  <Glitch delay={[0.0, 0.1]} duration={[0.1, 0.3]} strength={[0.3, 1.0]} mode={GlitchMode.CONSTANT_WILD} />
-)}
-```
-
----
-
-### Priority 10 — CRT shader (scanlines + barrel)
-
-**File:** `src/components/VisualEffects.jsx`
-
-> No new dependencies required — `@react-three/postprocessing` and `postprocessing` are already approved.
-
-Conditionally render when `settings.crtOverlays === true`. Requires a custom `ShaderPass` with:
-- Scanline darkening: `color *= 1.0 - 0.15 * mod(vUv.y * screenHeight, 2.0)`
-- Barrel distortion: radial uv warping
-
-Can also use `@react-three/postprocessing`'s `PixelationEffect` as a simpler substitute.
-
----
-
-### Priority 11 — Diegetic menu raycast (dashboard as interactive surface)
+### Priority 2 — Diegetic menu raycast (dashboard as interactive surface)
 
 **File:** `src/components/Dashboard.jsx`
 
-The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items.
+The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. Currently using Html overlay which works but breaks diegetic immersion.
 
 Implementation:
-1. In Dashboard canvas, render clickable regions for `[ NEW EXCAVATION ]` and `[ OS CONFIG ]` during `menu` phase.
-2. Add a `onPointerDown` handler to the dashboard mesh.
-3. Read UV coordinates from the intersection event (`event.uv`).
-4. Map UV → menu option (NEW EXCAVATION: uv.y < 0.5; OS CONFIG: uv.y >= 0.5).
-5. Call appropriate action.
+1. Add `onPointerDown` handler to the dashboard mesh.
+2. Read UV coordinates from the intersection event (`event.uv`).
+3. Map UV → menu option and call appropriate store action.
 
----
+### Priority 3 — Meltdown radial impulse
 
-### Priority 12 — framer-motion UI panel transitions
+**File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
 
-**File:** All `*Menu.jsx` overlays
+At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
 
-Wrap HTML overlay content in `<motion.div>` from `framer-motion`:
-```jsx
-<motion.div
-  initial={{ opacity: 0, y: -20 }}
-  animate={{ opacity: 1, y: 0 }}
-  exit={{ opacity: 0, y: 20 }}
-  transition={{ duration: 0.3, ease: 'easeOut' }}
->
-```
-Requires wrapping the phase-conditional render in `<AnimatePresence>` in `App.jsx` / `Scene`.
+### Priority 4 — Ore grind physics contact (quality)
 
----
+**File:** `src/components/OreSpawner.jsx`
 
-### Priority 13 — maath/random for spores
-
-**File:** `src/components/AmbientSpores.jsx`
-
-Replace current custom `inSphere()` with official maath:
-```js
-import * as random from 'maath/random/dist/maath-random.esm'
-const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius: 150 }))
-```
-(Currently using a custom equivalent because of ESM import complexity — fix once maath import is confirmed working in the build.)
+Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Low priority — current approach is stable and unnoticeable to players.
 
 ---
 
@@ -335,11 +156,12 @@ const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius
 | 1 | Ore grind uses camera proximity (not physics contact) | Medium | `OreSpawner.jsx` | Should use Rapier intersection instead for physical accuracy |
 | 2 | No ore health / destruction | High | `OreSpawner.jsx` | Veins never die; hopper fills infinitely |
 | 3 | Cube sell cleanup relies on userData callback + body relocation | Medium | `Silo.jsx`, `OreSpawner.jsx` | Works now, but should eventually move to a more explicit world-entity lifecycle |
-| 4 | Tractor Beam missing entirely | High | — | Core gameplay mechanic not yet implemented |
-| 5 | `maath` inSphere uses custom impl | Low | `AmbientSpores.jsx` | Functional but not using official maath API |
-| 6 | No headlamp / spotlight | Medium | `Player.jsx` | Cockpit is dark; only ambient + directional light |
+| 4 | ~~Tractor Beam missing entirely~~ | ~~High~~ | — | **Resolved in Stream A** |
+| 5 | ~~`maath` inSphere uses custom impl~~ | ~~Low~~ | `AmbientSpores.jsx` | **Resolved in Stream A** |
+| 6 | ~~No headlamp / spotlight~~ | ~~Medium~~ | `Player.jsx` | **Resolved in Stream A** |
 | 7 | Meltdown camera eject is basic (just y+) | Low | `Player.jsx` | Should be a lerp to sky with smooth curve |
-| 8 | No visual for tractor beam lock | Medium | — | No line/beam rendered when cube is grabbed |
+| 8 | ~~No visual for tractor beam lock~~ | ~~Medium~~ | — | **Resolved in Stream A** — cyan Line drawn |
+| 9 | Meltdown radial impulse on nearby rigid bodies | Medium | — | Deferred — no stable world-query API in R3F Rapier |
 
 ---
 
@@ -388,45 +210,45 @@ Cross-reference with the master problem statement sections.
 ### From §7 Visuals
 - [x] Color palette applied (§7.1)
 - [x] EffectComposer with Bloom + Vignette (§7.2)
-- [ ] ChromaticAberration missing from original spec items (added in supplemental §11)
+- [x] ChromaticAberration heat mapping (added in supplemental §11)
 - [x] Simplex-noise terrain (§7.3)
 - [x] Silo base + beam + sensor (§7.4)
 
 ### From §8 Game Feel
 - [x] Camera shake scaled by heat (§8.1)
 - [x] Dash FOV burst (§8.2)
-- [ ] Spark emitter on grind (§8.3)
+- [x] Spark emitter on grind (§8.3) — physics Sparks.jsx, TTL cleanup, max 5/s throttle
 
 ### From §10 Expanded Tech Stack (Supplemental)
 - [x] @react-three/postprocessing (§10)
-- [x] framer-motion installed, not yet used for transitions (§10)
-- [x] maath installed, custom inSphere in place (§10)
+- [x] framer-motion — all overlays have fade/slide transitions (§10)
+- [x] maath — official `random.inSphere` (§10)
 - [x] simplex-noise replacing Math.sin for terrain (§10)
 
 ### From §11 Advanced Post-Processing (Supplemental)
 - [x] ChromaticAberration heat mapping (§11)
 - [x] Vignette darkness at overheat (§11)
-- [ ] Grayscale pass during pause (§19)
-- [ ] Glitch pass during meltdown (§21)
+- [x] Grayscale pass during pause — HueSaturation in VisualEffects (§19)
+- [x] Glitch pass during meltdown — GlitchEffect in VisualEffects (§21)
 
 ### From §12 GLSL Shaders (Supplemental)
 - [x] MoltenSawMaterial with uHeat/uTime uniforms (§12)
-- [ ] CRT scanline + barrel distortion shader (§20)
+- [x] CRT scanline + barrel distortion shader — toggleable via settings (§20)
 
 ### From §13 Tractor Beam Spring Joints (Supplemental)
-- [ ] Kinematic Position anchor RigidBody (§13)
-- [ ] useSpringJoint on cube grab (§13)
-- [ ] Reel-in depth reduction (§13)
-- [ ] Throw velocity from pointer-up delta (§13)
+- [x] Kinematic Position anchor RigidBody (§13)
+- [x] useSpringJoint on cube grab (§13)
+- [x] Reel-in depth reduction (§13)
+- [x] Throw velocity from pointer-up delta (§13)
 
 ### From §14 Ambient Environment (Supplemental)
 - [x] AmbientSpores particle field (§14)
-- [ ] Official maath/random.inSphere (currently custom impl)
+- [x] Official maath/random.inSphere (§14)
 
 ### From §15 Spatial Audio (Supplemental)
-- [ ] Silo hum PositionalAudio (§15)
-- [ ] Dash thruster volume = linvel magnitude (§15)
-- [ ] Hit-stop 50ms freeze on first contact (§15)
+- [x] Silo hum — OscillatorNode + LFO, distance attenuation (§15)
+- [x] Dash thruster volume = linvel magnitude via ScriptProcessor (§15)
+- [x] Hit-stop 50ms freeze on first grind contact (§15)
 
 ### From §16 Full Component Architecture (Supplemental)
 - [x] PostProcessing chain (§16)
@@ -434,44 +256,44 @@ Cross-reference with the master problem statement sections.
 - [x] SiloGroup with mesh + sensor (§16)
 - [x] PlayerGroup with camera (§16)
 - [x] CockpitGroup with saw + dashboard (§16)
-- [ ] SpotLight headlamp on camera (§16)
-- [ ] TractorAnchor kinematic body (§16)
+- [x] SpotLight headlamp on camera — Headlamp.jsx with boot flicker (§16)
+- [x] TractorAnchor kinematic body — TractorBeam.jsx (§16)
 
 ### From §18 Diegetic Main Menu (Supplemental)
 - [x] Pitch black scene on load (§18)
 - [x] Boot sequence with audio power-up (§18)
-- [x] Dashboard displays menu options (partial — Html overlay only)
-- [ ] Raycast to shoot dashboard options (§18)
-- [ ] Boot headlamp flicker (§18)
+- [x] Dashboard displays menu options (Html overlay)
+- [ ] Raycast to shoot dashboard options (§18) — deferred, Html overlay works well
+- [x] Boot headlamp flicker — Headlamp.jsx flicker animation during boot phase (§18)
 
 ### From §19 System Diagnostics / Pause (Supplemental)
 - [x] ESC → paused state (§19)
 - [x] Physics paused while paused (§19)
 - [x] Audio filter muffling (§19)
-- [ ] Grayscale + cyan wireframe post-processing pass (§19)
+- [x] Grayscale post-processing pass — HueSaturation(saturation=-1) in VisualEffects (§19)
 - [x] CRT-styled pause menu HTML (§19)
 
 ### From §20 OS Configuration (Supplemental)
 - [x] Settings menu with volume/sensitivity/CRT toggle (§20)
 - [x] Settings persisted via Zustand persist (§20)
-- [ ] CRT shader actually activates from toggle (§20)
+- [x] CRT shader activates from settings.crtOverlays toggle (§20)
 
 ### From §21 Critical Meltdown (Supplemental)
 - [x] Heat 120 triggers meltdown state (§21)
-- [ ] Radial impulse explosion on nearby rigid bodies (§21)
-- [ ] ChromaticAberration extreme offset during meltdown (§21 — VisualEffects uses isOverheated not isMelting)
-- [ ] Glitch shader pass (§21)
-- [x] Tune.js/audio death (square wave pitch-down) (§21)
-- [x] Camera lerp upward (basic y+ drift) (§21)
+- [ ] Radial impulse explosion on nearby rigid bodies (§21) — not yet
+- [x] ChromaticAberration extreme offset — isMelting mapped in VisualEffects (§21)
+- [x] Glitch shader pass — GlitchEffect active during meltdown (§21)
+- [x] Audio death — square wave pitch-down playMeltdown() (§21)
+- [x] Camera lerp upward (y+ drift during isMelting) (§21)
 - [x] Report screen: TITAN LOST / credits recovered (§21)
 
 ### From §22 Metagame State Flow (Supplemental)
 - [x] powered_down → boot → menu → gameplay → paused → meltdown → report (§22)
-- [ ] settings accessible from both menu AND pause states (§22 — currently settings always returns to menu)
+- [x] Settings accessible from both menu AND pause states (§22)
 
 ### From §23 Final Architectural Checklist (Supplemental)
 - [x] Zustand persist (§23.1)
-- [ ] InstancedRigidBodies for debris > 20 chunks (§23.2)
+- [x] InstancedRigidBodies for debris (§23.2) — OreSpawner.jsx
 - [x] Html overlays with zIndexRange (§23.3)
 
 ---
@@ -486,3 +308,5 @@ Cross-reference with the master problem statement sections.
 | 2026-04-09 | claude-sonnet | Full docs extraction from strategy_sessions.md: Koota ECS + Zod as canonical target (user confirmed), design bible, M1–M6 roadmap, rare isotopes, onboarding missions, contracts, ADRs, mobile controls spec, playtesting notes |
 | 2026-04-09 | claude-sonnet | Agent infrastructure: .cursor/ MDC rules (game-architecture, coding-standards, no-go-list, docs-authoring), .claude/ (settings, hooks, rules), .github/ (copilot-instructions full rewrite, dependabot, issue templates, CD/release/release-please workflows, prompt files), CHANGELOG.md, release-please config |
 | 2026-04-09 | claude-sonnet-4-6 | PR #1 review remediation — all 43 threads addressed and replied. Critical: fixed A/D strafing (right-left), made meltdown reachable (split heat from ore-gated grinding in OreSpawner), fixed terrain mesh/collider half-cell offset (size-1)/2. Major: true 10Hz chromatic aberration pulse, ore ejection idempotency guard (ejectionPendingRef), spatial audio routes through AudioEngine singleton, BootScreen blink interval scoped to powered_down phase + boot timeout cleanup. Minor: uHeat uniform clamped [0,1], ESC key-repeat guard, blur key latch clear, CanvasTexture dispose on unmount, phase enum comment fix, pnpm/npm command consistency, repo URL slug fix, MD022 heading spacing in docs, upgrades phase added to architecture diagram, useFrame store rule refined. Squash merged to main. |
+| 2026-04-09 | claude-sonnet-4-6 | Stream A gameplay polish — implemented: tractor beam (spring joint + reel-in + throw + cyan Line), ore health + depletion shrink + destruction + InstancedRigidBodies debris + 15s respawn, rare isotopes (15% chance, magenta, 3× heat, $2500 cube value), sparks (physics bodies + TTL), hit-stop (50ms freeze on first grind), headlamp SpotLight with boot flicker, GlitchEffect during meltdown, HueSaturation grayscale during pause, CRT scanline+barrel shader (toggleable), isMelting chromAberr fix, official maath/random.inSphere, spatial audio (silo hum + thruster volume), framer-motion fade/slide on all overlay screens, settings back restores pointer lock. |
+| 2026-04-10 | claude-sonnet-4-6 | PR #10 CodeRabbit CHANGES_REQUESTED remediation — AnimatePresence fix (conditional rendering at App.jsx level so exit animations fire), AmbientSpores maath import + pause guard, MeltdownScreen single motion wrapper, Silo useFrame phase guard, AudioEngine LFO ref stored for cleanup, Player thruster silence effect, SettingsMenu/MainMenu/UpgradesTerminal stale phase subscriptions removed. §5 checklist reconciled with §1 snapshot. |
