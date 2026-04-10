@@ -9,9 +9,10 @@ const TTL = gameConfig.sparks.ttlMs / 1000
 const MIN_IMPULSE = gameConfig.sparks.minImpulse
 const MAX_IMPULSE = gameConfig.sparks.maxImpulse
 
-// Module-scope reusable objects — no per-frame allocation
+// Module-scope reusable objects — no per-frame allocation, no re-render allocation
 const _dummy = new THREE.Object3D()
 const _color = new THREE.Color()
+const _boxGeo = new THREE.BoxGeometry(1, 1, 1)
 
 function randVel() {
   return (
@@ -102,8 +103,7 @@ export function Sparks({ triggerRef }) {
   })
 
   return (
-    <instancedMesh ref={meshRef} args={[null, null, MAX_SPARKS]} frustumCulled={false}>
-      <boxGeometry args={[1, 1, 1]} />
+    <instancedMesh ref={meshRef} args={[_boxGeo, null, MAX_SPARKS]} frustumCulled={false}>
       <meshBasicMaterial vertexColors toneMapped={false} />
     </instancedMesh>
   )
