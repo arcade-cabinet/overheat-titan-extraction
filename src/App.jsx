@@ -1,5 +1,6 @@
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
+import { AnimatePresence } from 'framer-motion'
 import { Suspense, useRef } from 'react'
 import { AmbientSpores } from './components/AmbientSpores'
 import { BootScreen } from './components/BootScreen'
@@ -12,6 +13,7 @@ import { PauseMenu } from './components/PauseMenu'
 import { Player } from './components/Player'
 import { SettingsMenu } from './components/SettingsMenu'
 import { Silo } from './components/Silo'
+import { Sparks, useSparks } from './components/Sparks'
 import { Terrain } from './components/Terrain'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
@@ -24,6 +26,7 @@ function Scene() {
   const isMelting = useGameStore((s) => s.isMelting)
   const isOverheated = useGameStore((s) => s.isOverheated)
   const upgrades = useGameStore((s) => s.upgrades)
+  const { sparks, spawnSpark } = useSparks()
 
   // ECS setup — creates mech + silo entities on mount
   useECSSetup(upgrades)
@@ -53,21 +56,26 @@ function Scene() {
         <Silo />
         {(phase === 'gameplay' || isMelting) && (
           <>
-            <OreSpawner />
+            <OreSpawner onSparkTrigger={spawnSpark} />
             <Player />
+            <Sparks sparks={sparks} />
           </>
         )}
       </Physics>
       {phase === 'gameplay' && <Cockpit />}
       <VisualEffects />
 
-      {/* UI Overlays */}
-      <BootScreen />
-      <MainMenu />
-      <PauseMenu />
-      <SettingsMenu />
-      <MeltdownScreen />
-      <UpgradesTerminal />
+      {/* UI Overlays — conditionally rendered so AnimatePresence sees true mount/unmount */}
+      <AnimatePresence mode="wait">
+        {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
+        {phase === 'menu' && <MainMenu key="menu" />}
+        {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
+        {phase === 'settings' && <SettingsMenu key="settings" />}
+        {(phase === 'meltdown' || phase === 'report' || isMelting) && (
+          <MeltdownScreen key="meltdown" />
+        )}
+        {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
+      </AnimatePresence>
     </>
   )
 }

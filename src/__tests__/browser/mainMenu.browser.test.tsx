@@ -1,28 +1,37 @@
-/** @vitest-environment browser */
-
-import { cleanup, render } from '@testing-library/react'
-import React from 'react'
+import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
-import App from '../../App'
+import { loadApp, screenshot, setPhase } from './helpers'
 
-describe('Main Menu', () => {
-  beforeEach(() => cleanup())
+describe('MainMenu phase', () => {
+  beforeEach(async () => {
+    await loadApp()
+    await setPhase('menu')
+  })
 
-  it('renders main menu in menu phase', async () => {
-    render(<App />)
+  it('shows main menu in menu phase', async () => {
+    const el = page.getByTestId('main-menu')
+    await expect.element(el).toBeInTheDocument()
+    await screenshot('03-main-menu')
+  })
 
-    // Tests run IN the browser — directly access window globals
-    const store = (window as any).__ZUSTAND_STORE__
-    if (store) store.setState({ phase: 'menu' })
+  it('shows NEW EXCAVATION button', async () => {
+    const btn = page.getByText('[ NEW EXCAVATION ]')
+    await expect.element(btn).toBeVisible()
+  })
 
-    const mainMenu = page.getByTestId('main-menu')
-    await mainMenu.waitFor({ timeout: 5000 })
+  it('shows TITAN OS TERMINAL and OS CONFIG buttons', async () => {
+    await expect.element(page.getByText('[ TITAN OS TERMINAL ]')).toBeVisible()
+    await expect.element(page.getByText('[ OS CONFIG ]')).toBeVisible()
+  })
 
-    expect(mainMenu.element()).toBeTruthy()
+  it('shows seed phrase', async () => {
+    const seedEl = page.getByText(/RUN SEED:/)
+    await expect.element(seedEl).toBeVisible()
+  })
 
-    await page.screenshot({
-      path: 'src/__tests__/browser/screenshots/main-menu.png',
-    })
+  it('main menu hidden during gameplay', async () => {
+    await setPhase('gameplay')
+    const el = page.getByTestId('main-menu')
+    await expect.element(el).not.toBeInTheDocument()
   })
 })

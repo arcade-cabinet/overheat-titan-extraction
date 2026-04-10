@@ -40,18 +40,19 @@ last_updated: 2026-04-09
 | Upgrades terminal (cap / pow / cool) | ✅ Complete |
 | Domain-organized docs directory + index | ✅ Complete |
 | Docs-specific `docs/AGENTS.md` guidance | ✅ Complete |
-| Tractor Beam (Spring Joint drag + throw) | ❌ Not implemented |
-| Debris instancing (InstancedRigidBodies) | ❌ Not implemented |
-| Spark emitter on grind contact | ❌ Not implemented |
-| Ore shrink animation (compatible 3D motion library TBD) | ❌ Not implemented |
-| Hit-stop effect (50ms freeze on first contact) | ❌ Not implemented |
-| Spatial / positional audio (THREE.PositionalAudio) | ❌ Not implemented |
-| Headlamp SpotLight (boot flicker + stable beam) | ❌ Not implemented |
-| Grayscale / wireframe pass during pause | ❌ Not implemented |
-| Glitch shader pass during meltdown | ❌ Not implemented |
-| CRT overlay shader (scanlines + barrel) | ❌ Not implemented |
-| maath/random for spores (currently custom impl) | ⚠️ Partial — custom inSphere used |
-| 3D panel transitions pending compatible motion library | ❌ Not implemented |
+| Tractor Beam (Spring Joint drag + throw) | ✅ Complete |
+| Debris instancing (InstancedRigidBodies) | ✅ Complete |
+| Spark emitter on grind contact | ✅ Complete |
+| Ore shrink animation (scaleRef, direct imperative) | ✅ Complete |
+| Hit-stop effect (50ms freeze on first contact) | ✅ Complete |
+| Spatial audio (silo hum + thruster volume) | ✅ Complete |
+| Headlamp SpotLight (boot flicker + stable beam) | ✅ Complete |
+| Grayscale pass during pause (HueSaturation) | ✅ Complete |
+| Glitch shader pass during meltdown | ✅ Complete |
+| CRT overlay shader (scanlines + barrel) | ✅ Complete |
+| maath/random for spores (official inSphere) | ✅ Complete |
+| Framer-motion UI transitions (all overlay screens) | ✅ Complete |
+| Rare isotopes (15%, magenta, 3× heat, $2500 cube) | ✅ Complete |
 | Diegetic menu raycast (shoot dashboard to select) | ❌ Not implemented |
 
 ---
@@ -335,11 +336,12 @@ const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius
 | 1 | Ore grind uses camera proximity (not physics contact) | Medium | `OreSpawner.jsx` | Should use Rapier intersection instead for physical accuracy |
 | 2 | No ore health / destruction | High | `OreSpawner.jsx` | Veins never die; hopper fills infinitely |
 | 3 | Cube sell cleanup relies on userData callback + body relocation | Medium | `Silo.jsx`, `OreSpawner.jsx` | Works now, but should eventually move to a more explicit world-entity lifecycle |
-| 4 | Tractor Beam missing entirely | High | — | Core gameplay mechanic not yet implemented |
-| 5 | `maath` inSphere uses custom impl | Low | `AmbientSpores.jsx` | Functional but not using official maath API |
-| 6 | No headlamp / spotlight | Medium | `Player.jsx` | Cockpit is dark; only ambient + directional light |
+| 4 | ~~Tractor Beam missing entirely~~ | ~~High~~ | — | **Resolved in Stream A** |
+| 5 | ~~`maath` inSphere uses custom impl~~ | ~~Low~~ | `AmbientSpores.jsx` | **Resolved in Stream A** |
+| 6 | ~~No headlamp / spotlight~~ | ~~Medium~~ | `Player.jsx` | **Resolved in Stream A** |
 | 7 | Meltdown camera eject is basic (just y+) | Low | `Player.jsx` | Should be a lerp to sky with smooth curve |
-| 8 | No visual for tractor beam lock | Medium | — | No line/beam rendered when cube is grabbed |
+| 8 | ~~No visual for tractor beam lock~~ | ~~Medium~~ | — | **Resolved in Stream A** — cyan Line drawn |
+| 9 | Meltdown radial impulse on nearby rigid bodies | Medium | — | Deferred — no stable world-query API in R3F Rapier |
 
 ---
 
@@ -486,3 +488,4 @@ Cross-reference with the master problem statement sections.
 | 2026-04-09 | claude-sonnet | Full docs extraction from strategy_sessions.md: Koota ECS + Zod as canonical target (user confirmed), design bible, M1–M6 roadmap, rare isotopes, onboarding missions, contracts, ADRs, mobile controls spec, playtesting notes |
 | 2026-04-09 | claude-sonnet | Agent infrastructure: .cursor/ MDC rules (game-architecture, coding-standards, no-go-list, docs-authoring), .claude/ (settings, hooks, rules), .github/ (copilot-instructions full rewrite, dependabot, issue templates, CD/release/release-please workflows, prompt files), CHANGELOG.md, release-please config |
 | 2026-04-09 | claude-sonnet-4-6 | PR #1 review remediation — all 43 threads addressed and replied. Critical: fixed A/D strafing (right-left), made meltdown reachable (split heat from ore-gated grinding in OreSpawner), fixed terrain mesh/collider half-cell offset (size-1)/2. Major: true 10Hz chromatic aberration pulse, ore ejection idempotency guard (ejectionPendingRef), spatial audio routes through AudioEngine singleton, BootScreen blink interval scoped to powered_down phase + boot timeout cleanup. Minor: uHeat uniform clamped [0,1], ESC key-repeat guard, blur key latch clear, CanvasTexture dispose on unmount, phase enum comment fix, pnpm/npm command consistency, repo URL slug fix, MD022 heading spacing in docs, upgrades phase added to architecture diagram, useFrame store rule refined. Squash merged to main. |
+| 2026-04-09 | claude-sonnet-4-6 | Stream A gameplay polish — implemented: tractor beam (spring joint + reel-in + throw + cyan Line), ore health + depletion shrink + destruction + InstancedRigidBodies debris + 15s respawn, rare isotopes (15% chance, magenta, 3× heat, $2500 cube value), sparks (physics bodies + TTL), hit-stop (50ms freeze on first grind), headlamp SpotLight with boot flicker, GlitchEffect during meltdown, HueSaturation grayscale during pause, CRT scanline+barrel shader (toggleable), isMelting chromAberr fix, official maath/random.inSphere, spatial audio (silo hum + thruster volume), framer-motion fade/slide on all overlay screens, settings back restores pointer lock. |

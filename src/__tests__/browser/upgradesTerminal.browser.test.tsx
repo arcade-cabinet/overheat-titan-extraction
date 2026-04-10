@@ -1,28 +1,25 @@
-/** @vitest-environment browser */
-
-import { cleanup, render } from '@testing-library/react'
-import React from 'react'
+import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
-import App from '../../App'
+import { loadApp, screenshot, setPhase } from './helpers'
 
-describe('Upgrades Terminal', () => {
-  beforeEach(() => cleanup())
+describe('UpgradesTerminal phase', () => {
+  beforeEach(async () => {
+    await loadApp()
+    await setPhase('upgrades')
+  })
 
-  it('renders upgrades terminal in upgrades phase', async () => {
-    render(<App />)
+  it('shows upgrades terminal in upgrades phase', async () => {
+    const el = page.getByTestId('upgrades-terminal')
+    await expect.element(el).toBeInTheDocument()
+    await screenshot('07-upgrades-terminal')
+  })
 
-    // Tests run IN the browser — directly access window globals
-    const store = (window as any).__ZUSTAND_STORE__
-    if (store) store.setState({ phase: 'upgrades', credits: 9999 })
+  it('shows TITAN OS TERMINAL header', async () => {
+    await expect.element(page.getByText(/TITAN OS/i)).toBeVisible()
+  })
 
-    const terminal = page.getByTestId('upgrades-terminal')
-    await terminal.waitFor({ timeout: 5000 })
-
-    expect(terminal.element()).toBeTruthy()
-
-    await page.screenshot({
-      path: 'src/__tests__/browser/screenshots/upgrades-terminal.png',
-    })
+  it('upgrades terminal hidden during menu phase', async () => {
+    await setPhase('menu')
+    await expect.element(page.getByTestId('upgrades-terminal')).not.toBeInTheDocument()
   })
 })

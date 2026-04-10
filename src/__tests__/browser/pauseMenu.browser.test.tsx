@@ -1,28 +1,26 @@
-/** @vitest-environment browser */
-
-import { cleanup, render } from '@testing-library/react'
-import React from 'react'
+import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
-import App from '../../App'
+import { loadApp, patchStore, screenshot, setPhase } from './helpers'
 
-describe('Pause Menu', () => {
-  beforeEach(() => cleanup())
+describe('PauseMenu phase', () => {
+  beforeEach(async () => {
+    await loadApp()
+    await setPhase('gameplay')
+    await patchStore({ isPaused: true })
+  })
 
-  it('renders pause menu when isPaused=true in gameplay phase', async () => {
-    render(<App />)
+  it('shows pause menu when gameplay is paused', async () => {
+    const el = page.getByTestId('pause-menu')
+    await expect.element(el).toBeInTheDocument()
+    await screenshot('05-pause-menu')
+  })
 
-    // Tests run IN the browser — directly access window globals
-    const store = (window as any).__ZUSTAND_STORE__
-    if (store) store.setState({ phase: 'gameplay', isPaused: true })
+  it('shows RESUME button', async () => {
+    await expect.element(page.getByText('[ RESUME ]')).toBeVisible()
+  })
 
-    const pauseMenu = page.getByTestId('pause-menu')
-    await pauseMenu.waitFor({ timeout: 5000 })
-
-    expect(pauseMenu.element()).toBeTruthy()
-
-    await page.screenshot({
-      path: 'src/__tests__/browser/screenshots/pause-menu.png',
-    })
+  it('pause menu hidden when not paused', async () => {
+    await patchStore({ isPaused: false })
+    await expect.element(page.getByTestId('pause-menu')).not.toBeInTheDocument()
   })
 })

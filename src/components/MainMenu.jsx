@@ -1,19 +1,17 @@
 import { Html } from '@react-three/drei'
+import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 import { generateSeedPhrase } from '../utils/seedPhrase'
 
 export function MainMenu() {
-  const phase = useGameStore((s) => s.phase)
   const setPhase = useGameStore((s) => s.setPhase)
   const [seedPhrase, setSeedPhrase] = useState('')
 
   useEffect(() => {
     setSeedPhrase(generateSeedPhrase())
   }, [])
-
-  if (phase !== 'menu') return null
 
   const startGame = () => {
     audioManager.playBlip()
@@ -33,53 +31,62 @@ export function MainMenu() {
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
-      <div
-        style={{
-          width: '100vw',
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          gap: '20px',
-          background: 'rgba(0,0,0,0.6)',
-          pointerEvents: 'all',
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 16 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        style={{ width: '100%', height: '100%' }}
       >
         <div
+          data-testid="main-menu"
           style={{
-            color: '#00ffcc',
-            fontFamily: 'monospace',
-            fontSize: '28px',
-            letterSpacing: '0.3em',
-            marginBottom: '20px',
-            textShadow: '0 0 20px #00ffcc',
+            width: '100vw',
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '20px',
+            background: 'rgba(0,0,0,0.6)',
+            pointerEvents: 'all',
           }}
         >
-          OVERHEAT
+          <div
+            style={{
+              color: '#00ffcc',
+              fontFamily: 'monospace',
+              fontSize: '28px',
+              letterSpacing: '0.3em',
+              marginBottom: '4px',
+              textShadow: '0 0 20px #00ffcc',
+            }}
+          >
+            OVERHEAT
+          </div>
+          <div
+            style={{
+              color: '#006655',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              letterSpacing: '0.15em',
+              marginBottom: '16px',
+              opacity: 0.7,
+            }}
+          >
+            RUN SEED: {seedPhrase}
+          </div>
+          <button type="button" onClick={startGame} style={btnStyle('#00ffcc')}>
+            [ NEW EXCAVATION ]
+          </button>
+          <button type="button" onClick={openUpgrades} style={btnStyle('#ffaa00')}>
+            [ TITAN OS TERMINAL ]
+          </button>
+          <button type="button" onClick={openSettings} style={btnStyle('#ffaa00')}>
+            [ OS CONFIG ]
+          </button>
         </div>
-        <div
-          style={{
-            color: '#006655',
-            fontFamily: 'monospace',
-            fontSize: '12px',
-            letterSpacing: '0.15em',
-            marginBottom: '10px',
-            opacity: 0.7,
-          }}
-        >
-          RUN SEED: {seedPhrase}
-        </div>
-        <button type="button" onClick={startGame} style={btnStyle('#00ffcc')}>
-          [ NEW EXCAVATION ]
-        </button>
-        <button type="button" onClick={openUpgrades} style={btnStyle('#ffaa00')}>
-          [ TITAN OS TERMINAL ]
-        </button>
-        <button type="button" onClick={openSettings} style={btnStyle('#ffaa00')}>
-          [ OS CONFIG ]
-        </button>
-      </div>
+      </motion.div>
     </Html>
   )
 }
