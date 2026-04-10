@@ -1,22 +1,35 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
 import { audioManager } from '../audio/AudioEngine'
+import { gameConfig } from '../config'
 import { useGameStore } from '../store'
 
 const UPGRADES = [
-  { key: 'cap', label: 'HOPPER CAPACITY', desc: '+100 ore cap per level', baseCost: 100 },
-  { key: 'pow', label: 'GRIND POWER', desc: '+50% DPS per level', baseCost: 150 },
-  { key: 'cool', label: 'COOLING SYSTEM', desc: '+50% cooling rate per level', baseCost: 200 },
+  {
+    key: 'cap',
+    label: 'HOPPER CAPACITY',
+    desc: `+${gameConfig.mech.hopper.capacityPerUpgrade} ore cap per level`,
+    baseCost: gameConfig.upgrades.cap.baseCost,
+  },
+  {
+    key: 'pow',
+    label: 'GRIND POWER',
+    desc: `+${gameConfig.mech.grind.dpsPerUpgrade * 100}% DPS per level`,
+    baseCost: gameConfig.upgrades.pow.baseCost,
+  },
+  {
+    key: 'cool',
+    label: 'COOLING SYSTEM',
+    desc: `+${gameConfig.mech.heat.coolingRatePerUpgrade * 100}% cooling rate per level`,
+    baseCost: gameConfig.upgrades.cool.baseCost,
+  },
 ]
 
 export function UpgradesTerminal() {
-  const phase = useGameStore((s) => s.phase)
   const credits = useGameStore((s) => s.credits)
   const upgrades = useGameStore((s) => s.upgrades)
   const buyUpgrade = useGameStore((s) => s.buyUpgrade)
   const setPhase = useGameStore((s) => s.setPhase)
-
-  if (phase !== 'upgrades') return null
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>

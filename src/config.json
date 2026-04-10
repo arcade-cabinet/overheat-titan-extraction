@@ -1,0 +1,96 @@
+{
+  "mech": {
+    "baseSpeed": 8,
+    "dashSpeed": 20,
+    "dashFov": 100,
+    "normalFov": 75,
+    "eyeHeight": 1.6,
+    "heat": {
+      "perSecondGrinding": 15,
+      "rareMultiplier": 3,
+      "overheatThreshold": 100,
+      "meltdownThreshold": 120,
+      "baseCoolingRate": 20,
+      "coolingSafeThreshold": 20,
+      "coolingRatePerUpgrade": 0.5,
+      "cameraShakeMaxScale": 0.03
+    },
+    "hopper": {
+      "baseCapacity": 100,
+      "capacityPerUpgrade": 100
+    },
+    "grind": {
+      "baseDps": 50,
+      "dpsPerUpgrade": 0.5,
+      "radius": 5,
+      "soundIntervalMs": 100
+    },
+    "dash": {
+      "fovLerpSpeed": 6,
+      "stepIntervalS": 0.4
+    }
+  },
+  "ore": {
+    "count": 8,
+    "maxHealth": 100,
+    "respawnDelayMs": 15000,
+    "rareSpawnChance": 0.15,
+    "grindRadius": 5
+  },
+  "economy": {
+    "cubeValue": 50,
+    "rareCubeValue": 2500
+  },
+  "upgrades": {
+    "cap": { "baseCost": 100 },
+    "pow": { "baseCost": 150 },
+    "cool": { "baseCost": 200 }
+  },
+  "sparks": {
+    "maxLive": 30,
+    "ttlMs": 1200,
+    "minImpulse": 4,
+    "maxImpulse": 8
+  },
+  "tractor": {
+    "reelSpeed": 8,
+    "springStiffness": 60,
+    "springDamping": 8,
+    "minDepth": 1.5,
+    "defaultDepth": 6
+  },
+  "silo": {
+    "position": [0, 0, 0],
+    "humBaseFrequency": 58,
+    "humLfoFrequency": 0.3,
+    "humMaxDistance": 80
+  },
+  "postFx": {
+    "bloom": {
+      "luminanceThreshold": 0.6,
+      "intensity": 1.5
+    },
+    "vignette": {
+      "darknessCool": 1.1,
+      "darknessOverheat": 1.3,
+      "darknessMeltdown": 1.5
+    },
+    "chromAberr": {
+      "heatStartPct": 50,
+      "maxOffset": 0.005,
+      "baseOffset": 0.001
+    }
+  },
+  "audio": {
+    "defaultMasterVolume": 0.7,
+    "pauseFilterHz": 300,
+    "normalFilterHz": 20000
+  },
+  "hitStop": {
+    "durationMs": 50
+  },
+  "debris": {
+    "count": 6,
+    "ttlMs": 4000
+  }
+}

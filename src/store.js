@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { gameConfig } from './config'
+
+const { mech } = gameConfig
 
 export const useGameStore = create(
   persist(
@@ -20,7 +23,7 @@ export const useGameStore = create(
 
       // Settings
       settings: {
-        masterVolume: 0.7,
+        masterVolume: gameConfig.audio.defaultMasterVolume,
         lookSensitivity: 1.0,
         crtOverlays: false,
       },
@@ -29,9 +32,15 @@ export const useGameStore = create(
       sessionCredits: 0,
 
       // Computed
-      getMaxOre: () => 100 * get().upgrades.cap,
-      getGrindDps: () => 50 * (1 + (get().upgrades.pow - 1) * 0.5),
-      getCoolingRate: () => 20 * (1 + (get().upgrades.cool - 1) * 0.5),
+      getMaxOre: () =>
+        mech.hopper.baseCapacity + (get().upgrades.cap - 1) * mech.hopper.capacityPerUpgrade,
+
+      getGrindDps: () =>
+        mech.grind.baseDps * (1 + (get().upgrades.pow - 1) * mech.grind.dpsPerUpgrade),
+
+      getCoolingRate: () =>
+        mech.heat.baseCoolingRate *
+        (1 + (get().upgrades.cool - 1) * mech.heat.coolingRatePerUpgrade),
 
       // Phase transitions
       setPhase: (phase) => set({ phase }),
@@ -40,44 +49,44 @@ export const useGameStore = create(
       // Ore & Heat
       addOre: (amount) =>
         set((state) => ({ rawOre: Math.min(state.getMaxOre(), state.rawOre + amount) })),
+
       addHeat: (amount) =>
         set((state) => {
           const newHeat = state.heat + amount
-          if (newHeat >= 120) {
+          if (newHeat >= mech.heat.meltdownThreshold) {
             return {
-              heat: 120,
+              heat: mech.heat.meltdownThreshold,
               isOverheated: true,
               isMelting: true,
               phase: 'meltdown',
               isPaused: false,
             }
           }
-          if (newHeat >= 100) return { heat: 100, isOverheated: true }
+          if (newHeat >= mech.heat.overheatThreshold)
+            return { heat: mech.heat.overheatThreshold, isOverheated: true }
           return { heat: newHeat }
         }),
+
       coolDown: (amount) =>
         set((state) => {
           const newHeat = Math.max(0, state.heat - amount)
-          if (newHeat < 20 && state.isOverheated)
+          if (newHeat < mech.heat.coolingSafeThreshold && state.isOverheated)
             return { heat: newHeat, isOverheated: false, isMelting: false }
           return { heat: newHeat }
         }),
+
       ejectCube: () => set({ rawOre: 0 }),
+
       addCredits: (amount) =>
         set((state) => ({
           credits: state.credits + amount,
           sessionCredits: state.sessionCredits + amount,
         })),
+
       buyUpgrade: (type, cost) =>
         set((state) => {
-          if (!Object.hasOwn(state.upgrades, type)) {
-            return state
-          }
-
-          if (state.credits < cost) {
-            return state
-          }
-
+          if (!Object.hasOwn(state.upgrades, type)) return state
+          if (state.credits < cost) return state
           return {
             credits: state.credits - cost,
             upgrades: { ...state.upgrades, [type]: state.upgrades[type] + 1 },
@@ -90,6 +99,7 @@ export const useGameStore = create(
 
       // Meltdown & reset
       triggerMeltdown: () => set({ isMelting: true, phase: 'meltdown' }),
+
       resetSession: () =>
         set({
           phase: 'menu',

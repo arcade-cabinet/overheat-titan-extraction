@@ -1,13 +1,17 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
+import { generateSeedPhrase } from '../utils/seedPhrase'
 
 export function MainMenu() {
-  const phase = useGameStore((s) => s.phase)
   const setPhase = useGameStore((s) => s.setPhase)
+  const [seedPhrase, setSeedPhrase] = useState('')
 
-  if (phase !== 'menu') return null
+  useEffect(() => {
+    setSeedPhrase(generateSeedPhrase())
+  }, [])
 
   const startGame = () => {
     audioManager.playBlip()
@@ -54,11 +58,23 @@ export function MainMenu() {
               fontFamily: 'monospace',
               fontSize: '28px',
               letterSpacing: '0.3em',
-              marginBottom: '20px',
+              marginBottom: '4px',
               textShadow: '0 0 20px #00ffcc',
             }}
           >
             OVERHEAT
+          </div>
+          <div
+            style={{
+              color: '#006655',
+              fontFamily: 'monospace',
+              fontSize: '12px',
+              letterSpacing: '0.15em',
+              marginBottom: '16px',
+              opacity: 0.7,
+            }}
+          >
+            RUN SEED: {seedPhrase}
           </div>
           <button type="button" onClick={startGame} style={btnStyle('#00ffcc')}>
             [ NEW EXCAVATION ]
