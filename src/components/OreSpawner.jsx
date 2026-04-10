@@ -36,6 +36,7 @@ function buildOreState() {
 
 export function OreSpawner({ onSparkTrigger }) {
   const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
   const isOverheated = useGameStore((s) => s.isOverheated)
   const heat = useGameStore((s) => s.heat)
   const addOre = useGameStore((s) => s.addOre)
@@ -84,7 +85,7 @@ export function OreSpawner({ onSparkTrigger }) {
   }, [])
 
   useFrame(({ camera }, delta) => {
-    if (phase !== 'gameplay') return
+    if (phase !== 'gameplay' || isPaused) return
     if (rawOre === 0) ejectionPendingRef.current = false
 
     // Hit-stop: freeze this frame
