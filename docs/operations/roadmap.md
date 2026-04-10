@@ -82,13 +82,13 @@ See `docs/design/mobile-controls.md` for the full control spec.
 **Goal:** Every visual and audio moment feels deliberate. The cockpit is a finished piece of art.
 
 ### Tasks
-- [ ] Final cockpit dashboard art pass — material detail, instrument bezels, LED strip lighting
-- [ ] Spatial audio — silo hum (`THREE.PositionalAudio`), dash thruster volume mapped to velocity magnitude
-- [ ] CRT scanlines + barrel distortion shader (toggleable via `settings.crtOverlays`)
-- [ ] Ore shrink animation via react-spring — smooth depletion instead of toggle-off
-- [ ] Ambient spore density and drift tuning
-- [ ] AudioEngine mixing pass — dynamic ducking on alarm, proper envelope on all sounds
-- [ ] Rare isotope visual distinction — larger glow radius, particle spawn on approach
+- [x] Final cockpit dashboard art pass — material detail, instrument bezels, LED strip lighting
+- [x] Spatial audio — silo hum (`THREE.PositionalAudio`), dash thruster volume mapped to velocity magnitude
+- [x] CRT scanlines + barrel distortion shader (toggleable via `settings.crtOverlays`)
+- [x] Ore shrink animation via react-spring — smooth depletion instead of toggle-off
+- [x] Ambient spore density and drift tuning
+- [x] AudioEngine mixing pass — dynamic ducking on alarm, proper envelope on all sounds
+- [x] Rare isotope visual distinction — larger glow radius, particle spawn on approach
 
 ---
 

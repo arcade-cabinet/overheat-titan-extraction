@@ -13,7 +13,8 @@
       "baseCoolingRate": 20,
       "coolingSafeThreshold": 20,
       "coolingRatePerUpgrade": 0.75,
-      "cameraShakeMaxScale": 0.03
+      "cameraShakeMaxScale": 0.03,
+      "denseMultiplier": 0.5
     },
     "hopper": {
       "baseCapacity": 100,
@@ -35,16 +36,25 @@
     "maxHealth": 100,
     "respawnDelayMs": 15000,
     "rareSpawnChance": 0.15,
-    "grindRadius": 5
+    "grindRadius": 5,
+    "denseSpawnChance": 0.25,
+    "denseHealthMultiplier": 5
   },
   "economy": {
     "cubeValue": 50,
-    "rareCubeValue": 2500
+    "rareCubeValue": 2500,
+    "denseCubeValue": 500
   },
   "upgrades": {
-    "cap": { "baseCost": 100 },
-    "pow": { "baseCost": 150 },
-    "cool": { "baseCost": 200 }
+    "cap": {
+      "baseCost": 100
+    },
+    "pow": {
+      "baseCost": 150
+    },
+    "cool": {
+      "baseCost": 200
+    }
   },
   "sparks": {
     "maxLive": 30,
@@ -60,7 +70,11 @@
     "defaultDepth": 6
   },
   "silo": {
-    "position": [0, 0, 0],
+    "position": [
+      0,
+      0,
+      0
+    ],
     "humBaseFrequency": 58,
     "humBaseGain": 0.05,
     "humLfoFrequency": 0.3,
@@ -93,9 +107,21 @@
     "thrusterSmoothTime": 0.05,
     "rareSell": {
       "oscillators": [
-        { "frequency": 1320, "gain": 0.25, "duration": 0.6 },
-        { "frequency": 1396, "gain": 0.15, "duration": 0.6 },
-        { "frequency": 110, "gain": 0.3, "duration": 0.25 }
+        {
+          "frequency": 1320,
+          "gain": 0.25,
+          "duration": 0.6
+        },
+        {
+          "frequency": 1396,
+          "gain": 0.15,
+          "duration": 0.6
+        },
+        {
+          "frequency": 110,
+          "gain": 0.3,
+          "duration": 0.25
+        }
       ]
     }
   },
