@@ -46,6 +46,20 @@ export function Player() {
   const pitchRef = useRef(0)
   const stepTimer = useRef(0)
 
+  // Stop thruster audio node on unmount to prevent resource leak
+  useEffect(() => {
+    return () => {
+      audioManager.stopThruster()
+    }
+  }, [])
+
+  // Silence thruster when paused or outside gameplay
+  useEffect(() => {
+    if (isPaused || phase !== 'gameplay') {
+      audioManager.setThrusterVolume(0)
+    }
+  }, [isPaused, phase])
+
   useEffect(() => {
     const onMove = (e) => {
       if (phase !== 'gameplay' || isPaused) return

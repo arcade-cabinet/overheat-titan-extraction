@@ -21,18 +21,18 @@ export function MeltdownScreen() {
     }
   }, [phase])
 
-  if (phase !== 'meltdown' && phase !== 'report') return null
+  const isMeltdownPhase = phase === 'meltdown'
 
-  if (phase === 'meltdown') {
-    return (
-      <Html fullscreen zIndexRange={[200, 0]}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
-          style={{ width: '100%', height: '100%' }}
-        >
+  return (
+    <Html fullscreen zIndexRange={[200, 0]}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        style={{ width: '100%', height: '100%' }}
+      >
+        {isMeltdownPhase ? (
           <div
             data-testid="meltdown-screen"
             style={{
@@ -57,70 +57,63 @@ export function MeltdownScreen() {
               ⚠ CRITICAL MELTDOWN ⚠
             </div>
           </div>
-        </motion.div>
-      </Html>
-    )
-  }
-
-  return (
-    <Html fullscreen zIndexRange={[200, 0]}>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.25, ease: 'easeOut' }}
-        style={{ width: '100%', height: '100%' }}
-      >
-        <div
-          data-testid="meltdown-screen"
-          style={{
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0,0,0,0.9)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'column',
-            gap: '20px',
-            pointerEvents: 'all',
-          }}
-        >
+        ) : (
           <div
+            data-testid="meltdown-screen"
             style={{
-              color: '#ff4400',
-              fontFamily: 'monospace',
-              fontSize: '36px',
-              letterSpacing: '0.3em',
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0,0,0,0.9)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexDirection: 'column',
+              gap: '20px',
+              pointerEvents: 'all',
             }}
           >
-            TITAN LOST
+            <div
+              style={{
+                color: '#ff4400',
+                fontFamily: 'monospace',
+                fontSize: '36px',
+                letterSpacing: '0.3em',
+              }}
+            >
+              TITAN LOST
+            </div>
+            <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '20px' }}>
+              CREDITS RECOVERED: ${sessionCredits}
+            </div>
+            <div
+              style={{
+                color: '#666',
+                fontFamily: 'monospace',
+                fontSize: '13px',
+                marginTop: '10px',
+              }}
+            >
+              REBOOTING...
+            </div>
+            <button
+              type="button"
+              onClick={resetSession}
+              style={{
+                background: 'transparent',
+                border: '1px solid #ff4400',
+                color: '#ff4400',
+                fontFamily: 'monospace',
+                fontSize: '15px',
+                padding: '10px 28px',
+                cursor: 'pointer',
+                letterSpacing: '0.15em',
+                marginTop: '20px',
+              }}
+            >
+              [ RETURN TO BASE ]
+            </button>
           </div>
-          <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '20px' }}>
-            CREDITS RECOVERED: ${sessionCredits}
-          </div>
-          <div
-            style={{ color: '#666', fontFamily: 'monospace', fontSize: '13px', marginTop: '10px' }}
-          >
-            REBOOTING...
-          </div>
-          <button
-            type="button"
-            onClick={resetSession}
-            style={{
-              background: 'transparent',
-              border: '1px solid #ff4400',
-              color: '#ff4400',
-              fontFamily: 'monospace',
-              fontSize: '15px',
-              padding: '10px 28px',
-              cursor: 'pointer',
-              letterSpacing: '0.15em',
-              marginTop: '20px',
-            }}
-          >
-            [ RETURN TO BASE ]
-          </button>
-        </div>
+        )}
       </motion.div>
     </Html>
   )

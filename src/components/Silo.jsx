@@ -18,10 +18,13 @@ export function Silo() {
       audioManager.initSiloHum()
       audioManager.initThruster()
     }
+    return () => {
+      audioManager.stopSiloHum()
+    }
   }, [phase])
 
   useFrame(() => {
-    if (!audioManager._initialized) return
+    if (!audioManager._initialized || phase !== 'gameplay') return
     const dist = camera.position.distanceTo(SILO_POSITION)
     audioManager.setSiloHumDistance(dist)
   })

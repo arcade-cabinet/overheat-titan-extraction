@@ -121,7 +121,7 @@ class AudioEngine {
     humGain.connect(this.masterGain)
     humOsc.start()
     lfo.start()
-    this._siloHum = { osc: humOsc, gain: humGain }
+    this._siloHum = { osc: humOsc, gain: humGain, lfo }
   }
 
   setSiloHumDistance(distance) {
@@ -156,11 +156,32 @@ class AudioEngine {
   setThrusterVolume(normalizedSpeed) {
     if (!this._thrusterGain) return
     this._thrusterLevel = normalizedSpeed * 0.08
-    this._thrusterGain.gain.setTargetAtTime(
-      normalizedSpeed * 0.06,
-      this.ctx.currentTime,
-      0.05
-    )
+    this._thrusterGain.gain.setTargetAtTime(normalizedSpeed * 0.06, this.ctx.currentTime, 0.05)
+  }
+
+  stopSiloHum() {
+    if (!this._siloHum) return
+    try {
+      this._siloHum.osc.stop()
+    } catch (_) {
+      // already stopped
+    }
+    try {
+      this._siloHum.lfo.stop()
+    } catch (_) {
+      // already stopped
+    }
+    this._siloHum.gain.disconnect()
+    this._siloHum = null
+  }
+
+  stopThruster() {
+    if (!this._thrusterNode) return
+    this._thrusterNode.disconnect()
+    this._thrusterGain?.disconnect()
+    this._thrusterNode = null
+    this._thrusterGain = null
+    this._thrusterLevel = 0
   }
 }
 
