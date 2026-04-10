@@ -1,3 +1,4 @@
+import { a, useSprings } from '@react-spring/three'
 import { useFrame } from '@react-three/fiber'
 import { BallCollider, InstancedRigidBodies, RigidBody } from '@react-three/rapier'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -30,7 +31,7 @@ function makeRare() {
 function buildOreState() {
   const state = {}
   for (const { id } of ORE_POSITIONS) {
-    state[id] = { health: MAX_ORE_HEALTH, isRare: makeRare(), alive: true, respawnAt: null }
+    state[id] = { health: MAX_ORE_HEALTH, isRare: makeRare(), alive: true, isDying: false, respawnAt: null }
   }
   return state
 }
@@ -52,6 +53,11 @@ export function OreSpawner({ onSparkTrigger }) {
   // Revision counter forces re-render when ore respawns
   const [oreRevision, setOreRevision] = useState(0)
 
+  const [springs, api] = useSprings(ORE_POSITIONS.length, () => ({
+    scale: 1,
+    config: { tension: 170, friction: 26 },
+  }))
+
   const oreStateRef = useRef(buildOreState())
   const lastGrindSoundAtRef = useRef(0)
   const lastSparkAtRef = useRef(0)
@@ -60,7 +66,6 @@ export function OreSpawner({ onSparkTrigger }) {
   const hitStopRef = useRef(false)
   const hitStopTimerRef = useRef(null)
   const wasGrindingRef = useRef(false)
-  const oreScaleRefs = useRef({})
   const removeDebrisTimeout = useRef({})
 
   // Pending state mutations from useFrame — flushed via setTimeout to stay outside render
@@ -131,7 +136,8 @@ export function OreSpawner({ onSparkTrigger }) {
     let heatOreCount = 0
     const now = performance.now()
 
-    for (const { id, pos } of ORE_POSITIONS) {
+    for (let index = 0; index < ORE_POSITIONS.length; index++) {
+      const { id, pos } = ORE_POSITIONS[index]
       const oreState = oreStateRef.current[id]
       if (!oreState.alive) {
         // Respawn check
@@ -140,12 +146,19 @@ export function OreSpawner({ onSparkTrigger }) {
             health: MAX_ORE_HEALTH,
             isRare: makeRare(),
             alive: true,
+            isDying: false,
             respawnAt: null,
           }
+          api.start((i) => {
+            if (i === index) return { from: { scale: 0 }, to: { scale: 1 }, immediate: false, config: { tension: 170, friction: 26 } }
+            return {}
+          })
           scheduleAction(() => setOreRevision((r) => r + 1))
         }
         continue
       }
+
+      if (oreState.isDying) continue
 
       const dx = camera.position.x - pos[0]
       const dz = camera.position.z - pos[2]
@@ -175,9 +188,10 @@ export function OreSpawner({ onSparkTrigger }) {
       addOre(getGrindDps() * delta * grindingOreCount)
 
       // Drain ore health, trigger sparks, shrink mesh
-      for (const { id, pos } of ORE_POSITIONS) {
+      for (let index = 0; index < ORE_POSITIONS.length; index++) {
+        const { id, pos } = ORE_POSITIONS[index]
         const oreState = oreStateRef.current[id]
-        if (!oreState.alive) continue
+        if (!oreState.alive || oreState.isDying) continue
         const dx = camera.position.x - pos[0]
         const dz = camera.position.z - pos[2]
         const dist = Math.sqrt(dx * dx + dz * dz)
@@ -192,15 +206,31 @@ export function OreSpawner({ onSparkTrigger }) {
           }
 
           const healthPct = Math.max(0, oreStateRef.current[id].health / MAX_ORE_HEALTH)
-          if (oreScaleRefs.current[id]) {
-            oreScaleRefs.current[id].scale.setScalar(0.3 + healthPct * 0.7)
-          }
-
-          if (oreStateRef.current[id].health <= 0) {
-            oreStateRef.current[id].alive = false
-            oreStateRef.current[id].respawnAt = now + ORE_RESPAWN_DELAY_MS
-            spawnDebris(pos)
-            scheduleAction(() => setOreRevision((r) => r + 1))
+          
+          if (oreStateRef.current[id].health > 0) {
+            api.start((i) => {
+              if (i === index) return { scale: 0.3 + healthPct * 0.7, immediate: true }
+              return {}
+            })
+          } else {
+            oreStateRef.current[id].isDying = true
+            api.start((i) => {
+              if (i === index) {
+                return {
+                  scale: 0,
+                  immediate: false,
+                  config: { tension: 300, friction: 20 },
+                  onRest: () => {
+                    oreStateRef.current[id].alive = false
+                    oreStateRef.current[id].isDying = false
+                    oreStateRef.current[id].respawnAt = performance.now() + ORE_RESPAWN_DELAY_MS
+                    spawnDebris(pos)
+                    scheduleAction(() => setOreRevision((r) => r + 1))
+                  }
+                }
+              }
+              return {}
+            })
           }
         }
       }
@@ -213,8 +243,9 @@ export function OreSpawner({ onSparkTrigger }) {
 
     if (heatOreCount > 0) {
       let heatRate = 0
-      for (const { id, pos } of ORE_POSITIONS) {
-        if (!oreStateRef.current[id].alive) continue
+      for (let index = 0; index < ORE_POSITIONS.length; index++) {
+        const { id, pos } = ORE_POSITIONS[index]
+        if (!oreStateRef.current[id].alive || oreStateRef.current[id].isDying) continue
         const dx = camera.position.x - pos[0]
         const dz = camera.position.z - pos[2]
         const dist = Math.sqrt(dx * dx + dz * dz)
@@ -257,24 +288,23 @@ export function OreSpawner({ onSparkTrigger }) {
 
   return (
     <>
-      {ORE_POSITIONS.map(({ id, pos }) => {
+      {ORE_POSITIONS.map(({ id, pos }, index) => {
         const oreState = oreStateRef.current[id]
         if (!oreState?.alive) return null
         return (
           <RigidBody key={`${id}-${oreRevision}`} type="fixed" colliders={false} position={pos}>
             <BallCollider args={[1.5]} />
-            <mesh
-              ref={(el) => {
-                if (el) oreScaleRefs.current[id] = el
-              }}
-            >
+            <a.mesh scale={springs[index].scale}>
               <sphereGeometry args={[1.5, 12, 12]} />
               <meshStandardMaterial
                 color={oreState.isRare ? '#ff00ff' : '#00ffcc'}
                 emissive={oreState.isRare ? '#ff00ff' : '#00ffcc'}
                 emissiveIntensity={oreState.isRare ? 0.7 : 0.4}
               />
-            </mesh>
+              {oreState.isRare && (
+                <pointLight color="#ff00ff" intensity={5} distance={15} />
+              )}
+            </a.mesh>
           </RigidBody>
         )
       })}

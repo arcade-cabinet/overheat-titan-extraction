@@ -7,17 +7,26 @@ class AudioEngine {
     this._initialized = false
     this.ctx = null
     this.masterGain = null
+    this.bgBus = null
     this.filterNode = null
   }
 
   init() {
     if (this._initialized) return
     this.ctx = new (window.AudioContext || window.webkitAudioContext)()
+    
     this.masterGain = this.ctx.createGain()
     this.masterGain.gain.value = 0.7
+
+    // Background bus for ducking
+    this.bgBus = this.ctx.createGain()
+    this.bgBus.gain.value = 1.0
+    this.bgBus.connect(this.masterGain)
+
     this.filterNode = this.ctx.createBiquadFilter()
     this.filterNode.type = 'lowpass'
     this.filterNode.frequency.value = 20000
+    
     this.masterGain.connect(this.filterNode)
     this.filterNode.connect(this.ctx.destination)
     this._initialized = true
@@ -34,18 +43,25 @@ class AudioEngine {
     this.filterNode.frequency.setTargetAtTime(freq, this.ctx.currentTime, 0.3)
   }
 
-  _makeOsc(type, freq, gainVal, duration) {
+  _makeOsc(type, freq, gainVal, duration, destBus = null) {
     if (!this._initialized) return
+    const bus = destBus || this.bgBus
     const osc = this.ctx.createOscillator()
     const gain = this.ctx.createGain()
     osc.type = type
     osc.frequency.value = freq
-    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime)
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration)
+    
+    const attack = Math.min(0.02, duration * 0.1)
+    const release = duration - attack
+    
+    gain.gain.setValueAtTime(0.001, this.ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(gainVal, this.ctx.currentTime + attack)
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + attack + release)
+    
     osc.connect(gain)
-    gain.connect(this.masterGain)
+    gain.connect(bus)
     osc.start()
-    osc.stop(this.ctx.currentTime + duration)
+    osc.stop(this.ctx.currentTime + duration + 0.1)
   }
 
   playMechStep() {
@@ -60,8 +76,15 @@ class AudioEngine {
 
   playAlarm() {
     if (!this._initialized) return
-    this._makeOsc('square', 880, 0.15, 0.2)
-    setTimeout(() => this._makeOsc('square', 660, 0.15, 0.2), 250)
+    
+    // Duck BG bus dynamically
+    this.bgBus.gain.cancelScheduledValues(this.ctx.currentTime)
+    this.bgBus.gain.setTargetAtTime(0.2, this.ctx.currentTime, 0.05)
+    this.bgBus.gain.setTargetAtTime(1.0, this.ctx.currentTime + 0.6, 0.5)
+
+    // Play alarm directly on master to avoid ducking itself
+    this._makeOsc('square', 880, 0.15, 0.2, this.masterGain)
+    setTimeout(() => this._makeOsc('square', 660, 0.15, 0.2, this.masterGain), 250)
   }
 
   playSell() {
@@ -130,7 +153,7 @@ class AudioEngine {
     lfoGain.connect(humGain.gain)
 
     humOsc.connect(humGain)
-    humGain.connect(this.masterGain)
+    humGain.connect(this.bgBus)
     humOsc.start()
     lfo.start()
     this._siloHum = { osc: humOsc, gain: humGain, lfo, lfoGain }
@@ -164,7 +187,7 @@ class AudioEngine {
     const gain = this.ctx.createGain()
     gain.gain.value = 0
     node.connect(gain)
-    gain.connect(this.masterGain)
+    gain.connect(this.bgBus)
     this._thrusterGain = gain
     this._thrusterNode = node
     this._thrusterLevel = 0
