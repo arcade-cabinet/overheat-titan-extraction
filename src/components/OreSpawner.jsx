@@ -124,7 +124,9 @@ export function OreSpawner({ onSparkTrigger }) {
     // Hit-stop on leading edge of grind
     if (isGrinding && !wasGrindingRef.current) {
       hitStopRef.current = true
-      setTimeout(() => { hitStopRef.current = false }, 50)
+      setTimeout(() => {
+        hitStopRef.current = false
+      }, 50)
       wasGrindingRef.current = true
     } else if (!isGrinding) {
       wasGrindingRef.current = false

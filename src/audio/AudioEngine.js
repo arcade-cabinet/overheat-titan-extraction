@@ -156,11 +156,7 @@ class AudioEngine {
   setThrusterVolume(normalizedSpeed) {
     if (!this._thrusterGain) return
     this._thrusterLevel = normalizedSpeed * 0.08
-    this._thrusterGain.gain.setTargetAtTime(
-      normalizedSpeed * 0.06,
-      this.ctx.currentTime,
-      0.05
-    )
+    this._thrusterGain.gain.setTargetAtTime(normalizedSpeed * 0.06, this.ctx.currentTime, 0.05)
   }
 }
 

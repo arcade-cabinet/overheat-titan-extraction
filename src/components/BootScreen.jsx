@@ -76,7 +76,12 @@ export function BootScreen() {
             ▶ AWAITING PILOT INPUT...
           </div>
           <div
-            style={{ color: '#006655', fontFamily: 'monospace', fontSize: '11px', marginTop: '40px' }}
+            style={{
+              color: '#006655',
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              marginTop: '40px',
+            }}
           >
             CLICK TO INITIALIZE TITAN SYSTEMS
           </div>
