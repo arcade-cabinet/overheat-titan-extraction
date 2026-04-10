@@ -89,6 +89,11 @@ const GameConfigSchema = z.object({
     defaultMasterVolume: z.number(),
     pauseFilterHz: z.number(),
     normalFilterHz: z.number(),
+    rareSell: z.object({
+      oscillators: z.array(
+        z.object({ frequency: z.number(), gain: z.number(), duration: z.number() })
+      ),
+    }),
   }),
   hitStop: z.object({ durationMs: z.number() }),
   debris: z.object({ count: z.number(), ttlMs: z.number() }),
