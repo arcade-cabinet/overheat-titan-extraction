@@ -3,7 +3,7 @@ title: Handoff
 doc_type: handoff
 status: active
 owner: engineering
-last_updated: 2026-04-09
+last_updated: 2026-04-10
 ---
 
 # HANDOFF.md — OVERHEAT: Titan Extraction
@@ -390,45 +390,45 @@ Cross-reference with the master problem statement sections.
 ### From §7 Visuals
 - [x] Color palette applied (§7.1)
 - [x] EffectComposer with Bloom + Vignette (§7.2)
-- [ ] ChromaticAberration missing from original spec items (added in supplemental §11)
+- [x] ChromaticAberration heat mapping (added in supplemental §11)
 - [x] Simplex-noise terrain (§7.3)
 - [x] Silo base + beam + sensor (§7.4)
 
 ### From §8 Game Feel
 - [x] Camera shake scaled by heat (§8.1)
 - [x] Dash FOV burst (§8.2)
-- [ ] Spark emitter on grind (§8.3)
+- [x] Spark emitter on grind (§8.3) — physics Sparks.jsx, TTL cleanup, max 5/s throttle
 
 ### From §10 Expanded Tech Stack (Supplemental)
 - [x] @react-three/postprocessing (§10)
-- [x] framer-motion installed, not yet used for transitions (§10)
-- [x] maath installed, custom inSphere in place (§10)
+- [x] framer-motion — all overlays have fade/slide transitions (§10)
+- [x] maath — official `random.inSphere` (§10)
 - [x] simplex-noise replacing Math.sin for terrain (§10)
 
 ### From §11 Advanced Post-Processing (Supplemental)
 - [x] ChromaticAberration heat mapping (§11)
 - [x] Vignette darkness at overheat (§11)
-- [ ] Grayscale pass during pause (§19)
-- [ ] Glitch pass during meltdown (§21)
+- [x] Grayscale pass during pause — HueSaturation in VisualEffects (§19)
+- [x] Glitch pass during meltdown — GlitchEffect in VisualEffects (§21)
 
 ### From §12 GLSL Shaders (Supplemental)
 - [x] MoltenSawMaterial with uHeat/uTime uniforms (§12)
-- [ ] CRT scanline + barrel distortion shader (§20)
+- [x] CRT scanline + barrel distortion shader — toggleable via settings (§20)
 
 ### From §13 Tractor Beam Spring Joints (Supplemental)
-- [ ] Kinematic Position anchor RigidBody (§13)
-- [ ] useSpringJoint on cube grab (§13)
-- [ ] Reel-in depth reduction (§13)
-- [ ] Throw velocity from pointer-up delta (§13)
+- [x] Kinematic Position anchor RigidBody (§13)
+- [x] useSpringJoint on cube grab (§13)
+- [x] Reel-in depth reduction (§13)
+- [x] Throw velocity from pointer-up delta (§13)
 
 ### From §14 Ambient Environment (Supplemental)
 - [x] AmbientSpores particle field (§14)
-- [ ] Official maath/random.inSphere (currently custom impl)
+- [x] Official maath/random.inSphere (§14)
 
 ### From §15 Spatial Audio (Supplemental)
-- [ ] Silo hum PositionalAudio (§15)
-- [ ] Dash thruster volume = linvel magnitude (§15)
-- [ ] Hit-stop 50ms freeze on first contact (§15)
+- [x] Silo hum — OscillatorNode + LFO, distance attenuation (§15)
+- [x] Dash thruster volume = linvel magnitude via ScriptProcessor (§15)
+- [x] Hit-stop 50ms freeze on first grind contact (§15)
 
 ### From §16 Full Component Architecture (Supplemental)
 - [x] PostProcessing chain (§16)
@@ -436,44 +436,44 @@ Cross-reference with the master problem statement sections.
 - [x] SiloGroup with mesh + sensor (§16)
 - [x] PlayerGroup with camera (§16)
 - [x] CockpitGroup with saw + dashboard (§16)
-- [ ] SpotLight headlamp on camera (§16)
-- [ ] TractorAnchor kinematic body (§16)
+- [x] SpotLight headlamp on camera — Headlamp.jsx with boot flicker (§16)
+- [x] TractorAnchor kinematic body — TractorBeam.jsx (§16)
 
 ### From §18 Diegetic Main Menu (Supplemental)
 - [x] Pitch black scene on load (§18)
 - [x] Boot sequence with audio power-up (§18)
-- [x] Dashboard displays menu options (partial — Html overlay only)
-- [ ] Raycast to shoot dashboard options (§18)
-- [ ] Boot headlamp flicker (§18)
+- [x] Dashboard displays menu options (Html overlay)
+- [ ] Raycast to shoot dashboard options (§18) — deferred, Html overlay works well
+- [x] Boot headlamp flicker — Headlamp.jsx flicker animation during boot phase (§18)
 
 ### From §19 System Diagnostics / Pause (Supplemental)
 - [x] ESC → paused state (§19)
 - [x] Physics paused while paused (§19)
 - [x] Audio filter muffling (§19)
-- [ ] Grayscale + cyan wireframe post-processing pass (§19)
+- [x] Grayscale post-processing pass — HueSaturation(saturation=-1) in VisualEffects (§19)
 - [x] CRT-styled pause menu HTML (§19)
 
 ### From §20 OS Configuration (Supplemental)
 - [x] Settings menu with volume/sensitivity/CRT toggle (§20)
 - [x] Settings persisted via Zustand persist (§20)
-- [ ] CRT shader actually activates from toggle (§20)
+- [x] CRT shader activates from settings.crtOverlays toggle (§20)
 
 ### From §21 Critical Meltdown (Supplemental)
 - [x] Heat 120 triggers meltdown state (§21)
-- [ ] Radial impulse explosion on nearby rigid bodies (§21)
-- [ ] ChromaticAberration extreme offset during meltdown (§21 — VisualEffects uses isOverheated not isMelting)
-- [ ] Glitch shader pass (§21)
-- [x] Tune.js/audio death (square wave pitch-down) (§21)
-- [x] Camera lerp upward (basic y+ drift) (§21)
+- [ ] Radial impulse explosion on nearby rigid bodies (§21) — not yet
+- [x] ChromaticAberration extreme offset — isMelting mapped in VisualEffects (§21)
+- [x] Glitch shader pass — GlitchEffect active during meltdown (§21)
+- [x] Audio death — square wave pitch-down playMeltdown() (§21)
+- [x] Camera lerp upward (y+ drift during isMelting) (§21)
 - [x] Report screen: TITAN LOST / credits recovered (§21)
 
 ### From §22 Metagame State Flow (Supplemental)
 - [x] powered_down → boot → menu → gameplay → paused → meltdown → report (§22)
-- [ ] settings accessible from both menu AND pause states (§22 — currently settings always returns to menu)
+- [x] Settings accessible from both menu AND pause states (§22)
 
 ### From §23 Final Architectural Checklist (Supplemental)
 - [x] Zustand persist (§23.1)
-- [ ] InstancedRigidBodies for debris > 20 chunks (§23.2)
+- [x] InstancedRigidBodies for debris (§23.2) — OreSpawner.jsx
 - [x] Html overlays with zIndexRange (§23.3)
 
 ---
@@ -489,3 +489,4 @@ Cross-reference with the master problem statement sections.
 | 2026-04-09 | claude-sonnet | Agent infrastructure: .cursor/ MDC rules (game-architecture, coding-standards, no-go-list, docs-authoring), .claude/ (settings, hooks, rules), .github/ (copilot-instructions full rewrite, dependabot, issue templates, CD/release/release-please workflows, prompt files), CHANGELOG.md, release-please config |
 | 2026-04-09 | claude-sonnet-4-6 | PR #1 review remediation — all 43 threads addressed and replied. Critical: fixed A/D strafing (right-left), made meltdown reachable (split heat from ore-gated grinding in OreSpawner), fixed terrain mesh/collider half-cell offset (size-1)/2. Major: true 10Hz chromatic aberration pulse, ore ejection idempotency guard (ejectionPendingRef), spatial audio routes through AudioEngine singleton, BootScreen blink interval scoped to powered_down phase + boot timeout cleanup. Minor: uHeat uniform clamped [0,1], ESC key-repeat guard, blur key latch clear, CanvasTexture dispose on unmount, phase enum comment fix, pnpm/npm command consistency, repo URL slug fix, MD022 heading spacing in docs, upgrades phase added to architecture diagram, useFrame store rule refined. Squash merged to main. |
 | 2026-04-09 | claude-sonnet-4-6 | Stream A gameplay polish — implemented: tractor beam (spring joint + reel-in + throw + cyan Line), ore health + depletion shrink + destruction + InstancedRigidBodies debris + 15s respawn, rare isotopes (15% chance, magenta, 3× heat, $2500 cube value), sparks (physics bodies + TTL), hit-stop (50ms freeze on first grind), headlamp SpotLight with boot flicker, GlitchEffect during meltdown, HueSaturation grayscale during pause, CRT scanline+barrel shader (toggleable), isMelting chromAberr fix, official maath/random.inSphere, spatial audio (silo hum + thruster volume), framer-motion fade/slide on all overlay screens, settings back restores pointer lock. |
+| 2026-04-10 | claude-sonnet-4-6 | PR #10 CodeRabbit CHANGES_REQUESTED remediation — AnimatePresence fix (conditional rendering at App.jsx level so exit animations fire), AmbientSpores maath import + pause guard, MeltdownScreen single motion wrapper, Silo useFrame phase guard, AudioEngine LFO ref stored for cleanup, Player thruster silence effect, SettingsMenu/MainMenu/UpgradesTerminal stale phase subscriptions removed. §5 checklist reconciled with §1 snapshot. |
