@@ -63,15 +63,15 @@ This document maps OVERHEAT: Titan Extraction's production path to a store-ready
 **Goal:** Touch-native, ships to iOS and Android.
 
 ### Tasks
-- [ ] Input Service — normalizes touch, gamepad, and keyboard into `InputState`
-- [ ] Virtual joystick overlay — dynamic origin, dead zones, left=move, right=look
-- [ ] Action buttons — GRIND (hold), TRACTOR (hold), DASH (tap)
-- [ ] Haptic feedback — overheat pulse, cube ejection pop, silo sell triple-tick
-- [ ] Silo aim assist — 15° magnetism during tractor throw
-- [ ] Capacitor shell — iOS and Android debug builds in CI
-- [ ] capacitor-sqlite + jeep-sqlite/OPFS persistence layer
-- [ ] Mobile performance budget — 60fps on iPhone 13 / mid-range Android 2023
-- [ ] Landscape lock + safe area insets
+- [x] Input Service — normalizes touch, gamepad, and keyboard into `InputState`
+- [x] Virtual joystick overlay — dynamic origin, dead zones, left=move, right=look
+- [x] Action buttons — GRIND (hold), TRACTOR (hold), DASH (tap)
+- [x] Haptic feedback — overheat pulse, cube ejection pop, silo sell triple-tick
+- [x] Silo aim assist — 15° magnetism during tractor throw
+- [x] Capacitor shell — iOS and Android debug builds in CI
+- [x] capacitor-sqlite + jeep-sqlite/OPFS persistence layer
+- [x] Mobile performance budget — 60fps on iPhone 13 / mid-range Android 2023
+- [x] Landscape lock + safe area insets
 
 See `docs/design/mobile-controls.md` for the full control spec.
 

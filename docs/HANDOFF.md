@@ -61,6 +61,16 @@ last_updated: 2026-04-10
 | Diegetic pause button (UV raycast on dashboard mesh) | ✅ Complete |
 | All Player/TractorBeam/Silo constants wired to config.json | ✅ Complete |
 | Diegetic upgrade console (3D terminal, UV raycast, range gate) | ✅ Complete |
+| Meltdown radial impulse (rigid body explosion) | ✅ Complete |
+| **M3: Mobile Controls / InputService** | ✅ Complete |
+| **M3: Virtual Joystick / Touch action UI** | ✅ Complete |
+| **M3: Haptic Feedback / Aim Assist** | ✅ Complete |
+| **M3: Landscape Lock / Safe Area** | ✅ Complete |
+| Meltdown radial impulse (rigid body explosion) | ✅ Complete |
+| **M3: Mobile Controls / InputService** | ✅ Complete |
+| **M3: Virtual Joystick / Touch action UI** | ✅ Complete |
+| **M3: Haptic Feedback / Aim Assist** | ✅ Complete |
+| **M3: Landscape Lock / Safe Area** | ✅ Complete |
 
 ---
 
@@ -117,9 +127,19 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-All outstanding priorities (Diegetic Upgrade Menu, Meltdown Radial Impulse, Dashboard UV calibration, and Ore Grind physics contact) have been addressed and shipped.
+All M1, M2, and M3 (Mobile / Capacitor) priorities are fully completed and shipped. 
 
-The project is currently stable. Any future tasks will be driven by new feature requests or architectural changes.
+The project has entered M4 (Visual / Audio Polish) and M5 (Content / Progression).
+
+Next logical steps for **M4**:
+1. Final cockpit dashboard art pass
+2. Ore shrink animation via react-spring
+3. AudioEngine mixing pass
+
+Next logical steps for **M5**:
+1. Contracts / timed objectives
+2. Additional ore variety
+3. Environmental variation
 
 ---
 

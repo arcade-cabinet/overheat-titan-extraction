@@ -1,0 +1,1 @@
+sed -i '' -e 's/| Diegetic upgrade console.*$/&\n| Meltdown radial impulse (rigid body explosion) | ✅ Complete |\n| **M3: Mobile Controls \/ InputService** | ✅ Complete |\n| **M3: Virtual Joystick \/ Touch action UI** | ✅ Complete |\n| **M3: Haptic Feedback \/ Aim Assist** | ✅ Complete |\n| **M3: Landscape Lock \/ Safe Area** | ✅ Complete |/' docs/HANDOFF.md

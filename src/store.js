@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { gameConfig } from './config'
+import { hapticManager } from './haptics/HapticEngine'
 
 const { mech } = gameConfig
 
@@ -54,6 +55,7 @@ export const useGameStore = create(
         set((state) => {
           const newHeat = state.heat + amount
           if (newHeat >= mech.heat.meltdownThreshold) {
+            if (!state.isMelting) hapticManager.playMeltdown()
             return {
               heat: mech.heat.meltdownThreshold,
               isOverheated: true,
@@ -62,8 +64,10 @@ export const useGameStore = create(
               isPaused: false,
             }
           }
-          if (newHeat >= mech.heat.overheatThreshold)
+          if (newHeat >= mech.heat.overheatThreshold) {
+            if (!state.isOverheated) hapticManager.playOverheat()
             return { heat: mech.heat.overheatThreshold, isOverheated: true }
+          }
           return { heat: newHeat }
         }),
 
@@ -75,13 +79,18 @@ export const useGameStore = create(
           return { heat: newHeat }
         }),
 
-      ejectCube: () => set({ rawOre: 0 }),
+      ejectCube: () => {
+        hapticManager.playCubeEject()
+        set({ rawOre: 0 })
+      },
 
-      addCredits: (amount) =>
+      addCredits: (amount) => {
+        hapticManager.playCubeSell()
         set((state) => ({
           credits: state.credits + amount,
           sessionCredits: state.sessionCredits + amount,
-        })),
+        }))
+      },
 
       buyUpgrade: (type, cost) =>
         set((state) => {
@@ -98,7 +107,10 @@ export const useGameStore = create(
         set((state) => ({ settings: { ...state.settings, [key]: value } })),
 
       // Meltdown & reset
-      triggerMeltdown: () => set({ isMelting: true, phase: 'meltdown' }),
+      triggerMeltdown: () => {
+        hapticManager.playMeltdown()
+        set({ isMelting: true, phase: 'meltdown' })
+      },
 
       resetSession: () =>
         set({

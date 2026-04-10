@@ -89,7 +89,32 @@ export function TractorBeam() {
       }
     }
 
-    if (inputState.tractorUpThisFrame && grabbed) {
+    if (inputState.tractorUpThisFrame && grabbed && grabbedRef.current) {
+      // Silo aim assist (magnetism)
+      const siloPos = new THREE.Vector3(...gameConfig.silo.position)
+      const cubePos = grabbedRef.current.translation()
+      const cubeVel = grabbedRef.current.linvel()
+      
+      const velVec = new THREE.Vector3(cubeVel.x, cubeVel.y, cubeVel.z)
+      const speed = velVec.length()
+      
+      if (speed > 2) { // Only assist if it's a meaningful throw
+        const toSilo = new THREE.Vector3().subVectors(siloPos, new THREE.Vector3(cubePos.x, cubePos.y, cubePos.z))
+        toSilo.y += 2 // Aim slightly above the base of the silo
+        const distToSilo = toSilo.length()
+        toSilo.normalize()
+        
+        const velDir = velVec.clone().normalize()
+        const angle = velDir.angleTo(toSilo)
+        
+        // 15 degrees = ~0.26 radians
+        if (angle < 0.26 && distToSilo < 40) {
+          // Adjust velocity to point exactly at silo
+          const newVel = toSilo.multiplyScalar(Math.max(speed, distToSilo * 0.8)) // Ensure it reaches
+          grabbedRef.current.setLinvel({ x: newVel.x, y: newVel.y, z: newVel.z }, true)
+        }
+      }
+
       grabbedRef.current = null
       setGrabbed(false)
       setBeamVisible(false)
