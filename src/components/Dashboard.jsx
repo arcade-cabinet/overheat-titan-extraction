@@ -126,7 +126,7 @@ export function Dashboard() {
   }, [credits, ctx, heat, isOverheated, isPaused, maxOre, phase, rawOre, texture])
 
   function handlePointerDown(event) {
-    if (phase !== 'gameplay') return
+    if (!event || phase !== 'gameplay') return
     const uv = event.uv
     if (!uv) return
     if (

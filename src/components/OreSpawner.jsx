@@ -83,8 +83,10 @@ export function OreSpawner({ onSparkTrigger }) {
     if (!flushScheduledRef.current) {
       flushScheduledRef.current = true
       setTimeout(() => {
-        const actions = pendingActionsRef.current.splice(0)
-        for (const action of actions) action()
+        while (pendingActionsRef.current.length > 0) {
+          const actions = pendingActionsRef.current.splice(0)
+          for (const action of actions) action()
+        }
         flushScheduledRef.current = false
       }, 0)
     }
