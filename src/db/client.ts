@@ -7,7 +7,7 @@ type SqliteResult = { values: unknown[][] }
 // Web: jeep-sqlite (sql.js + OPFS)
 async function createWebClient() {
   const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite')
-  const sqlitePlugin = new CapacitorSQLite()
+  const sqlitePlugin = CapacitorSQLite as any
 
   // Initialize jeep-sqlite web element
   const { defineCustomElements } = await import('jeep-sqlite/loader')
@@ -40,7 +40,7 @@ async function createWebClient() {
 // Native (iOS/Android): capacitor-sqlite directly
 async function createNativeClient() {
   const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite')
-  const sqlitePlugin = new CapacitorSQLite()
+  const sqlitePlugin = CapacitorSQLite as any
   const sqlite = new SQLiteConnection(sqlitePlugin)
 
   const db = await sqlite.createConnection('overheat', false, 'no-encryption', 1, false)
