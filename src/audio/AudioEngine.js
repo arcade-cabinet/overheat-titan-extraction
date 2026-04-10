@@ -140,6 +140,11 @@ class AudioEngine {
     node.onaudioprocess = (e) => {
       const output = e.outputBuffer.getChannelData(0)
       const level = this._thrusterLevel || 0
+      if (level === 0) {
+        // Zero-fill when silent — avoid burning CPU on random() for no output
+        output.fill(0)
+        return
+      }
       for (let i = 0; i < output.length; i++) {
         output[i] = (Math.random() * 2 - 1) * level
       }
