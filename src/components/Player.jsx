@@ -53,6 +53,13 @@ export function Player() {
     }
   }, [])
 
+  // Silence thruster when paused or outside gameplay
+  useEffect(() => {
+    if (isPaused || phase !== 'gameplay') {
+      audioManager.setThrusterVolume(0)
+    }
+  }, [isPaused, phase])
+
   useEffect(() => {
     const onMove = (e) => {
       if (phase !== 'gameplay' || isPaused) return

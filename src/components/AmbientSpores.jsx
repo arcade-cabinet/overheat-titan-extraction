@@ -1,15 +1,19 @@
 import { PointMaterial, Points } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import * as random from 'maath/random/dist/maath-random.esm.js'
+import * as random from 'maath/random'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
+import { useGameStore } from '../store'
 
 export function AmbientSpores() {
   const [sphere] = useState(() => random.inSphere(new Float32Array(4500), { radius: 120 }))
   const pointsRef = useRef()
+  const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return
+    if (isPaused || phase !== 'gameplay') return
     pointsRef.current.rotation.x -= delta / 20
     pointsRef.current.rotation.y -= delta / 30
   })

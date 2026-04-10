@@ -26,13 +26,10 @@ const UPGRADES = [
 ]
 
 export function UpgradesTerminal() {
-  const phase = useGameStore((s) => s.phase)
   const credits = useGameStore((s) => s.credits)
   const upgrades = useGameStore((s) => s.upgrades)
   const buyUpgrade = useGameStore((s) => s.buyUpgrade)
   const setPhase = useGameStore((s) => s.setPhase)
-
-  if (phase !== 'upgrades') return null
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>

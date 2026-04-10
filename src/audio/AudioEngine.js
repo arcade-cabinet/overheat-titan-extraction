@@ -121,7 +121,7 @@ class AudioEngine {
     humGain.connect(this.masterGain)
     humOsc.start()
     lfo.start()
-    this._siloHum = { osc: humOsc, gain: humGain }
+    this._siloHum = { osc: humOsc, gain: humGain, lfo }
   }
 
   setSiloHumDistance(distance) {
@@ -163,6 +163,11 @@ class AudioEngine {
     if (!this._siloHum) return
     try {
       this._siloHum.osc.stop()
+    } catch (_) {
+      // already stopped
+    }
+    try {
+      this._siloHum.lfo.stop()
     } catch (_) {
       // already stopped
     }

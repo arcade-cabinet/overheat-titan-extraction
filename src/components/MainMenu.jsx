@@ -6,15 +6,12 @@ import { useGameStore } from '../store'
 import { generateSeedPhrase } from '../utils/seedPhrase'
 
 export function MainMenu() {
-  const phase = useGameStore((s) => s.phase)
   const setPhase = useGameStore((s) => s.setPhase)
   const [seedPhrase, setSeedPhrase] = useState('')
 
   useEffect(() => {
     setSeedPhrase(generateSeedPhrase())
   }, [])
-
-  if (phase !== 'menu') return null
 
   const startGame = () => {
     audioManager.playBlip()

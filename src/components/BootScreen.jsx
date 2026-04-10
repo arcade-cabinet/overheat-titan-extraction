@@ -18,8 +18,6 @@ export function BootScreen() {
 
   useEffect(() => () => clearTimeout(bootTimerRef.current), [])
 
-  if (phase !== 'powered_down') return null
-
   const handleClick = () => {
     audioManager.init()
     audioManager.playPowerUp()

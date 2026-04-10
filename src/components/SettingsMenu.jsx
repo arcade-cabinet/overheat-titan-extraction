@@ -4,20 +4,16 @@ import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 
 export function SettingsMenu() {
-  const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
   const setPhase = useGameStore((s) => s.setPhase)
   const settings = useGameStore((s) => s.settings)
   const updateSetting = useGameStore((s) => s.updateSetting)
 
-  if (phase !== 'settings') return null
-
   const back = () => {
     audioManager.playBlip()
     if (isPaused) {
+      // Return to gameplay in paused state so PauseMenu shows — don't re-request pointer lock yet
       setPhase('gameplay')
-      // Re-request pointer lock when returning to active gameplay
-      document.body.requestPointerLock?.()
     } else {
       setPhase('menu')
     }

@@ -25,8 +25,6 @@ export function PauseMenu() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, isPaused, setPaused])
 
-  if (!isPaused || phase !== 'gameplay') return null
-
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
       <motion.div

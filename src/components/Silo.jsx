@@ -24,7 +24,7 @@ export function Silo() {
   }, [phase])
 
   useFrame(() => {
-    if (!audioManager._initialized) return
+    if (!audioManager._initialized || phase !== 'gameplay') return
     const dist = camera.position.distanceTo(SILO_POSITION)
     audioManager.setSiloHumDistance(dist)
   })

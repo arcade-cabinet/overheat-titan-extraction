@@ -65,14 +65,16 @@ function Scene() {
       {phase === 'gameplay' && <Cockpit />}
       <VisualEffects />
 
-      {/* UI Overlays with framer-motion transitions */}
+      {/* UI Overlays — conditionally rendered so AnimatePresence sees true mount/unmount */}
       <AnimatePresence mode="wait">
-        <BootScreen key="boot" />
-        <MainMenu key="menu" />
-        <PauseMenu key="pause" />
-        <SettingsMenu key="settings" />
-        <MeltdownScreen key="meltdown" />
-        <UpgradesTerminal key="upgrades" />
+        {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
+        {phase === 'menu' && <MainMenu key="menu" />}
+        {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
+        {phase === 'settings' && <SettingsMenu key="settings" />}
+        {(phase === 'meltdown' || phase === 'report' || isMelting) && (
+          <MeltdownScreen key="meltdown" />
+        )}
+        {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
       </AnimatePresence>
     </>
   )
