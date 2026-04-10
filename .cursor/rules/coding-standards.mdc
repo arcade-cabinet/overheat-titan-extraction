@@ -1,0 +1,81 @@
+---
+description: Component authoring, useFrame, useMemo, and shader conventions for OVERHEAT. Auto-attached when JSX/JS files are open.
+globs: src/**/*.jsx,src/**/*.js
+alwaysApply: false
+---
+
+# Coding Standards
+
+## Component structure template
+
+```jsx
+import { useRef, useMemo } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { useGameStore } from '../store'
+
+export function ComponentName() {
+  // 1. Store slices (narrow selectors only)
+  const phase = useGameStore((s) => s.phase)
+
+  // 2. Refs for imperative R3F/Rapier access
+  const bodyRef = useRef()
+
+  // 3. Memoized geometry / materials (build once)
+  const geometry = useMemo(() => { /* ... */ }, [])
+
+  // 4. useFrame loop
+  useFrame((state, delta) => {
+    if (!bodyRef.current) return
+    if (phase !== 'gameplay') return
+    // physics/shader/camera logic here
+  })
+
+  // 5. JSX — minimal, semantic
+  return ( /* ... */ )
+}
+```
+
+## useFrame rules
+- All physics, movement, shader update, and camera logic lives in `useFrame`.
+- Always guard: `if (!bodyRef.current) return`
+- Always guard: `if (isPaused || phase !== 'gameplay') return`
+- Never call `setState` or Zustand `set()` inside `useFrame` — use throttled refs, call store actions at bounded intervals only.
+
+## useMemo for geometry
+
+```js
+// ✅ Always memoize procedurally generated geometries
+const geometry = useMemo(() => new THREE.BufferGeometry(), [])
+```
+
+## Zustand selector rule
+
+```js
+// ✅ Correct — narrow selector
+const heat = useGameStore((s) => s.heat)
+
+// ❌ Wrong — subscribes to entire store, re-renders on every state change
+const store = useGameStore()
+```
+
+## GLSL shader uniforms
+- Prefix uniforms with `u` (uHeat, uTime)
+- Prefix varyings with `v` (vUv, vNormal)
+- Update uniforms imperatively in `useFrame`: `matRef.current.uHeat = heat / 100`
+- Never update uniforms via React state
+
+## File naming
+- One component per file
+- File name === component name (`Terrain.jsx` exports `Terrain`)
+- All components in `src/components/`
+
+## Config rule (M1+)
+
+```js
+// ✅ Reference config
+import { gameConfig } from '../config'
+const rate = gameConfig.mech.heat.perSecondGrinding
+
+// ❌ Magic number
+const rate = 15
+```

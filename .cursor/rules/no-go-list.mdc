@@ -1,0 +1,43 @@
+---
+description: Hard bans and forbidden patterns for OVERHEAT. Always active.
+globs:
+alwaysApply: true
+---
+
+# No-Go List
+
+These patterns are banned. Do not introduce them, even if asked.
+
+## Physics
+- ❌ Cannon.js — replaced by Rapier due to Vec3 NaN crashes on convex hulls
+- ❌ Convex hull colliders on ore or large generated geometry — use Ball or Cuboid
+- ❌ Any physics engine other than `@react-three/rapier`
+
+## State
+- ❌ React Context for game loop state — use Zustand or Koota
+- ❌ `useReducer` for game loop — Zustand only
+- ❌ Adding new libraries to manage state — Zustand + Koota are the approved stack
+
+## UI
+- ❌ `document.createElement` for in-game HUD elements — use R3F `<Html>` for overlays
+- ❌ `position: fixed` or `position: absolute` for in-game status info — use CanvasTexture on dashboard
+- ❌ DOM overlays for heat, hopper, or credits — these are physical instruments
+
+## Audio
+- ❌ tune.js — not on npm; use raw Web Audio API via `AudioEngine.js`
+- ❌ Hardcoded audio frequencies inline in components — route through `audioManager.*` methods
+- ❌ New audio libraries
+
+## Terrain
+- ❌ `Math.sin` grids for terrain height — use `simplex-noise`
+
+## Build
+- ❌ Committing `node_modules/`, `dist/`, or `.env` files
+- ❌ `package-lock.json` — pnpm uses `pnpm-lock.yaml`
+
+## 3D Animation
+- ❌ framer-motion-3d — not maintained; use `react-spring` / `@react-spring/three`
+
+## Zustand (M1+ only)
+- ❌ Adding new simulation state to Zustand after M1 — new entities go in Koota traits
+- ❌ Mutating Zustand state directly — always use action methods

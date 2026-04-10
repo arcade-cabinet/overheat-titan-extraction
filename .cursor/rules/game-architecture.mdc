@@ -1,0 +1,40 @@
+---
+description: Core game architecture rules for OVERHEAT: Titan Extraction. Always active — read before any code change.
+globs:
+alwaysApply: true
+---
+
+# Game Architecture — OVERHEAT: Titan Extraction
+
+## Identity
+- Game: OVERHEAT: Titan Extraction
+- Genre: Extraction / resource-management / physics sandbox
+- Platform: Browser (WebGL 2) via Vite + React Three Fiber
+- Perspective: True Diegetic 2.5D Cockpit (first-person, UI inside the 3D scene)
+
+## Tech stack (locked)
+- Rendering: `three` + `@react-three/fiber`
+- Physics: `@react-three/rapier` ONLY — Cannon.js is banned
+- State (current): `zustand` with persist middleware
+- State (production target, M1+): `koota` ECS — traits + systems
+- Tunables (M1+): `zod`-validated `src/config.json`
+- Post-FX: `@react-three/postprocessing` + `postprocessing`
+- Helpers: `@react-three/drei`
+- Noise: `simplex-noise`
+- Audio: custom `AudioEngine` singleton (Web Audio API) — tune.js is NOT on npm
+- Animation (2D): `framer-motion` (HTML overlays only)
+- Animation (3D): `react-spring` / `@react-spring/three`
+
+## Phase state machine
+`powered_down → boot → menu → gameplay → paused → meltdown → report`
+Settings accessible from menu and pause. Source of truth: `src/store.js` (`phase` key).
+
+## Key invariants
+- The Zustand store in `src/store.js` is the single source of truth for phase, economy, and settings.
+- New gameplay entity systems (ore, cubes, debris) go in Koota traits, NOT Zustand.
+- All per-frame logic lives in `useFrame`, never in React state.
+- Dashboard HUD is rendered to a `THREE.CanvasTexture` — never DOM overlays for in-game info.
+- Menus use `@react-three/drei` `<Html>` — never raw `document.createElement`.
+
+## Where to start
+Read in order: `AGENTS.md` → `docs/HANDOFF.md` → `docs/STANDARDS.md`
