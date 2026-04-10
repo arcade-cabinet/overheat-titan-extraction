@@ -469,3 +469,5 @@ Cross-reference with the master problem statement sections.
 | 2026-04-09 | copilot-swe | Initial project scaffold — all core components, store, audio engine, full component tree built and building clean |
 | 2026-04-09 | copilot-swe | Documentation infrastructure — AGENTS.md, CLAUDE.md, .github/copilot-instructions.md, .github/pull_request_template.md, docs/HANDOFF.md, docs/STANDARDS.md |
 | 2026-04-09 | copilot-swe | Expanded docs set — docs/README.md index, docs/AGENTS.md guidance, and domain docs for architecture, gameplay, design, lore, and operations |
+| 2026-04-09 | claude-sonnet | Full docs extraction from strategy_sessions.md: Koota ECS + Zod as canonical target (user confirmed), design bible, M1–M6 roadmap, rare isotopes, onboarding missions, contracts, ADRs, mobile controls spec, playtesting notes |
+| 2026-04-09 | claude-sonnet | Agent infrastructure: .cursor/ MDC rules (game-architecture, coding-standards, no-go-list, docs-authoring), .claude/ (settings, hooks, rules), .github/ (copilot-instructions full rewrite, dependabot, issue templates, CD/release/release-please workflows, prompt files), CHANGELOG.md, release-please config |

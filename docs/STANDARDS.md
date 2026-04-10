@@ -126,7 +126,28 @@ bodyRef.current.setLinvel({ x: dir.x * speed, y: vel.y, z: dir.z * speed }, true
 
 ## 6. State management patterns
 
-### The Zustand rule
+### Koota ECS (M1+ — canonical production target)
+
+After M1, simulation state lives in Koota traits. R3F components are thin views over ECS entities:
+
+```tsx
+function MechRig({ entityId }: { entityId: string }) {
+  const ref = useRef<THREE.Group>(null!)
+  const world = useKootaWorld()
+
+  useFrame((state, dt) => {
+    const pos = world.getTrait(entityId, 'Position')
+    if (!pos) return
+    ref.current.position.set(pos.x, pos.y, pos.z)
+  })
+
+  return <group ref={ref}><Cockpit entityId={entityId} /></group>
+}
+```
+
+**Rule:** new gameplay simulation entities (ore, cubes, debris) go into Koota traits, not Zustand.
+
+### The Zustand rule (current / UI-only after M1)
 ```
 NEVER use React Context, useReducer, or prop-drilling for game loop data.
 ALWAYS use useGameStore() with slice selectors.
@@ -288,7 +309,7 @@ On grind contact: emit 5–10 small emissive box meshes with upward + random vel
 
 ## 11. Approved libraries
 
-Only the following libraries are in `package.json` and approved for use:
+Libraries currently in `package.json` and approved for use:
 
 ```
 react, react-dom
@@ -298,10 +319,23 @@ zustand
 simplex-noise
 maath
 framer-motion
+react-spring, @react-spring/three   (3D animation — replaces framer-motion-3d)
+```
+
+**Planned (M1+):**
+```
+koota                                (ECS production state target)
+zod                                  (config schema validation)
+```
+
+**Planned (M3):**
+```
+@capacitor/core                      (iOS/Android shell)
+capacitor-sqlite, jeep-sqlite        (cross-platform persistence)
 ```
 
 **To add a new library:** Document the reason in the PR description and update this section.  
-**Never add:** Cannon.js, Redux, MobX, any additional physics engine.
+**Never add:** Cannon.js · Redux · MobX · any additional physics engine · `framer-motion-3d` · `tune.js`
 
 ---
 
@@ -321,6 +355,64 @@ framer-motion
 `dist/` is gitignored. `package-lock.json` is gitignored. Never commit build artifacts or npm lockfiles.
 
 Vite config (`vite.config.js`) uses `@vitejs/plugin-react` with optimizeDeps for Three.js ecosystem packages.
+
+---
+
+## 14. Zod config standards (M1+)
+
+All numeric tunables live in `src/config.json`, validated at startup by a Zod schema. Components reference `gameConfig.*` — never magic numbers.
+
+```js
+// ✅ Correct
+import { gameConfig } from '../config'
+const rate = gameConfig.mech.heat.perSecondGrinding
+
+// ❌ Wrong
+const rate = 15
+```
+
+### Schema ownership
+- The schema (`GameConfigSchema`) is the canonical definition.
+- Adding a new tunable: add to schema first (with `.default()`), then to `config.json`, then reference `gameConfig.*`.
+- Never add a numeric constant directly to a component — all tunables must flow through the config.
+
+### Config change discipline
+- Config changes (e.g., A/B test in M6) happen in one file: `src/config.json`.
+- Schema defaults provide safe fallbacks if a config key is missing.
+- Never parse rawConfig more than once — `gameConfig` is the exported singleton.
+
+---
+
+## 15. Mobile standards (M3+)
+
+### Input abstraction
+All input goes through the Input Service as `InputState`:
+```ts
+type InputState = {
+  move: { x: number; y: number }
+  look: { x: number; y: number }
+  grind: boolean
+  dash: boolean
+  tractor: boolean
+}
+```
+Components never read raw touch events. `InputSystem` (Koota) reads `InputState` and updates the mech `Input` trait.
+
+### Touch targets
+- All interactive buttons: minimum 44×44pt touch target (Apple HIG minimum)
+- Pause button: always reachable with one tap
+
+### Performance budget (mobile)
+- 60fps target on iPhone 13 / mid-range Android 2023
+- `InstancedRigidBodies` when debris count exceeds 20
+- LOD strategy for heavy visual effects (sparks, spores) on low-power devices
+
+### Haptics
+Haptic events (Capacitor API, M3+):
+- Overheat lockout: heavy pulse (3 × 200ms)
+- Cube ejected: medium pop (1 × 80ms)
+- Cube sold: triple tick (3 × 30ms, 50ms apart)
+- Meltdown: continuous rumble → fade
 
 ---
 

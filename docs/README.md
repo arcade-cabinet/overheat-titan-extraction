@@ -8,7 +8,7 @@ last_updated: 2026-04-09
 
 # Documentation Index
 
-This directory is the long-lived source of project context. It is intentionally organized by domain so future agents can load only the documents relevant to the task at hand without losing the broader architecture, brand, or gameplay intent.
+This directory is the long-lived source of project context. Organized by domain so future agents can load only the documents relevant to the task at hand.
 
 ## Reading order
 
@@ -21,43 +21,52 @@ This directory is the long-lived source of project context. It is intentionally 
 
 | Domain | File | Purpose |
 |---|---|---|
-| Architecture | [`architecture/overview.md`](./architecture/overview.md) | High-level structure, phase flow, component topology |
-| Architecture | [`architecture/runtime-systems.md`](./architecture/runtime-systems.md) | Runtime contracts for rendering, physics, state, audio, and UI |
-| Gameplay | [`gameplay/loop-and-progression.md`](./gameplay/loop-and-progression.md) | Core loop, risk/reward, economy, upgrades, and fail states |
-| Design | [`design/visual-audio-direction.md`](./design/visual-audio-direction.md) | Brand palette, lighting, post-FX, cockpit feel, audio mood |
-| Lore | [`lore/world-primer.md`](./lore/world-primer.md) | Fictional framing, extraction fantasy, factions, and setting rules |
-| Operations | [`operations/roadmap.md`](./operations/roadmap.md) | Delivery roadmap, implementation order, and documentation maintenance |
-| Live state | [`HANDOFF.md`](./HANDOFF.md) | What is built now, known issues, and immediate next steps |
+| Architecture | [`architecture/overview.md`](./architecture/overview.md) | High-level structure, phase flow, Koota ECS + Zod architecture |
+| Architecture | [`architecture/runtime-systems.md`](./architecture/runtime-systems.md) | Runtime contracts for rendering, physics, state, animation, audio, and UI |
+| Architecture | [`architecture/decisions.md`](./architecture/decisions.md) | ADRs — why we chose Rapier, Koota, diegetic cockpit, Capacitor |
+| Gameplay | [`gameplay/loop-and-progression.md`](./gameplay/loop-and-progression.md) | Core loop, heat model, rare isotopes, onboarding missions 0–3, contracts |
+| Gameplay | [`gameplay/playtesting-notes.md`](./gameplay/playtesting-notes.md) | Paper playtest analysis, friction points, economy targets, session length |
+| Design | [`design/visual-audio-direction.md`](./design/visual-audio-direction.md) | Design bible — palette, typography, cockpit layout, motion, audio identity |
+| Design | [`design/mobile-controls.md`](./design/mobile-controls.md) | Mobile control spec — virtual joysticks, input abstraction, haptics |
+| Lore | [`lore/world-primer.md`](./lore/world-primer.md) | Fictional framing, extraction fantasy, setting rules |
+| Operations | [`operations/roadmap.md`](./operations/roadmap.md) | M1–M6 milestone roadmap and documentation maintenance rules |
+| Live state | [`HANDOFF.md`](./HANDOFF.md) | What is built now, known issues, immediate next steps |
 | Standards | [`STANDARDS.md`](./STANDARDS.md) | Non-negotiable implementation conventions |
+| References | [`references/strategy_sessions.md`](./references/strategy_sessions.md) | Full design history — Gemini prototype chat → production audit |
 
-## Source-of-truth rules
+## Source-of-truth hierarchy
 
-- `AGENTS.md` defines the global contract.
-- `docs/STANDARDS.md` defines immutable standards.
-- `docs/HANDOFF.md` is the live status ledger and must reflect the latest state.
-- Domain docs explain intent and structure; they should not contradict the above files.
-- When adding a new domain document, update this index and `docs/AGENTS.md` guidance if the pattern changes.
+1. `AGENTS.md` — global contract. Never contradicted by domain docs.
+2. `docs/STANDARDS.md` — immutable standards. Domain docs align to this.
+3. `docs/HANDOFF.md` — live status. Always current.
+4. Domain docs — explain intent. Should not contradict the above.
 
 ## Suggested reading by task
 
-### If you are implementing gameplay
+### Implementing gameplay
 - `HANDOFF.md`
 - `gameplay/loop-and-progression.md`
 - `architecture/runtime-systems.md`
 - `STANDARDS.md`
 
-### If you are implementing visuals / shaders
+### Implementing visuals / shaders
 - `design/visual-audio-direction.md`
 - `STANDARDS.md`
 - `architecture/runtime-systems.md`
 
-### If you are implementing new systems
+### Implementing new systems (M1+ Koota)
 - `architecture/overview.md`
 - `architecture/runtime-systems.md`
+- `architecture/decisions.md`
 - `operations/roadmap.md`
 - `HANDOFF.md`
 
-### If you are writing or reorganizing docs
+### Writing or reorganizing docs
 - `docs/AGENTS.md`
 - `docs/README.md`
-- affected domain docs
+- Affected domain docs
+
+### Mobile / Capacitor work (M3)
+- `design/mobile-controls.md`
+- `architecture/decisions.md §ADR-004`
+- `operations/roadmap.md §M3`

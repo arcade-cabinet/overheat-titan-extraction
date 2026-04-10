@@ -43,15 +43,23 @@ Never leave the tree in a failing build state at the end of a session.
 |---|---|---|
 | Rendering | `three` + `@react-three/fiber` | Industry standard R3F |
 | Physics | `@react-three/rapier` | Rapier (Rust) — Cannon.js was abandoned after Vec3 NaN crashes with convex hulls |
-| State | `zustand` + `persist` middleware | Zero re-render spam; components subscribe to slices only |
+| State (current) | `zustand` + `persist` middleware | Interim store for phase, economy, and settings; used until M1 Koota migration |
+| State (M1+ target) | `koota` ECS — traits + systems | **Canonical production target.** Data-oriented; new gameplay entities (ore, cubes, debris) go here. |
+| Tunables (M1+) | `zod`-validated `src/config.json` | Single source of truth for all numeric tunables — replaces magic numbers |
 | Post-FX | `@react-three/postprocessing` + `postprocessing` | Batches all passes into one shader |
 | Helpers | `@react-three/drei` | Cameras, shaderMaterial, Html, Points, Stars |
 | Noise | `simplex-noise` | Organic alien terrain; replaces Math.sin grid ripples |
 | Particles | `maath` | `maath/random` for Float32Array sphere distributions |
-| Animation | `framer-motion` | 2D/menu transitions; 3D motion tooling deferred until a compatible R3F option is selected |
+| Animation (3D) | `react-spring` / `@react-spring/three` | FOV bursts, silo beam transitions, cockpit UI. `framer-motion-3d` is abandoned — do NOT use. |
+| Animation (HTML) | `framer-motion` | 2D/menu overlays only |
 | Audio | Custom `AudioEngine` (Web Audio API) | `tune.js` is not on npm; we replicate its microtonal intent procedurally |
+| Mobile shell (M3+) | Capacitor | iOS/Android wrapper; persistence via `capacitor-sqlite` + `jeep-sqlite`/OPFS |
 
-> **Never introduce Cannon.js, React Context for the game loop, or HTML DOM overlays for in-game HUD.**
+> **Architecture decision (user-confirmed):** Koota ECS + Zod is the canonical production state layer.
+> Zustand is **interim** — it handles phase/economy/settings until the M1 Koota migration is complete.
+> All new gameplay simulation entities (ore, cubes, debris) go into Koota traits, NOT Zustand.
+>
+> **Never introduce:** Cannon.js · React Context for game loop · `framer-motion-3d` · HTML DOM overlays for in-game HUD · new Zustand simulation state after M1.
 
 ---
 
@@ -77,16 +85,19 @@ Never leave the tree in a failing build state at the end of a session.
 │   ├── HANDOFF.md                 ← Implementation state + next-steps
 │   └── STANDARDS.md               ← All code, design, and audio standards
 │   ├── architecture/
-│   │   ├── overview.md
-│   │   └── runtime-systems.md
+│   │   ├── overview.md           ← Koota ECS + Zod architecture
+│   │   ├── runtime-systems.md   ← runtime contracts + animation (react-spring)
+│   │   └── decisions.md         ← ADRs (Rapier, Koota, diegetic cockpit, Capacitor)
 │   ├── gameplay/
-│   │   └── loop-and-progression.md
+│   │   ├── loop-and-progression.md  ← rare isotopes, onboarding missions, contracts
+│   │   └── playtesting-notes.md     ← paper playtest analysis, economy targets
 │   ├── design/
-│   │   └── visual-audio-direction.md
+│   │   ├── visual-audio-direction.md  ← full design bible
+│   │   └── mobile-controls.md         ← mobile input spec, haptics, joystick layout
 │   ├── lore/
 │   │   └── world-primer.md
 │   └── operations/
-│       └── roadmap.md
+│       └── roadmap.md           ← M1–M6 milestones
 │
 └── src/
     ├── main.jsx
@@ -294,5 +305,8 @@ At the end of every agent session:
 - ❌ Do not use convex hull colliders on large/complex ore meshes.
 - ❌ Do not commit `node_modules/`, `dist/`, or `.env` files.
 - ❌ Do not hardcode audio frequencies — route through `AudioEngine` methods.
-- ❌ Do not add new state management libraries (Zustand only).
+- ❌ Do not add new state management libraries (Zustand + Koota only).
 - ❌ Do not mutate Zustand state directly — always use the action methods.
+- ❌ Do not add new Zustand simulation state after M1 — new entities go in Koota traits.
+- ❌ Do not use `framer-motion-3d` — not maintained; use `react-spring` / `@react-spring/three`.
+- ❌ Do not use magic numbers — reference `gameConfig.*` from `src/config.json`.
