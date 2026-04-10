@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { RigidBody } from '@react-three/rapier'
+import { BallCollider, RigidBody } from '@react-three/rapier'
 import { useGameStore } from '../store'
 import { audioManager } from '../audio/AudioEngine'
 
@@ -12,6 +12,7 @@ const ORE_POSITIONS = [
 export function OreSpawner() {
   const phase = useGameStore((s) => s.phase)
   const isOverheated = useGameStore((s) => s.isOverheated)
+  const heat = useGameStore((s) => s.heat)
   const addOre = useGameStore((s) => s.addOre)
   const addHeat = useGameStore((s) => s.addHeat)
   const rawOre = useGameStore((s) => s.rawOre)
@@ -19,9 +20,12 @@ export function OreSpawner() {
   const getGrindDps = useGameStore((s) => s.getGrindDps)
   const ejectCube = useGameStore((s) => s.ejectCube)
   const [cubes, setCubes] = useState([])
+  const lastGrindSoundAtRef = useRef(0)
 
   useFrame(({ camera }, delta) => {
     if (phase !== 'gameplay') return
+
+    let nearbyOreCount = 0
 
     ORE_POSITIONS.forEach((orePos) => {
       const dx = camera.position.x - orePos[0]
@@ -29,11 +33,20 @@ export function OreSpawner() {
       const dist = Math.sqrt(dx * dx + dz * dz)
 
       if (dist < 5 && !isOverheated) {
-        addOre(getGrindDps() * delta)
-        addHeat(15 * delta)
-        audioManager.playGrind(0)
+        nearbyOreCount += 1
       }
     })
+
+    if (nearbyOreCount > 0) {
+      addOre(getGrindDps() * delta * nearbyOreCount)
+      addHeat(15 * delta * nearbyOreCount)
+
+      const now = performance.now()
+      if (now - lastGrindSoundAtRef.current >= 100) {
+        audioManager.playGrind(Math.min(100, heat))
+        lastGrindSoundAtRef.current = now
+      }
+    }
 
     if (rawOre >= getMaxOre()) {
       const cubePos = [
@@ -50,6 +63,7 @@ export function OreSpawner() {
     <>
       {ORE_POSITIONS.map((pos, i) => (
         <RigidBody key={i} type="fixed" colliders={false} position={pos}>
+          <BallCollider args={[1.5]} />
           <mesh>
             <sphereGeometry args={[1.5, 12, 12]} />
             <meshStandardMaterial color="#00ffcc" emissive="#00ffcc" emissiveIntensity={0.4} />
@@ -57,7 +71,16 @@ export function OreSpawner() {
         </RigidBody>
       ))}
       {cubes.map((cube) => (
-        <RigidBody key={cube.id} colliders="cuboid" position={cube.position} userData={{ type: 'cube', id: cube.id }}>
+        <RigidBody
+          key={cube.id}
+          colliders="cuboid"
+          position={cube.position}
+          userData={{
+            type: 'cube',
+            id: cube.id,
+            onSell: () => setCubes((prev) => prev.filter((entry) => entry.id !== cube.id)),
+          }}
+        >
           <mesh>
             <boxGeometry args={[1.5, 1.5, 1.5]} />
             <meshStandardMaterial color="#ffaa00" emissive="#ffaa00" emissiveIntensity={0.5} />

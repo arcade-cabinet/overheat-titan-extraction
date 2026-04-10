@@ -48,7 +48,7 @@ Never leave the tree in a failing build state at the end of a session.
 | Helpers | `@react-three/drei` | Cameras, shaderMaterial, Html, Points, Stars |
 | Noise | `simplex-noise` | Organic alien terrain; replaces Math.sin grid ripples |
 | Particles | `maath` | `maath/random` for Float32Array sphere distributions |
-| Animation | `framer-motion` + `framer-motion-3d` | Boot/upgrade panel transitions; ore-shrink 3D scale |
+| Animation | `framer-motion` | 2D/menu transitions; 3D motion tooling deferred until a compatible R3F option is selected |
 | Audio | Custom `AudioEngine` (Web Audio API) | `tune.js` is not on npm; we replicate its microtonal intent procedurally |
 
 > **Never introduce Cannon.js, React Context for the game loop, or HTML DOM overlays for in-game HUD.**
@@ -233,7 +233,7 @@ graph TD
 
 ## 8. Physics rules (Rapier — non-negotiable)
 
-- **Player**: `RigidBody type="fixed"` body + `lockRotations` + velocity-driven movement via `setLinvel()` in `useFrame`.
+- **Player**: dynamic `RigidBody` + `lockRotations` + velocity-driven movement via `setLinvel()` in `useFrame`.
 - **Terrain**: `HeightfieldCollider` generated from simplex-noise 64×64 grid, scale=5.
 - **Ore veins**: `RigidBody type="fixed"` + `BallCollider`. Never use convex hull on ore.
 - **Ejected cubes**: `RigidBody` default (dynamic) + `colliders="cuboid"`.

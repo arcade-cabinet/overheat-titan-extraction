@@ -6,12 +6,44 @@ import * as THREE from 'three'
 
 export function Silo() {
   const addCredits = useGameStore((s) => s.addCredits)
+  const soldBodiesRef = useRef(new Set())
 
   const handleIntersect = (e) => {
     const other = e.other.rigidBody
     if (!other) return
+
+    const otherObject = e.other.rigidBodyObject
+    const otherUserData = other.userData || otherObject?.userData || {}
+    if (otherUserData.type !== 'cube') return
+
+    const bodyId = other.handle ?? otherUserData.id
+    if (otherUserData.sold || soldBodiesRef.current.has(bodyId)) return
+
+    soldBodiesRef.current.add(bodyId)
+    other.userData = { ...otherUserData, sold: true }
+    if (otherObject) {
+      otherObject.userData = { ...otherObject.userData, sold: true }
+    }
+
     addCredits(50)
     audioManager.playSell()
+
+    if (typeof otherUserData.onSell === 'function') {
+      otherUserData.onSell()
+    }
+
+    if (typeof other.setLinvel === 'function') {
+      other.setLinvel({ x: 0, y: 0, z: 0 }, true)
+    }
+    if (typeof other.setAngvel === 'function') {
+      other.setAngvel({ x: 0, y: 0, z: 0 }, true)
+    }
+    if (typeof other.setTranslation === 'function') {
+      other.setTranslation({ x: 0, y: -1000, z: 0 }, true)
+    }
+    if (typeof other.sleep === 'function') {
+      other.sleep()
+    }
   }
 
   return (

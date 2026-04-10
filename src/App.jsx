@@ -1,7 +1,6 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
-import { KeyboardControls } from '@react-three/drei'
 import { useGameStore } from './store'
 
 import { Environment } from './components/Environment'
@@ -20,23 +19,16 @@ import { SettingsMenu } from './components/SettingsMenu'
 import { MeltdownScreen } from './components/MeltdownScreen'
 import { UpgradesTerminal } from './components/UpgradesTerminal'
 
-const MAP = [
-  { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
-  { name: 'backward', keys: ['ArrowDown', 'KeyS'] },
-  { name: 'left', keys: ['ArrowLeft', 'KeyA'] },
-  { name: 'right', keys: ['ArrowRight', 'KeyD'] },
-  { name: 'dash', keys: ['ShiftLeft', 'ShiftRight'] },
-]
-
 function Scene() {
   const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
   const isMelting = useGameStore((s) => s.isMelting)
 
   return (
     <>
       <Environment />
       <AmbientSpores />
-      <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay'}>
+      <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
         {(phase === 'gameplay' || isMelting) && (
@@ -62,17 +54,15 @@ function Scene() {
 
 export default function App() {
   return (
-    <KeyboardControls map={MAP}>
-      <Canvas
-        shadows
-        camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
-        style={{ background: '#020406' }}
-        gl={{ antialias: true, toneMapping: 0 }}
-      >
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      </Canvas>
-    </KeyboardControls>
+    <Canvas
+      shadows
+      camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
+      style={{ background: '#020406' }}
+      gl={{ antialias: true, toneMapping: 0 }}
+    >
+      <Suspense fallback={null}>
+        <Scene />
+      </Suspense>
+    </Canvas>
   )
 }

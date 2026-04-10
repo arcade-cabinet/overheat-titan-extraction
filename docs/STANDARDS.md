@@ -29,7 +29,7 @@ last_updated: 2026-04-09
 | `color.sawCold` | `#1a1a1a` | MoltenSaw blade when cool |
 | `color.sawHot` | `#ff3300` | MoltenSaw blade at peak heat |
 
-**Rule:** Never hardcode hex values inline in components. Reference this table or store values in a shared `src/constants.js` if needed.
+**Rule:** Avoid introducing new repeated inline hex values in components. The current scaffold still contains some temporary inline colors; when touching those areas, prefer consolidating reused palette values into shared constants instead of adding more one-off literals.
 
 ---
 
@@ -278,8 +278,8 @@ camera.updateProjectionMatrix()
 ### Hit-stop (planned)
 On first ore contact: freeze `useFrame` delta application and Tune oscillator for exactly 50ms. Massive perceived impact.
 
-### Ore shrink (planned — framer-motion-3d)
-As ore health drains, animate ore mesh scale from `[1,1,1]` toward `[0,0,0]` via `<motion.mesh scale={...} />`.
+### Ore shrink (planned)
+As ore health drains, animate ore mesh scale from `[1,1,1]` toward `[0,0,0]` via a compatible 3D motion solution once one is selected for the current React Three Fiber version.
 
 ### Sparks (planned)
 On grind contact: emit 5–10 small emissive box meshes with upward + random velocity. Apply gravity via Rapier dynamic RigidBodies. TTL ~1.5s.
@@ -297,11 +297,11 @@ three, @react-three/fiber, @react-three/drei, @react-three/rapier
 zustand
 simplex-noise
 maath
-framer-motion, framer-motion-3d
+framer-motion
 ```
 
 **To add a new library:** Document the reason in the PR description and update this section.  
-**Never add:** Cannon.js, react-spring (use framer-motion-3d), Redux, MobX, any additional physics engine.
+**Never add:** Cannon.js, Redux, MobX, any additional physics engine.
 
 ---
 

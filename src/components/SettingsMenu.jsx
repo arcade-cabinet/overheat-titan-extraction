@@ -4,6 +4,7 @@ import { audioManager } from '../audio/AudioEngine'
 
 export function SettingsMenu() {
   const phase = useGameStore((s) => s.phase)
+  const isPaused = useGameStore((s) => s.isPaused)
   const setPhase = useGameStore((s) => s.setPhase)
   const settings = useGameStore((s) => s.settings)
   const updateSetting = useGameStore((s) => s.updateSetting)
@@ -12,7 +13,7 @@ export function SettingsMenu() {
 
   const back = () => {
     audioManager.playBlip()
-    setPhase('menu')
+    setPhase(isPaused ? 'gameplay' : 'menu')
   }
 
   return (

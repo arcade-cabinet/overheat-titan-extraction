@@ -43,7 +43,7 @@ last_updated: 2026-04-09
 | Tractor Beam (Spring Joint drag + throw) | ❌ Not implemented |
 | Debris instancing (InstancedRigidBodies) | ❌ Not implemented |
 | Spark emitter on grind contact | ❌ Not implemented |
-| Ore shrink animation (framer-motion-3d) | ❌ Not implemented |
+| Ore shrink animation (compatible 3D motion library TBD) | ❌ Not implemented |
 | Hit-stop effect (50ms freeze on first contact) | ❌ Not implemented |
 | Spatial / positional audio (THREE.PositionalAudio) | ❌ Not implemented |
 | Headlamp SpotLight (boot flicker + stable beam) | ❌ Not implemented |
@@ -51,7 +51,7 @@ last_updated: 2026-04-09
 | Glitch shader pass during meltdown | ❌ Not implemented |
 | CRT overlay shader (scanlines + barrel) | ❌ Not implemented |
 | maath/random for spores (currently custom impl) | ⚠️ Partial — custom inSphere used |
-| framer-motion-3d panel transitions (boot/upgrade) | ❌ Not implemented |
+| 3D panel transitions pending compatible motion library | ❌ Not implemented |
 | Diegetic menu raycast (shoot dashboard to select) | ❌ Not implemented |
 
 ---
@@ -175,15 +175,14 @@ Boot flicker: in the `boot` phase, run a `useInterval` or `useFrame` for 0.5s th
 
 ---
 
-### Priority 5 — Ore shrink (framer-motion-3d)
+### Priority 5 — Ore shrink (compatible 3D motion library TBD)
 
 **File:** `src/components/OreSpawner.jsx`
 
-Replace static ore mesh with `<motion.mesh>` from `framer-motion-3d`:
+Replace static ore mesh with a compatible 3D motion primitive once the project adopts a React Three Fiber-compatible animation library:
 ```jsx
-import { motion } from 'framer-motion-3d'
-// ...
-<motion.mesh animate={{ scale: healthPct }} transition={{ type: 'spring', stiffness: 100 }}>
+// Example shape only — use the chosen compatible 3D motion wrapper once selected.
+<AnimatedOreMesh scale={healthPct} />
 ```
 Where `healthPct` goes from `1.0` to `0.0` as ore health drains.
 
@@ -321,14 +320,12 @@ const [sphere] = useState(() => random.inSphere(new Float32Array(5000), { radius
 |---|---|---|---|---|
 | 1 | Ore grind uses camera proximity (not physics contact) | Medium | `OreSpawner.jsx` | Should use Rapier intersection instead for physical accuracy |
 | 2 | No ore health / destruction | High | `OreSpawner.jsx` | Veins never die; hopper fills infinitely |
-| 3 | Cube sell doesn't remove RigidBody | High | `Silo.jsx` | `onIntersectionEnter` triggers credits but cube body persists |
+| 3 | Cube sell cleanup relies on userData callback + body relocation | Medium | `Silo.jsx`, `OreSpawner.jsx` | Works now, but should eventually move to a more explicit world-entity lifecycle |
 | 4 | Tractor Beam missing entirely | High | — | Core gameplay mechanic not yet implemented |
-| 5 | No pointer-lock on resume from pause | Low | `PauseMenu.jsx` | `requestPointerLock()` may need user gesture |
-| 6 | Settings "back" always goes to 'menu' | Medium | `SettingsMenu.jsx` | Should return to 'paused' if accessed from pause |
-| 7 | `maath` inSphere uses custom impl | Low | `AmbientSpores.jsx` | Functional but not using official maath API |
-| 8 | No headlamp / spotlight | Medium | `Player.jsx` | Cockpit is dark; only ambient + directional light |
-| 9 | Meltdown camera eject is basic (just y+) | Low | `Player.jsx` | Should be a lerp to sky with smooth curve |
-| 10 | No visual for tractor beam lock | Medium | — | No line/beam rendered when cube is grabbed |
+| 5 | `maath` inSphere uses custom impl | Low | `AmbientSpores.jsx` | Functional but not using official maath API |
+| 6 | No headlamp / spotlight | Medium | `Player.jsx` | Cockpit is dark; only ambient + directional light |
+| 7 | Meltdown camera eject is basic (just y+) | Low | `Player.jsx` | Should be a lerp to sky with smooth curve |
+| 8 | No visual for tractor beam lock | Medium | — | No line/beam rendered when cube is grabbed |
 
 ---
 
@@ -343,8 +340,8 @@ The V1–V3 prototype used Cannon.js. When generating convex hulls for the Silo 
 ### Why diegetic UI (not DOM overlays)
 The design decision to render the HUD inside the 3D scene as a `CanvasTexture` on the dashboard mesh was made to maintain immersion. This is non-negotiable. The only HTML overlays allowed are boot, menus, and settings (which pause the game world).
 
-### Why KeyboardControls not used for movement
-The `@react-three/drei` `KeyboardControls` hook was set up in `App.jsx` but the `Player.jsx` implementation uses direct `window.addEventListener` for keys. This is intentional — it avoids a known timing issue with `useKeyboardControls` hook and pointer lock camera. Both approaches can coexist.
+### Why direct window listeners are the authoritative movement input path
+`Player.jsx` uses direct `window.addEventListener` key handlers for movement so mouse-look and pointer-lock behavior stay coupled to the same imperative input loop. `KeyboardControls` was removed from `App.jsx` to avoid having two competing input models in the scaffold.
 
 ### Why `useFrame` for cooling (not a timeout/interval)
 Cooling needs to be delta-time accurate and pause-aware. A `setInterval` would continue cooling even when paused. `useFrame` with the `isPaused` guard ensures cooling only happens during active gameplay.

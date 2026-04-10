@@ -3,7 +3,6 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
 import { useGameStore } from '../store'
 import { audioManager } from '../audio/AudioEngine'
-import { Cockpit } from './Cockpit'
 import * as THREE from 'three'
 
 const SPEED = 8

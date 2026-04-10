@@ -5,7 +5,7 @@ export const useGameStore = create(
   persist(
     (set, get) => ({
       // Game Phase
-      phase: 'powered_down', // powered_down | boot | menu | gameplay | paused | meltdown | report
+      phase: 'powered_down', // powered_down | boot | menu | gameplay | paused | meltdown | report | settings | upgrades
       isPaused: false,
 
       // Economy & Inventory
@@ -43,7 +43,15 @@ export const useGameStore = create(
       addHeat: (amount) =>
         set((state) => {
           const newHeat = state.heat + amount
-          if (newHeat >= 120) return { heat: 120, isOverheated: true, isMelting: true }
+          if (newHeat >= 120) {
+            return {
+              heat: 120,
+              isOverheated: true,
+              isMelting: true,
+              phase: 'meltdown',
+              isPaused: false,
+            }
+          }
           if (newHeat >= 100) return { heat: 100, isOverheated: true }
           return { heat: newHeat }
         }),
@@ -57,10 +65,20 @@ export const useGameStore = create(
       addCredits: (amount) =>
         set((state) => ({ credits: state.credits + amount, sessionCredits: state.sessionCredits + amount })),
       buyUpgrade: (type, cost) =>
-        set((state) => ({
-          credits: state.credits - cost,
-          upgrades: { ...state.upgrades, [type]: state.upgrades[type] + 1 },
-        })),
+        set((state) => {
+          if (!Object.prototype.hasOwnProperty.call(state.upgrades, type)) {
+            return state
+          }
+
+          if (state.credits < cost) {
+            return state
+          }
+
+          return {
+            credits: state.credits - cost,
+            upgrades: { ...state.upgrades, [type]: state.upgrades[type] + 1 },
+          }
+        }),
 
       // Settings
       updateSetting: (key, value) =>

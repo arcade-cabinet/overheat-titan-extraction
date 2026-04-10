@@ -7,7 +7,7 @@ export function Dashboard() {
   const heat = useGameStore((s) => s.heat)
   const credits = useGameStore((s) => s.credits)
   const isOverheated = useGameStore((s) => s.isOverheated)
-  const getMaxOre = useGameStore((s) => s.getMaxOre)
+  const maxOre = useGameStore((s) => 100 * s.upgrades.cap)
 
   const { canvas, ctx, texture } = useMemo(() => {
     const c = document.createElement('canvas')
@@ -19,10 +19,12 @@ export function Dashboard() {
   }, [])
 
   useEffect(() => {
+    if (!ctx) return
+
     ctx.fillStyle = '#050a0f'
     ctx.fillRect(0, 0, 1024, 256)
 
-    const pct = Math.min(100, Math.floor((rawOre / getMaxOre()) * 100))
+    const pct = Math.min(100, Math.floor((rawOre / maxOre) * 100))
     ctx.fillStyle = pct >= 100 ? '#ffaa00' : '#00ffcc'
     ctx.font = 'bold 36px monospace'
     ctx.textAlign = 'left'
@@ -40,7 +42,7 @@ export function Dashboard() {
     ctx.lineWidth = 3
     ctx.strokeRect(40, 163, 400, 28)
     ctx.fillStyle = isOverheated ? '#ff0000' : '#ff4400'
-    ctx.fillRect(44, 167, 392 * (heat / 100), 20)
+    ctx.fillRect(44, 167, 392 * Math.min(1, heat / 100), 20)
 
     ctx.textAlign = 'right'
     ctx.fillStyle = '#ffaa00'
@@ -57,7 +59,7 @@ export function Dashboard() {
     }
 
     texture.needsUpdate = true
-  }, [rawOre, heat, credits, isOverheated])
+  }, [credits, ctx, heat, isOverheated, maxOre, rawOre, texture])
 
   return (
     <mesh position={[0, -1.3, -1.8]} rotation={[-0.25, 0, 0]}>
