@@ -1,0 +1,59 @@
+appId: com.arcadecabinet.overheattitanextraction
+---
+- launchApp:
+    clearState: true
+
+# Boot sequence
+- waitFor:
+    selector:
+      text: "AWAITING PILOT INPUT"
+    timeout: 5000
+- takeScreenshot: flow-01-boot
+- tapOn:
+    point: "50%, 50%"
+- delay: 2000
+- waitFor:
+    selector:
+      text: "NEW EXCAVATION"
+    timeout: 8000
+- takeScreenshot: flow-02-main-menu
+
+# Start game
+- tapOn:
+    text: "NEW EXCAVATION"
+- delay: 1000
+- takeScreenshot: flow-03-gameplay
+
+# Open pause menu via back button
+- pressKey: Back
+- waitFor:
+    selector:
+      text: "RESUME"
+    timeout: 5000
+- takeScreenshot: flow-04-pause-menu
+
+# Open settings from pause
+- tapOn:
+    text: "SETTINGS"
+- waitFor:
+    selector:
+      text: "MASTER VOLUME"
+    timeout: 5000
+- takeScreenshot: flow-05-settings
+
+# Go back to pause
+- tapOn:
+    text: "BACK"
+- waitFor:
+    selector:
+      text: "RESUME"
+    timeout: 3000
+
+# Abort mission
+- tapOn:
+    text: "ABORT MISSION"
+- waitFor:
+    selector:
+      text: "NEW EXCAVATION"
+    timeout: 5000
+- takeScreenshot: flow-06-back-to-menu

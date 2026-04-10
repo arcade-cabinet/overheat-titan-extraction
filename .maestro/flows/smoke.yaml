@@ -1,0 +1,16 @@
+appId: com.arcadecabinet.overheattitanextraction
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- assertVisible:
+    text: "AWAITING PILOT INPUT"
+- takeScreenshot: smoke-powered-down
+- tapOn:
+    point: "50%, 50%"
+- waitForAnimationToEnd
+- waitFor:
+    selector:
+      text: "NEW EXCAVATION"
+    timeout: 10000
+- takeScreenshot: smoke-main-menu

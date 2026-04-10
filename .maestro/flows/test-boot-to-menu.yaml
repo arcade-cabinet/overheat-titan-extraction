@@ -1,0 +1,25 @@
+appId: com.arcadecabinet.overheattitanextraction
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd
+- assertVisible:
+    text: "AWAITING PILOT INPUT"
+- takeScreenshot: boot-01-powered-down
+
+# Click to trigger boot sequence
+- tapOn:
+    point: "50%, 50%"
+- waitForAnimationToEnd
+
+# Wait for boot to complete — headlamp flicker runs ~0.5s then stabilizes
+- delay: 2000
+
+# Main menu should be visible
+- waitFor:
+    selector:
+      text: "NEW EXCAVATION"
+    timeout: 8000
+- assertVisible:
+    text: "OS CONFIG"
+- takeScreenshot: boot-02-main-menu
