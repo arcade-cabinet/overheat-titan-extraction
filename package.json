@@ -8,6 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "biome lint ./src",
     "format": "biome format ./src",
     "check": "biome check ./src"
@@ -25,17 +28,22 @@
     "@react-three/postprocessing": "^3.0.4",
     "@react-three/rapier": "^2.2.0",
     "framer-motion": "^12.38.0",
+    "koota": "^0.6.6",
     "maath": "^0.10.8",
     "postprocessing": "^6.39.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "simplex-noise": "^4.0.3",
     "three": "^0.183.2",
+    "zod": "^4.3.6",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.11",
     "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.0.8"
+    "@vitest/coverage-v8": "^4.1.4",
+    "jsdom": "^29.0.2",
+    "vite": "^8.0.8",
+    "vitest": "^4.1.4"
   }
 }
