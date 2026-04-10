@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import gameConfig from '../config.json'
 
@@ -28,7 +28,8 @@ export function Sparks({ triggerRef }) {
   const sparks = useRef([]) // { pos: THREE.Vector3, vel: THREE.Vector3, ttl: number, life: number }
 
   // Expose spawn function via ref — called from OreSpawner during grind
-  if (triggerRef) {
+  useEffect(() => {
+    if (!triggerRef) return
     triggerRef.current = (pos) => {
       const count = 4 + Math.floor(Math.random() * 5) // 4-8 sparks per burst
       for (let i = 0; i < count; i++) {
@@ -47,7 +48,10 @@ export function Sparks({ triggerRef }) {
         })
       }
     }
-  }
+    return () => {
+      triggerRef.current = null
+    }
+  }, [triggerRef])
 
   useFrame((_, delta) => {
     if (!meshRef.current) return
