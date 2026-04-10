@@ -141,14 +141,57 @@ export function Dashboard() {
   }
 
   return (
-    <mesh position={[0, -1.3, -1.8]} rotation={[-0.25, 0, 0]} onPointerDown={handlePointerDown}>
-      <boxGeometry args={[4, 0.8, 1]} />
-      <meshStandardMaterial attach="material-0" color="#0f1418" />
-      <meshStandardMaterial attach="material-1" color="#0f1418" />
-      <meshBasicMaterial attach="material-2" map={texture} />
-      <meshStandardMaterial attach="material-3" color="#0f1418" />
-      <meshStandardMaterial attach="material-4" color="#0f1418" />
-      <meshStandardMaterial attach="material-5" color="#0f1418" />
-    </mesh>
+    <group position={[0, -1.3, -1.8]} rotation={[-0.25, 0, 0]}>
+      {/* Main Screen Base */}
+      <mesh onPointerDown={handlePointerDown}>
+        <boxGeometry args={[4, 0.8, 1]} />
+        <meshStandardMaterial attach="material-0" color="#0a0f14" roughness={0.8} />
+        <meshStandardMaterial attach="material-1" color="#0a0f14" roughness={0.8} />
+        <meshBasicMaterial attach="material-2" map={texture} />
+        <meshStandardMaterial attach="material-3" color="#0a0f14" roughness={0.8} />
+        <meshStandardMaterial attach="material-4" color="#0a0f14" roughness={0.8} />
+        <meshStandardMaterial attach="material-5" color="#0a0f14" roughness={0.8} />
+      </mesh>
+
+      {/* Top Bezel (Back edge of screen, z = -0.5) */}
+      <mesh position={[0, 0.45, -0.55]}>
+        <boxGeometry args={[4.2, 0.1, 0.1]} />
+        <meshStandardMaterial color="#111820" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* Bottom Bezel (Front edge of screen, z = 0.5) */}
+      <mesh position={[0, 0.45, 0.55]}>
+        <boxGeometry args={[4.2, 0.1, 0.1]} />
+        <meshStandardMaterial color="#111820" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* Left Bezel */}
+      <mesh position={[-2.05, 0.45, 0]}>
+        <boxGeometry args={[0.1, 0.1, 1.2]} />
+        <meshStandardMaterial color="#111820" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* Right Bezel */}
+      <mesh position={[2.05, 0.45, 0]}>
+        <boxGeometry args={[0.1, 0.1, 1.2]} />
+        <meshStandardMaterial color="#111820" metalness={0.7} roughness={0.3} />
+      </mesh>
+
+      {/* LED Strip Indicator (Top Bezel) */}
+      <mesh position={[0, 0.51, -0.52]}>
+        <boxGeometry args={[3.8, 0.02, 0.04]} />
+        <meshBasicMaterial color={isOverheated ? '#ff0000' : '#00ffcc'} />
+      </mesh>
+
+      {/* Hardware Screws */}
+      {[-2.05, 2.05].map((x) =>
+        [-0.55, 0.55].map((z) => (
+          <mesh key={`${x}-${z}`} position={[x, 0.51, z]} rotation={[0, 0, 0]}>
+            <cylinderGeometry args={[0.02, 0.02, 0.01, 8]} />
+            <meshStandardMaterial color="#444" metalness={0.9} roughness={0.2} />
+          </mesh>
+        ))
+      )}
+    </group>
   )
 }
