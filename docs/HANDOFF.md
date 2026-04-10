@@ -53,7 +53,14 @@ last_updated: 2026-04-10
 | maath/random for spores (official inSphere) | ✅ Complete |
 | Framer-motion UI transitions (all overlay screens) | ✅ Complete |
 | Rare isotopes (15%, magenta, 3× heat, $2500 cube) | ✅ Complete |
-| Diegetic menu raycast (shoot dashboard to select) | ❌ Not implemented |
+| Instanced spark particle system (CPU sim, no Rapier bodies) | ✅ Complete |
+| Rare sell audio (dissonant chord via config oscillators) | ✅ Complete |
+| Dashboard danger zone (overheat marker + 120°C scale) | ✅ Complete |
+| OreSpawner setState deferred via scheduleAction pattern | ✅ Complete |
+| All OreSpawner constants wired to config.json | ✅ Complete |
+| Diegetic pause button (UV raycast on dashboard mesh) | ✅ Complete |
+| All Player/TractorBeam/Silo constants wired to config.json | ✅ Complete |
+| Diegetic menu raycast (upgrade/sell terminal interaction) | ❌ Not implemented |
 
 ---
 
@@ -110,42 +117,39 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-All Stream A deliverables are shipped and merged. Remaining work:
+Stream A gameplay polish, OreSpawner tech debt, diegetic pause button, and config wire-up are all shipped and merged (PRs #13–#17). PRs #13 and #15 are open pending CodeRabbit re-review after remediation commits. Remaining work:
 
-### Priority 1 — OreSpawner `setState` inside `useFrame` (tech debt)
+### Priority 1 — Diegetic upgrade/sell menu (dashboard as interactive surface)
 
-**File:** `src/components/OreSpawner.jsx`
+**File:** `src/components/Dashboard.jsx` and overlay screens
 
-`setOreRevision`, `setDebris`, and `setCubes` are called inside `useFrame`. These should be buffered in refs and flushed from a `useEffect` with a throttle to avoid React scheduler pressure during render:
-
-```js
-const pendingCubesRef = useRef([])
-// In useFrame: push to pendingCubesRef.current instead of calling setCubes
-// In useEffect: flush pending with setCubes every ~100ms
-```
-
-### Priority 2 — Diegetic menu raycast (dashboard as interactive surface)
-
-**File:** `src/components/Dashboard.jsx`
-
-The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. Currently using Html overlay which works but breaks diegetic immersion.
+The AGENTS.md §18 vision: player shoots the 3D dashboard with the crosshair to select menu items. The **pause button** is now diegetic (UV raycast on dashboard mesh, PR #15). The next step is to do the same for the **upgrade terminal** and **silo sell confirmation** — replacing or augmenting the Html overlay screens with 3D-surface interaction.
 
 Implementation:
-1. Add `onPointerDown` handler to the dashboard mesh.
-2. Read UV coordinates from the intersection event (`event.uv`).
-3. Map UV → menu option and call appropriate store action.
+1. Extend the dashboard UV hit zone to cover upgrade/sell buttons.
+2. Map UV regions → store actions (`openUpgrades`, `confirmSell`, etc.).
+3. Render upgrade options directly on the CanvasTexture rather than Html overlay.
 
-### Priority 3 — Meltdown radial impulse
+### Priority 2 — Meltdown radial impulse
 
 **File:** `src/components/OreSpawner.jsx` or a new `MeltdownExplosion.jsx`
 
 At meltdown trigger, apply radial impulse to all nearby rigid bodies. Blocked by lack of stable world-query API in current `@react-three/rapier` version — revisit when Rapier adds `world.intersectionsWithShape`.
 
-### Priority 4 — Ore grind physics contact (quality)
+### Priority 3 — Ore grind physics contact (quality)
 
 **File:** `src/components/OreSpawner.jsx`
 
 Currently uses camera proximity (distance < 5) for grind detection. Should use Rapier sensor intersection for physical accuracy. Low priority — current approach is stable and unnoticeable to players.
+
+### Deferred — CodeRabbit open items on PR #13 (pending re-review)
+
+After remediation commit (d710b46), CodeRabbit needs to re-review:
+- ✅ Pos normalization (array vs object) — fixed
+- ✅ Unified lifetime so `ttl === life` at spawn — fixed
+- ✅ Phase/isPaused guard in `useFrame` — fixed
+- ✅ `playRareSell` oscillator params from config — fixed
+- ✅ `DISPLAY_MAX_HEAT` and overheat marker from config — fixed
 
 ---
 
