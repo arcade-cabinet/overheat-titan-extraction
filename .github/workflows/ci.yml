@@ -10,6 +10,8 @@ jobs:
   ci:
     name: Build & Lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout
         # actions/checkout v6.0.2

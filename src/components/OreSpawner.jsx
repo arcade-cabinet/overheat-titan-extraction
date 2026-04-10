@@ -5,14 +5,14 @@ import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
 
 const ORE_POSITIONS = [
-  [15, 0, 15],
-  [-15, 0, 15],
-  [15, 0, -15],
-  [-15, 0, -15],
-  [25, 0, 5],
-  [-25, 0, -5],
-  [5, 0, 25],
-  [-5, 0, -25],
+  { id: 'ore-0', pos: [15, 0, 15] },
+  { id: 'ore-1', pos: [-15, 0, 15] },
+  { id: 'ore-2', pos: [15, 0, -15] },
+  { id: 'ore-3', pos: [-15, 0, -15] },
+  { id: 'ore-4', pos: [25, 0, 5] },
+  { id: 'ore-5', pos: [-25, 0, -5] },
+  { id: 'ore-6', pos: [5, 0, 25] },
+  { id: 'ore-7', pos: [-5, 0, -25] },
 ]
 
 export function OreSpawner() {
@@ -33,7 +33,7 @@ export function OreSpawner() {
 
     let grindingOreCount = 0
 
-    ORE_POSITIONS.forEach((orePos) => {
+    ORE_POSITIONS.forEach(({ pos: orePos }) => {
       const dx = camera.position.x - orePos[0]
       const dz = camera.position.z - orePos[2]
       const dist = Math.sqrt(dx * dx + dz * dz)
@@ -67,8 +67,8 @@ export function OreSpawner() {
 
   return (
     <>
-      {ORE_POSITIONS.map((pos) => (
-        <RigidBody key={`ore-${pos[0]},${pos[2]}`} type="fixed" colliders={false} position={pos}>
+      {ORE_POSITIONS.map(({ id, pos }) => (
+        <RigidBody key={id} type="fixed" colliders={false} position={pos}>
           <BallCollider args={[1.5]} />
           <mesh>
             <sphereGeometry args={[1.5, 12, 12]} />

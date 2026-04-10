@@ -22,7 +22,7 @@ export function PauseMenu() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, isPaused, setPaused])
+  }, [phase, isPaused])
 
   if (!isPaused || phase !== 'gameplay') return null
 
