@@ -13,8 +13,8 @@
 3. Read docs/HANDOFF.md  — tells you exactly what is done and what is next.
 4. Read docs/STANDARDS.md — non-negotiable code, design, and audio rules.
 5. If you are editing docs, read docs/AGENTS.md for frontmatter and organization rules.
-6. Run:  npm install && npm run build   to verify the tree is healthy before touching anything.
-7. Run:  npm run dev                    to preview in-browser.
+6. Run:  pnpm install && pnpm run build   to verify the tree is healthy before touching anything.
+7. Run:  pnpm run dev                    to preview in-browser.
 ```
 
 If the build fails, fix it before writing new features.  
@@ -32,8 +32,8 @@ Never leave the tree in a failing build state at the end of a session.
 | **Target platform** | Browser (WebGL 2) via Vite + React |
 | **Repository** | `arcade-cabinet/overheat-titan-extract` |
 | **Working branch** | `copilot/update-game-architecture` |
-| **Build command** | `npm run build` |
-| **Dev server** | `npm run dev` |
+| **Build command** | `pnpm run build` |
+| **Dev server** | `pnpm run dev` |
 
 ---
 

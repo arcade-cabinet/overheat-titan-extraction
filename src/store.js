@@ -58,15 +58,19 @@ export const useGameStore = create(
       coolDown: (amount) =>
         set((state) => {
           const newHeat = Math.max(0, state.heat - amount)
-          if (newHeat < 20 && state.isOverheated) return { heat: newHeat, isOverheated: false, isMelting: false }
+          if (newHeat < 20 && state.isOverheated)
+            return { heat: newHeat, isOverheated: false, isMelting: false }
           return { heat: newHeat }
         }),
       ejectCube: () => set({ rawOre: 0 }),
       addCredits: (amount) =>
-        set((state) => ({ credits: state.credits + amount, sessionCredits: state.sessionCredits + amount })),
+        set((state) => ({
+          credits: state.credits + amount,
+          sessionCredits: state.sessionCredits + amount,
+        })),
       buyUpgrade: (type, cost) =>
         set((state) => {
-          if (!Object.prototype.hasOwnProperty.call(state.upgrades, type)) {
+          if (!Object.hasOwn(state.upgrades, type)) {
             return state
           }
 

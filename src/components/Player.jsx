@@ -1,9 +1,9 @@
-import { useRef, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
-import { useGameStore } from '../store'
-import { audioManager } from '../audio/AudioEngine'
+import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
+import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 const SPEED = 8
 const DASH_SPEED = 20
@@ -52,7 +52,7 @@ export function Player() {
     return () => document.removeEventListener('mousemove', onMove)
   }, [phase, isPaused, lookSensitivity])
 
-  useFrame(({ clock }, delta) => {
+  useFrame(({ clock: _clock }, delta) => {
     if (!bodyRef.current) return
 
     // Meltdown camera eject
@@ -73,11 +73,11 @@ export function Player() {
     camera.quaternion.setFromEuler(euler)
 
     // Movement
-    const forward = keys['KeyW'] || keys['ArrowUp'] ? 1 : 0
-    const backward = keys['KeyS'] || keys['ArrowDown'] ? 1 : 0
-    const left = keys['KeyA'] || keys['ArrowLeft'] ? 1 : 0
-    const right = keys['KeyD'] || keys['ArrowRight'] ? 1 : 0
-    const dash = keys['ShiftLeft'] || keys['ShiftRight'] ? true : false
+    const forward = keys.KeyW || keys.ArrowUp ? 1 : 0
+    const backward = keys.KeyS || keys.ArrowDown ? 1 : 0
+    const left = keys.KeyA || keys.ArrowLeft ? 1 : 0
+    const right = keys.KeyD || keys.ArrowRight ? 1 : 0
+    const dash = !!(keys.ShiftLeft || keys.ShiftRight)
 
     const dir = new THREE.Vector3(left - right, 0, backward - forward)
     if (dir.length() > 0.01) dir.normalize()
@@ -95,7 +95,7 @@ export function Player() {
 
     // Camera shake when grinding close to ore
     if (!isOverheated) {
-      const shakeScale = heat / 100 * 0.03
+      const shakeScale = (heat / 100) * 0.03
       camera.position.x += (Math.random() - 0.5) * shakeScale
       camera.position.y += (Math.random() - 0.5) * shakeScale
       camera.position.z += (Math.random() - 0.5) * shakeScale
@@ -108,7 +108,7 @@ export function Player() {
 
     // Footstep sounds
     stepTimer.current += delta
-    const moving = (forward || backward || left || right)
+    const moving = forward || backward || left || right
     if (moving && stepTimer.current > 0.4) {
       stepTimer.current = 0
       audioManager.playMechStep()

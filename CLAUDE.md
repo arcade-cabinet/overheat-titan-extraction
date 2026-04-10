@@ -24,7 +24,7 @@ CLAUDE.md  (you are here)
 3. `cat docs/HANDOFF.md` — understand exactly what is built and what is next
 4. `cat docs/STANDARDS.md` — internalize non-negotiable rules
 5. If touching docs, read `docs/AGENTS.md`
-6. `npm install && npm run build` — confirm healthy tree
+6. `pnpm install && pnpm run build` — confirm healthy tree
 7. Only then begin work
 
 ## Claude-specific reminders

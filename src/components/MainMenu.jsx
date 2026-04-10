@@ -1,6 +1,6 @@
 import { Html } from '@react-three/drei'
-import { useGameStore } from '../store'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 export function MainMenu() {
   const phase = useGameStore((s) => s.phase)
@@ -39,16 +39,25 @@ export function MainMenu() {
           pointerEvents: 'all',
         }}
       >
-        <div style={{ color: '#00ffcc', fontFamily: 'monospace', fontSize: '28px', letterSpacing: '0.3em', marginBottom: '20px', textShadow: '0 0 20px #00ffcc' }}>
+        <div
+          style={{
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '28px',
+            letterSpacing: '0.3em',
+            marginBottom: '20px',
+            textShadow: '0 0 20px #00ffcc',
+          }}
+        >
           OVERHEAT
         </div>
-        <button onClick={startGame} style={btnStyle('#00ffcc')}>
+        <button type="button" onClick={startGame} style={btnStyle('#00ffcc')}>
           [ NEW EXCAVATION ]
         </button>
-        <button onClick={openUpgrades} style={btnStyle('#ffaa00')}>
+        <button type="button" onClick={openUpgrades} style={btnStyle('#ffaa00')}>
           [ TITAN OS TERMINAL ]
         </button>
-        <button onClick={openSettings} style={btnStyle('#ffaa00')}>
+        <button type="button" onClick={openSettings} style={btnStyle('#ffaa00')}>
           [ OS CONFIG ]
         </button>
       </div>

@@ -1,7 +1,7 @@
+import { HeightfieldCollider, RigidBody } from '@react-three/rapier'
 import { useMemo } from 'react'
-import { RigidBody, HeightfieldCollider } from '@react-three/rapier'
-import * as THREE from 'three'
 import { createNoise2D } from 'simplex-noise'
+import * as THREE from 'three'
 
 export function Terrain() {
   const size = 64
@@ -51,7 +51,12 @@ export function Terrain() {
   return (
     <RigidBody type="fixed" colliders={false}>
       <HeightfieldCollider
-        args={[size - 1, size - 1, heights.flat(), { x: scale * (size - 1), y: 1, z: scale * (size - 1) }]}
+        args={[
+          size - 1,
+          size - 1,
+          heights.flat(),
+          { x: scale * (size - 1), y: 1, z: scale * (size - 1) },
+        ]}
         position={[0, 0, 0]}
       />
       <mesh geometry={geometry} receiveShadow>

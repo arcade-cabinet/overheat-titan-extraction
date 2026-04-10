@@ -1,6 +1,6 @@
 import { Html } from '@react-three/drei'
-import { useGameStore } from '../store'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 export function SettingsMenu() {
   const phase = useGameStore((s) => s.phase)
@@ -31,16 +31,30 @@ export function SettingsMenu() {
           pointerEvents: 'all',
         }}
       >
-        <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '22px', letterSpacing: '0.3em', marginBottom: '10px' }}>
+        <div
+          style={{
+            color: '#ffaa00',
+            fontFamily: 'monospace',
+            fontSize: '22px',
+            letterSpacing: '0.3em',
+            marginBottom: '10px',
+          }}
+        >
           OS CONFIG
         </div>
 
         <label style={labelStyle}>
           <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>MASTER VOLUME</span>
           <input
-            type="range" min="0" max="1" step="0.05"
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
             value={settings.masterVolume}
-            onChange={(e) => { updateSetting('masterVolume', parseFloat(e.target.value)); audioManager.setVolume(parseFloat(e.target.value)) }}
+            onChange={(e) => {
+              updateSetting('masterVolume', parseFloat(e.target.value))
+              audioManager.setVolume(parseFloat(e.target.value))
+            }}
             style={{ accentColor: '#00ffcc' }}
           />
         </label>
@@ -48,7 +62,10 @@ export function SettingsMenu() {
         <label style={labelStyle}>
           <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>LOOK SENSITIVITY</span>
           <input
-            type="range" min="0.2" max="3" step="0.1"
+            type="range"
+            min="0.2"
+            max="3"
+            step="0.1"
             value={settings.lookSensitivity}
             onChange={(e) => updateSetting('lookSensitivity', parseFloat(e.target.value))}
             style={{ accentColor: '#00ffcc' }}
@@ -64,7 +81,9 @@ export function SettingsMenu() {
           />
         </label>
 
-        <button onClick={back} style={btnStyle}>[ BACK ]</button>
+        <button type="button" onClick={back} style={btnStyle}>
+          [ BACK ]
+        </button>
       </div>
     </Html>
   )

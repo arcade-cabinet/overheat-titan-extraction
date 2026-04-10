@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
 import { Html } from '@react-three/drei'
-import { useGameStore } from '../store'
+import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 export function PauseMenu() {
   const phase = useGameStore((s) => s.phase)
@@ -22,7 +22,7 @@ export function PauseMenu() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, isPaused])
+  }, [phase, isPaused, setPaused])
 
   if (!isPaused || phase !== 'gameplay') return null
 
@@ -41,16 +41,50 @@ export function PauseMenu() {
           pointerEvents: 'all',
         }}
       >
-        <div style={{ color: '#00ffcc', fontFamily: 'monospace', fontSize: '22px', letterSpacing: '0.3em', marginBottom: '16px' }}>
+        <div
+          style={{
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '22px',
+            letterSpacing: '0.3em',
+            marginBottom: '16px',
+          }}
+        >
           ⚙ DIAGNOSTICS MODE
         </div>
-        <button onClick={() => { audioManager.playBlip(); setPaused(false); audioManager.setPauseFilter(false); document.body.requestPointerLock?.() }} style={btnStyle('#00ffcc')}>
+        <button
+          type="button"
+          onClick={() => {
+            audioManager.playBlip()
+            setPaused(false)
+            audioManager.setPauseFilter(false)
+            document.body.requestPointerLock?.()
+          }}
+          style={btnStyle('#00ffcc')}
+        >
           [ RESUME ]
         </button>
-        <button onClick={() => { audioManager.playBlip(); setPhase('settings') }} style={btnStyle('#ffaa00')}>
+        <button
+          type="button"
+          onClick={() => {
+            audioManager.playBlip()
+            setPhase('settings')
+          }}
+          style={btnStyle('#ffaa00')}
+        >
           [ SETTINGS ]
         </button>
-        <button onClick={() => { audioManager.playBlip(); setPaused(false); audioManager.setPauseFilter(false); setPhase('menu'); document.exitPointerLock?.() }} style={btnStyle('#ff4400')}>
+        <button
+          type="button"
+          onClick={() => {
+            audioManager.playBlip()
+            setPaused(false)
+            audioManager.setPauseFilter(false)
+            setPhase('menu')
+            document.exitPointerLock?.()
+          }}
+          style={btnStyle('#ff4400')}
+        >
           [ ABORT MISSION ]
         </button>
       </div>

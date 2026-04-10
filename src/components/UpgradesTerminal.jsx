@@ -1,6 +1,6 @@
 import { Html } from '@react-three/drei'
-import { useGameStore } from '../store'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 const UPGRADES = [
   { key: 'cap', label: 'HOPPER CAPACITY', desc: '+100 ore cap per level', baseCost: 100 },
@@ -19,15 +19,38 @@ export function UpgradesTerminal() {
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
-      <div style={{
-        width: '100vw', height: '100vh', background: 'rgba(0,5,10,0.9)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexDirection: 'column', gap: '16px', pointerEvents: 'all'
-      }}>
-        <div style={{ color: '#00ffcc', fontFamily: 'monospace', fontSize: '22px', letterSpacing: '0.3em', marginBottom: '10px' }}>
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          background: 'rgba(0,5,10,0.9)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: '16px',
+          pointerEvents: 'all',
+        }}
+      >
+        <div
+          style={{
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '22px',
+            letterSpacing: '0.3em',
+            marginBottom: '10px',
+          }}
+        >
           TITAN OS TERMINAL
         </div>
-        <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '16px', marginBottom: '16px' }}>
+        <div
+          style={{
+            color: '#ffaa00',
+            fontFamily: 'monospace',
+            fontSize: '16px',
+            marginBottom: '16px',
+          }}
+        >
           CREDITS: ${credits}
         </div>
         {UPGRADES.map((u) => {
@@ -37,12 +60,18 @@ export function UpgradesTerminal() {
           return (
             <div key={u.key} style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
               <div style={{ color: '#aaa', fontFamily: 'monospace', width: '200px' }}>
-                <div style={{ color: '#00ffcc' }}>{u.label} [LVL {level}]</div>
+                <div style={{ color: '#00ffcc' }}>
+                  {u.label} [LVL {level}]
+                </div>
                 <div style={{ fontSize: '11px' }}>{u.desc}</div>
               </div>
               <button
+                type="button"
                 disabled={!canAfford}
-                onClick={() => { audioManager.playSell(); buyUpgrade(u.key, cost) }}
+                onClick={() => {
+                  audioManager.playSell()
+                  buyUpgrade(u.key, cost)
+                }}
                 style={{
                   background: 'transparent',
                   border: `1px solid ${canAfford ? '#ffaa00' : '#444'}`,
@@ -59,11 +88,26 @@ export function UpgradesTerminal() {
             </div>
           )
         })}
-        <button onClick={() => { audioManager.playBlip(); setPhase('menu') }} style={{
-          background: 'transparent', border: '1px solid #00ffcc',
-          color: '#00ffcc', fontFamily: 'monospace', fontSize: '14px',
-          padding: '10px 28px', cursor: 'pointer', letterSpacing: '0.15em', marginTop: '20px'
-        }}>[ BACK ]</button>
+        <button
+          type="button"
+          onClick={() => {
+            audioManager.playBlip()
+            setPhase('menu')
+          }}
+          style={{
+            background: 'transparent',
+            border: '1px solid #00ffcc',
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            padding: '10px 28px',
+            cursor: 'pointer',
+            letterSpacing: '0.15em',
+            marginTop: '20px',
+          }}
+        >
+          [ BACK ]
+        </button>
       </div>
     </Html>
   )

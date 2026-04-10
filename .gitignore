@@ -5,6 +5,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+pnpm-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -133,6 +134,15 @@ dist
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# npm lockfile (project uses pnpm)
+package-lock.json
+
+# pnpm store
+.pnpm-store/
+
+# Biome cache
+.biome-cache/
 
 # Vite logs files
 vite.config.js.timestamp-*

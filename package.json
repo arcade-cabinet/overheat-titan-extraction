@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "OVERHEAT: Titan Extraction - a React Three Fiber extraction game",
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "biome lint ./src",
+    "format": "biome format ./src",
+    "check": "biome check ./src"
   },
   "repository": {
     "type": "git",
@@ -30,6 +34,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.4.11",
     "@vitejs/plugin-react": "^6.0.1",
     "vite": "^8.0.8"
   }

@@ -1,8 +1,8 @@
-import { useRef } from 'react'
-import { useFrame, extend } from '@react-three/fiber'
 import { shaderMaterial } from '@react-three/drei'
-import { useGameStore } from '../store'
+import { extend, useFrame } from '@react-three/fiber'
+import { useRef } from 'react'
 import * as THREE from 'three'
+import { useGameStore } from '../store'
 
 const MoltenSawMaterial = shaderMaterial(
   {

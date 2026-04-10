@@ -1,8 +1,8 @@
+import { CuboidCollider, RigidBody } from '@react-three/rapier'
 import { useRef } from 'react'
-import { RigidBody, CuboidCollider } from '@react-three/rapier'
-import { useGameStore } from '../store'
-import { audioManager } from '../audio/AudioEngine'
 import * as THREE from 'three'
+import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 export function Silo() {
   const addCredits = useGameStore((s) => s.addCredits)
@@ -59,7 +59,14 @@ export function Silo() {
       {/* Extraction beam */}
       <mesh position={[0, 30, 0]}>
         <cylinderGeometry args={[1.5, 1.5, 60, 16, 1, true]} />
-        <meshBasicMaterial color="#00ffcc" transparent opacity={0.15} side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <meshBasicMaterial
+          color="#00ffcc"
+          transparent
+          opacity={0.15}
+          side={THREE.DoubleSide}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
 
       {/* Sensor for cube collection */}

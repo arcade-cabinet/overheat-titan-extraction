@@ -1,12 +1,18 @@
-import { useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { BallCollider, RigidBody } from '@react-three/rapier'
-import { useGameStore } from '../store'
+import { useRef, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 const ORE_POSITIONS = [
-  [15, 0, 15], [-15, 0, 15], [15, 0, -15], [-15, 0, -15],
-  [25, 0, 5], [-25, 0, -5], [5, 0, 25], [-5, 0, -25],
+  [15, 0, 15],
+  [-15, 0, 15],
+  [15, 0, -15],
+  [-15, 0, -15],
+  [25, 0, 5],
+  [-25, 0, -5],
+  [5, 0, 25],
+  [-5, 0, -25],
 ]
 
 export function OreSpawner() {
@@ -61,8 +67,8 @@ export function OreSpawner() {
 
   return (
     <>
-      {ORE_POSITIONS.map((pos, i) => (
-        <RigidBody key={i} type="fixed" colliders={false} position={pos}>
+      {ORE_POSITIONS.map((pos) => (
+        <RigidBody key={`ore-${pos[0]},${pos[2]}`} type="fixed" colliders={false} position={pos}>
           <BallCollider args={[1.5]} />
           <mesh>
             <sphereGeometry args={[1.5, 12, 12]} />

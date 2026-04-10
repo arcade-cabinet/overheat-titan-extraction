@@ -309,11 +309,16 @@ framer-motion
 
 | Command | Purpose |
 |---|---|
-| `npm run dev` | Vite dev server with HMR |
-| `npm run build` | Production build (outputs to `dist/`) |
-| `npm run preview` | Preview production build locally |
+| `pnpm dev` | Vite dev server with HMR |
+| `pnpm build` | Production build (outputs to `dist/`) |
+| `pnpm preview` | Preview production build locally |
+| `pnpm check` | Biome lint + format check (runs in CI) |
+| `pnpm lint` | Biome lint only |
+| `pnpm format` | Biome format only |
 
-`dist/` is gitignored. Never commit build artifacts.
+**Package manager:** `pnpm@10.33.0` (declared in `package.json#packageManager`).  
+**Linter/formatter:** `@biomejs/biome@2.4.11` — configured in `biome.json`. Rules: recommended + `noUnusedVariables`, `noUnusedImports` as warnings. A11y rules enforced.  
+`dist/` is gitignored. `package-lock.json` is gitignored. Never commit build artifacts or npm lockfiles.
 
 Vite config (`vite.config.js`) uses `@vitejs/plugin-react` with optimizeDeps for Three.js ecosystem packages.
 

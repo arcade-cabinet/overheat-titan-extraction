@@ -1,8 +1,8 @@
-import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing'
-import { BlendFunction } from 'postprocessing'
-import { useGameStore } from '../store'
 import { useFrame } from '@react-three/fiber'
+import { Bloom, ChromaticAberration, EffectComposer, Vignette } from '@react-three/postprocessing'
+import { BlendFunction } from 'postprocessing'
 import { useRef } from 'react'
+import { useGameStore } from '../store'
 
 export function VisualEffects() {
   const heat = useGameStore((s) => s.heat)
@@ -19,7 +19,12 @@ export function VisualEffects() {
 
   return (
     <EffectComposer disableNormalPass>
-      <Bloom luminanceThreshold={0.6} mipmapBlur intensity={1.5} blendFunction={BlendFunction.ADD} />
+      <Bloom
+        luminanceThreshold={0.6}
+        mipmapBlur
+        intensity={1.5}
+        blendFunction={BlendFunction.ADD}
+      />
       <ChromaticAberration ref={chromRef} blendFunction={BlendFunction.NORMAL} />
       <Vignette
         eskil={false}

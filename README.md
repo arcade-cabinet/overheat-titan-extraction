@@ -15,9 +15,9 @@ If you are an agent or maintainer picking up this repository, use this reading o
 ## Commands
 
 ```bash
-npm install
-npm run dev
-npm run build
+pnpm install
+pnpm run dev
+pnpm run build
 ```
 
 ## Documentation map

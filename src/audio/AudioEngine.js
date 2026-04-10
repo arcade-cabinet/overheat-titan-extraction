@@ -44,7 +44,9 @@ class AudioEngine {
     osc.stop(this.ctx.currentTime + duration)
   }
 
-  playMechStep() { this._makeOsc('sine', 60, 0.3, 0.2) }
+  playMechStep() {
+    this._makeOsc('sine', 60, 0.3, 0.2)
+  }
 
   playGrind(heatPercent) {
     if (!this._initialized) return
@@ -58,7 +60,9 @@ class AudioEngine {
     setTimeout(() => this._makeOsc('square', 660, 0.15, 0.2), 250)
   }
 
-  playSell() { this._makeOsc('sine', 1200, 0.2, 0.3) }
+  playSell() {
+    this._makeOsc('sine', 1200, 0.2, 0.3)
+  }
 
   playPowerUp() {
     if (!this._initialized) return
@@ -91,7 +95,9 @@ class AudioEngine {
     osc.stop(this.ctx.currentTime + 2)
   }
 
-  playBlip() { this._makeOsc('sine', 800, 0.1, 0.05) }
+  playBlip() {
+    this._makeOsc('sine', 800, 0.1, 0.05)
+  }
 }
 
 export const audioManager = new AudioEngine()

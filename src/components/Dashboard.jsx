@@ -1,6 +1,6 @@
-import { useMemo, useEffect } from 'react'
-import { useGameStore } from '../store'
+import { useEffect, useMemo } from 'react'
 import * as THREE from 'three'
+import { useGameStore } from '../store'
 
 const HOPPER_BAR = { x: 44, y: 74, width: 392, height: 20 }
 const HEAT_BAR = { x: 44, y: 167, width: 392, height: 20 }
@@ -13,7 +13,7 @@ export function Dashboard() {
   const isOverheated = useGameStore((s) => s.isOverheated)
   const maxOre = useGameStore((s) => 100 * s.upgrades.cap)
 
-  const { canvas, ctx, texture } = useMemo(() => {
+  const { ctx, texture } = useMemo(() => {
     const c = document.createElement('canvas')
     c.width = 1024
     c.height = 256

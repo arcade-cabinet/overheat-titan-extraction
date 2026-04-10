@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
 import { Html } from '@react-three/drei'
-import { useGameStore } from '../store'
+import { useEffect, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
+import { useGameStore } from '../store'
 
 export function BootScreen() {
   const phase = useGameStore((s) => s.phase)
@@ -24,7 +24,8 @@ export function BootScreen() {
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
-      <div
+      <button
+        type="button"
         onClick={handleClick}
         style={{
           width: '100vw',
@@ -36,18 +37,37 @@ export function BootScreen() {
           cursor: 'pointer',
           userSelect: 'none',
           background: 'rgba(0,0,0,0.85)',
+          border: 'none',
+          padding: 0,
         }}
       >
-        <div style={{ color: '#00ffcc', fontFamily: 'monospace', fontSize: '14px', letterSpacing: '0.2em', marginBottom: '20px' }}>
+        <div
+          style={{
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '14px',
+            letterSpacing: '0.2em',
+            marginBottom: '20px',
+          }}
+        >
           OVERHEAT: TITAN EXTRACTION
         </div>
-        <div style={{ color: '#00ffcc', fontFamily: 'monospace', fontSize: '18px', opacity: blink ? 1 : 0 }}>
+        <div
+          style={{
+            color: '#00ffcc',
+            fontFamily: 'monospace',
+            fontSize: '18px',
+            opacity: blink ? 1 : 0,
+          }}
+        >
           ▶ AWAITING PILOT INPUT...
         </div>
-        <div style={{ color: '#006655', fontFamily: 'monospace', fontSize: '11px', marginTop: '40px' }}>
+        <div
+          style={{ color: '#006655', fontFamily: 'monospace', fontSize: '11px', marginTop: '40px' }}
+        >
           CLICK TO INITIALIZE TITAN SYSTEMS
         </div>
-      </div>
+      </button>
     </Html>
   )
 }

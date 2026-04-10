@@ -24,7 +24,7 @@
 3. Read `docs/HANDOFF.md` — understand what is built (`[x]`) and what is next (`[ ]`).
 4. Read `docs/STANDARDS.md` — color palette, component patterns, shader rules, no-go list.
 5. If touching docs, read `docs/AGENTS.md`.
-6. Run `npm install && npm run build` — confirm the tree is healthy before touching anything.
+6. Run `pnpm install && pnpm run build` — confirm the tree is healthy before touching anything.
 7. Only then implement the next items from `docs/HANDOFF.md`.
 
 ## Copilot-specific behaviour

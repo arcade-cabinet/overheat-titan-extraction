@@ -1,6 +1,6 @@
-import { useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
 import { Stars } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { useRef } from 'react'
 import { useGameStore } from '../store'
 
 export function Environment() {
