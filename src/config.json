@@ -151,5 +151,12 @@
       "desc": "SURVIVE 3 MINS",
       "timeLimitS": 180
     }
+  },
+  "environment": {
+    "baseAmbient": 0.15,
+    "bootAmbient": 0.01,
+    "directionalLightIntensity": 0.8,
+    "fogNear": 60,
+    "fogFar": 200
   }
 }

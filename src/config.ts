@@ -37,6 +37,14 @@ const ContractSchema = z.object({
   timeLimitS: z.number(),
 })
 
+const EnvironmentSchema = z.object({
+  baseAmbient: z.number(),
+  bootAmbient: z.number(),
+  directionalLightIntensity: z.number(),
+  fogNear: z.number(),
+  fogFar: z.number(),
+})
+
 const GameConfigSchema = z.object({
   mech: z.object({
     baseSpeed: z.number(),
@@ -49,6 +57,7 @@ const GameConfigSchema = z.object({
     grind: GrindSchema,
     dash: DashSchema,
   }),
+  environment: EnvironmentSchema,
   ore: z.object({
     count: z.number(),
     maxHealth: z.number(),
