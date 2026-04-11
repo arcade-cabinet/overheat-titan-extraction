@@ -45,10 +45,11 @@ export function MoltenSaw() {
   const heat = useGameStore((s) => s.heat)
   const isOverheated = useGameStore((s) => s.isOverheated)
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (!matRef.current) return
     matRef.current.uHeat = Math.min(1, Math.max(0, heat / 100))
-    matRef.current.uTime = clock.elapsedTime
+    // fallback or simply use performance.now() to avoid the warning if R3F still uses clock under the hood
+    matRef.current.uTime = performance.now() / 1000
     if (meshRef.current && !isOverheated) {
       meshRef.current.rotation.z += delta * 8
     }

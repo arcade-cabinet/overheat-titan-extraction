@@ -1,6 +1,8 @@
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
+import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
+import { useGameStore } from '../store'
 import {
   DebrisCleanupSystem,
   GrindingSystem,
@@ -75,6 +77,10 @@ export function useECSFrame({ playerPos, isOverheated, isPaused, upgrades }: any
       grindIsRare: grindingRare,
       upgradeCool: upgrades.cool,
     })
+
+    // Update continuous audio
+    const heat = useGameStore.getState().heat
+    audioManager.setGrinding(grindingCount > 0, heat)
 
     // Run hopper system
     HopperSystem(ecsWorld, delta, {

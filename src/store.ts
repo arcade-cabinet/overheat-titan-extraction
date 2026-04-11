@@ -15,6 +15,9 @@ export type GamePhase =
   | 'meltdown'
   | 'report'
 
+export type ContractType = 'quota' | 'thermal' | 'survival' | null
+export type ContractStatus = 'active' | 'completed' | 'failed' | null
+
 export interface Upgrades {
   cap: number
   pow: number
@@ -39,6 +42,11 @@ export interface GameState {
   settings: Settings
   sessionCredits: number
 
+  activeContract: ContractType
+  contractStatus: ContractStatus
+  contractProgress: number
+  contractTimer: number
+
   getMaxOre: () => number
   getGrindDps: () => number
   getCoolingRate: () => number
@@ -54,6 +62,9 @@ export interface GameState {
   updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void
   triggerMeltdown: () => void
   resetSession: () => void
+
+  acceptContract: (type: ContractType) => void
+  evaluateContracts: (deltaTime: number) => void
 }
 
 export const useGameStore = create<GameState>()(
@@ -73,6 +84,11 @@ export const useGameStore = create<GameState>()(
         crtOverlays: false,
       },
       sessionCredits: 0,
+      
+      activeContract: null,
+      contractStatus: null,
+      contractProgress: 0,
+      contractTimer: 0,
 
       getMaxOre: () =>
         mech.hopper.baseCapacity + (get().upgrades.cap - 1) * mech.hopper.capacityPerUpgrade,
@@ -86,6 +102,70 @@ export const useGameStore = create<GameState>()(
 
       setPhase: (phase) => set({ phase }),
       setPaused: (isPaused) => set({ isPaused }),
+
+      acceptContract: (type) => {
+        if (!type) {
+          set({ activeContract: null, contractStatus: null, contractProgress: 0, contractTimer: 0 })
+          return
+        }
+        const cfg = gameConfig.contracts[type]
+        set({
+          activeContract: type,
+          contractStatus: 'active',
+          contractProgress: 0,
+          contractTimer: cfg.timeLimitS,
+          sessionCredits: 0, // Reset session credits for quota tracking
+        })
+      },
+
+      evaluateContracts: (deltaTime) => {
+        set((state) => {
+          if (state.contractStatus !== 'active' || !state.activeContract) return state
+          
+          const cfg = gameConfig.contracts[state.activeContract]
+          let newTimer = state.contractTimer - deltaTime
+          let newStatus: ContractStatus = state.contractStatus
+          let newProgress = state.contractProgress
+
+          if (state.activeContract === 'survival') {
+            newProgress = cfg.timeLimitS - newTimer
+            if (newTimer <= 0) {
+              newStatus = 'completed'
+              hapticManager.playCubeSell() // Reward haptic
+            }
+          } else if (state.activeContract === 'thermal') {
+            newProgress = state.heat
+            if (state.heat >= cfg.target) {
+              newStatus = 'failed'
+              hapticManager.playMeltdown()
+            } else if (newTimer <= 0) {
+              newStatus = 'completed'
+              hapticManager.playCubeSell()
+            }
+          } else if (state.activeContract === 'quota') {
+            newProgress = state.sessionCredits
+            if (newProgress >= cfg.target) {
+              newStatus = 'completed'
+              hapticManager.playCubeSell()
+            } else if (newTimer <= 0) {
+              newStatus = 'failed'
+              hapticManager.playMeltdown()
+            }
+          }
+
+          if (newStatus === 'completed' && state.contractStatus === 'active') {
+            // Payout reward
+            return {
+              contractTimer: Math.max(0, newTimer),
+              contractProgress: newProgress,
+              contractStatus: newStatus,
+              credits: state.credits + cfg.reward,
+            }
+          }
+
+          return { contractTimer: Math.max(0, newTimer), contractStatus: newStatus, contractProgress: newProgress }
+        })
+      },
 
       addOre: (amount) =>
         set((state) => ({ rawOre: Math.min(state.getMaxOre(), state.rawOre + amount) })),

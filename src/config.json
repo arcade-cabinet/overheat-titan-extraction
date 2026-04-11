@@ -131,5 +131,25 @@
   "debris": {
     "count": 6,
     "ttlMs": 4000
+  },
+  "contracts": {
+    "quota": {
+      "target": 5000,
+      "reward": 2500,
+      "desc": "EARN ,000",
+      "timeLimitS": 180
+    },
+    "thermal": {
+      "target": 80,
+      "reward": 1500,
+      "desc": "STAY UNDER 80°C",
+      "timeLimitS": 180
+    },
+    "survival": {
+      "target": 180,
+      "reward": 3000,
+      "desc": "SURVIVE 3 MINS",
+      "timeLimitS": 180
+    }
   }
 }

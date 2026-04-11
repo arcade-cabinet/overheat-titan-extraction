@@ -30,6 +30,13 @@ const DashSchema = z.object({
   stepIntervalS: z.number(),
 })
 
+const ContractSchema = z.object({
+  target: z.number(),
+  reward: z.number(),
+  desc: z.string(),
+  timeLimitS: z.number(),
+})
+
 const GameConfigSchema = z.object({
   mech: z.object({
     baseSpeed: z.number(),
@@ -55,6 +62,11 @@ const GameConfigSchema = z.object({
     cubeValue: z.number(),
     rareCubeValue: z.number(),
     denseCubeValue: z.number(),
+  }),
+  contracts: z.object({
+    quota: ContractSchema,
+    thermal: ContractSchema,
+    survival: ContractSchema,
   }),
   upgrades: z.record(z.string(), z.object({ baseCost: z.number() })),
   sparks: z.object({

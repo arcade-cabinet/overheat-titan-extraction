@@ -58,17 +58,17 @@ export function VisualEffects() {
   // The ChromaticAberration effect component doesn't expose the offset prop in its Ref type properly in all versions
   const chromRef = useRef<any>(null)
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!chromRef.current?.offset) return
+    const t = performance.now() / 1000
     if (isMelting) {
       // Extreme aberration during meltdown
-      const t = clock.elapsedTime
       const tear = 0.02 + Math.sin(t * 30) * 0.015
       chromRef.current.offset.set(new THREE.Vector2(tear, tear * 0.7))
       return
     }
     const heatFactor = Math.max(0, (heat - 50) / 50)
-    const pulse = isOverheated ? Math.sin(clock.elapsedTime * Math.PI * 20) * 0.005 : 0
+    const pulse = isOverheated ? Math.sin(t * Math.PI * 20) * 0.005 : 0
     const offset = 0.001 + heatFactor * 0.004 + pulse
     chromRef.current.offset.set(new THREE.Vector2(offset, offset))
   })

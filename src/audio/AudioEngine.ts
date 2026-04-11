@@ -20,6 +20,11 @@ class AudioEngine {
   private _thrusterGain: GainNode | null = null
   private _thrusterLevel: number = 0
 
+  private _grinderNode: OscillatorNode | null = null
+  private _grinderGain: GainNode | null = null
+  private _grinderNoise: AudioBufferSourceNode | null = null
+  private _grinderIsActive: boolean = false
+
   constructor() {
     this._initialized = false
     this.ctx = null
@@ -33,21 +38,75 @@ class AudioEngine {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext
     this.ctx = new AudioContextClass()
 
-    this.masterGain = this.ctx!.createGain()
-    this.masterGain!.gain.value = 0.7
+    this.masterGain = this.ctx.createGain()
+    this.masterGain.gain.value = 0.7
 
     // Background bus for ducking
-    this.bgBus = this.ctx!.createGain()
-    this.bgBus!.gain.value = 1.0
-    this.bgBus!.connect(this.masterGain!)
+    this.bgBus = this.ctx.createGain()
+    this.bgBus.gain.value = 1.0
+    this.bgBus.connect(this.masterGain)
 
-    this.filterNode = this.ctx!.createBiquadFilter()
-    this.filterNode!.type = 'lowpass'
-    this.filterNode!.frequency.value = 20000
+    this.filterNode = this.ctx.createBiquadFilter()
+    this.filterNode.type = 'lowpass'
+    this.filterNode.frequency.value = 20000
 
-    this.masterGain!.connect(this.filterNode!)
-    this.filterNode!.connect(this.ctx!.destination)
+    this.masterGain.connect(this.filterNode)
+    this.filterNode.connect(this.ctx.destination)
+
+    // Init grinder synth
+    this._grinderNode = this.ctx.createOscillator()
+    this._grinderNode.type = 'sawtooth'
+    this._grinderNode.frequency.value = 100
+    
+    // Add white noise for grit
+    const bufferSize = this.ctx.sampleRate * 2
+    const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
+    const output = noiseBuffer.getChannelData(0)
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1
+    }
+    this._grinderNoise = this.ctx.createBufferSource()
+    this._grinderNoise.buffer = noiseBuffer
+    this._grinderNoise.loop = true
+
+    this._grinderGain = this.ctx.createGain()
+    this._grinderGain.gain.value = 0
+
+    this._grinderNode.connect(this._grinderGain)
+    this._grinderNoise.connect(this._grinderGain)
+    this._grinderGain.connect(this.bgBus)
+    
+    this._grinderNode.start()
+    this._grinderNoise.start()
+
     this._initialized = true
+  }
+
+  setGrinding(isActive: boolean, heatPercent: number) {
+    if (!this._initialized || !this._grinderGain || !this._grinderNode || !this.ctx) return
+    
+    const targetGain = isActive ? 0.15 : 0
+    const time = this.ctx.currentTime
+
+    // Ramp gain
+    if (isActive && !this._grinderIsActive) {
+      this._grinderGain.gain.setTargetAtTime(targetGain, time, 0.05)
+    } else if (!isActive && this._grinderIsActive) {
+      this._grinderGain.gain.setTargetAtTime(0, time, 0.1)
+    }
+    
+    this._grinderIsActive = isActive
+
+    // Modulate pitch and filter with heat
+    if (isActive) {
+      const baseFreq = 120 + heatPercent * 2.5
+      this._grinderNode.frequency.setTargetAtTime(baseFreq, time, 0.1)
+      
+      // Add distortion if very hot
+      if (heatPercent > 80 && this.filterNode) {
+        this.filterNode.frequency.setTargetAtTime(1000 + Math.random() * 2000, time, 0.05)
+      }
+    }
   }
 
   setVolume(v: number) {
@@ -91,12 +150,6 @@ class AudioEngine {
 
   playMechStep() {
     this._makeOsc('sine', 60, 0.3, 0.2)
-  }
-
-  playGrind(heatPercent: number) {
-    if (!this._initialized) return
-    const baseFreq = 80 + heatPercent * 2
-    this._makeOsc('sawtooth', baseFreq, 0.08, 0.1)
   }
 
   playAlarm() {

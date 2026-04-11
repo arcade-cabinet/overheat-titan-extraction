@@ -16,11 +16,10 @@ export default defineConfig({
       ],
       providerOptions: {
         launch: {
+          headless: false,
           args: [
-            '--use-gl=swiftshader',
             '--enable-webgl',
             '--ignore-gpu-blocklist',
-            '--disable-gpu-sandbox',
           ],
         },
       },

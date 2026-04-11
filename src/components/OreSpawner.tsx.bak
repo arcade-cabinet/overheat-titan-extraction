@@ -58,7 +58,7 @@ export function OreSpawner({
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
   const isOverheated = useGameStore((s) => s.isOverheated)
-  
+  const heat = useGameStore((s) => s.heat)
   const addOre = useGameStore((s) => s.addOre)
   const addHeat = useGameStore((s) => s.addHeat)
   const rawOre = useGameStore((s) => s.rawOre)

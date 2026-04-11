@@ -1,3 +1,4 @@
+import React from 'react';
 import { Capacitor } from '@capacitor/core'
 import { ScreenOrientation } from '@capacitor/screen-orientation'
 import { StatusBar } from '@capacitor/status-bar'
@@ -7,6 +8,7 @@ import { AnimatePresence } from 'framer-motion'
 import { Suspense, useEffect, useRef } from 'react'
 import { AmbientSpores } from './components/AmbientSpores'
 import { BootScreen } from './components/BootScreen'
+import { BountyTerminal } from './components/BountyTerminal'
 import { Cockpit } from './components/Cockpit'
 import { Environment } from './components/Environment'
 import { MainMenu } from './components/MainMenu'
@@ -48,9 +50,15 @@ function Scene() {
   // Track camera position each frame for proximity queries (avoids Zustand subscription overhead)
   const playerPosRef = useRef({ x: 0, z: 0 })
 
-  useFrame(({ camera }) => {
+  const evaluateContracts = useGameStore((s) => s.evaluateContracts)
+
+  useFrame(({ camera }, delta) => {
     playerPosRef.current.x = camera.position.x
     playerPosRef.current.z = camera.position.z
+    
+    if (phase === 'gameplay' && !isPaused && !isMelting) {
+      evaluateContracts(delta)
+    }
   })
 
   // ECS frame runner — bridges Zustand state into ECS systems
@@ -66,6 +74,7 @@ function Scene() {
       <Environment />
       <AmbientSpores />
       <UpgradeConsole />
+      <BountyTerminal />
       <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
@@ -76,8 +85,8 @@ function Scene() {
             <Player />
           </>
         )}
+        {phase === 'gameplay' && <Cockpit />}
       </Physics>
-      {phase === 'gameplay' && <Cockpit />}
       <Sparks triggerRef={sparkTriggerRef} />
       <VisualEffects />
 
@@ -96,6 +105,25 @@ function Scene() {
   )
 }
 
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: any }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
@@ -110,17 +138,19 @@ export default function App() {
 
   return (
     <>
-      <Canvas
-        shadows
-        camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
-        style={{ background: '#020406', touchAction: 'none' }}
-        gl={{ antialias: true, toneMapping: 0 }}
-      >
-        <FrameResetter />
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-      </Canvas>
+      <ErrorBoundary>
+        <Canvas
+          shadows
+          camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
+          style={{ background: '#020406', touchAction: 'none' }}
+          gl={{ antialias: true, toneMapping: 0 }}
+        >
+          <FrameResetter />
+          <Suspense fallback={null}>
+            <Scene />
+          </Suspense>
+        </Canvas>
+      </ErrorBoundary>
       {phase === 'gameplay' && !isPaused && <MobileControls />}
     </>
   )

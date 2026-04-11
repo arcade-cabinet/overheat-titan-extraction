@@ -32,6 +32,7 @@ export function MainMenu() {
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
       <motion.div
+        data-testid="main-menu"
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 16 }}
