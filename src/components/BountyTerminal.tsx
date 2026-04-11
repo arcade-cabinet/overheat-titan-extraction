@@ -1,18 +1,24 @@
 import { Text } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
-import { useRef, useState } from 'react'
 import { useTrait } from 'koota/react'
+import { useRef, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
-import { ContractType, useGameStore } from '../store'
+import { Contracts, GlobalState } from '../ecs/traits'
 import { GameStateEntity } from '../ecs/world'
-import { GlobalState, Contracts } from '../ecs/traits'
+import { type ContractType, useGameStore } from '../store'
 
 // Console world position — opposite of Upgrade Console
 const CONSOLE_POSITION: [number, number, number] = [-6, 0, -3]
 const INTERACT_RADIUS = 4
 
-const CONTRACTS: { key: NonNullable<ContractType>; label: string; desc: string; reward: number; timeLimit: number }[] = [
+const CONTRACTS: {
+  key: NonNullable<ContractType>
+  label: string
+  desc: string
+  reward: number
+  timeLimit: number
+}[] = [
   {
     key: 'quota',
     label: 'QUOTA RUN',
@@ -38,7 +44,7 @@ const CONTRACTS: { key: NonNullable<ContractType>; label: string; desc: string; 
 
 export function BountyTerminal() {
   const acceptContract = useGameStore((s) => s.acceptContract)
-  
+
   const globalState = useTrait(GameStateEntity, GlobalState)
   const contractsState = useTrait(GameStateEntity, Contracts)
 
@@ -83,7 +89,7 @@ export function BountyTerminal() {
           <boxGeometry args={[1.6, 0.8, 0.04]} />
           <meshStandardMaterial color="#0e0208" />
         </mesh>
-        
+
         <mesh position={[0, 0, -0.015]}>
           <planeGeometry args={[1.58, 0.78]} />
           <meshBasicMaterial color="#ff00ff" wireframe opacity={0.3} transparent />
@@ -160,11 +166,18 @@ export function BountyTerminal() {
               >
                 <mesh position={[0, 0, -0.001]}>
                   <planeGeometry args={[0.5, 0.09]} />
-                  <meshBasicMaterial color={canAccept ? '#ff00ff' : isActive ? '#ffffff' : '#333333'} wireframe />
+                  <meshBasicMaterial
+                    color={canAccept ? '#ff00ff' : isActive ? '#ffffff' : '#333333'}
+                    wireframe
+                  />
                 </mesh>
                 <mesh position={[0, 0, 0]}>
                   <planeGeometry args={[0.5, 0.09]} />
-                  <meshBasicMaterial color={canAccept ? '#ff00ff' : isActive ? '#ffffff' : '#000000'} opacity={canAccept || isActive ? 0.1 : 0} transparent />
+                  <meshBasicMaterial
+                    color={canAccept ? '#ff00ff' : isActive ? '#ffffff' : '#000000'}
+                    opacity={canAccept || isActive ? 0.1 : 0}
+                    transparent
+                  />
                 </mesh>
                 <Text
                   position={[0, 0, 0.001]}

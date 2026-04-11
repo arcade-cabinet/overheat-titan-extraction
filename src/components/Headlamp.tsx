@@ -1,10 +1,12 @@
 import { useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useEffect, useRef } from 'react'
 import type * as THREE from 'three'
-import { useGameStore } from '../store'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 export function Headlamp() {
-  const phase = useGameStore((s) => s.phase)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
   const spotRef = useRef<THREE.SpotLight>(null)
   const flickerEnd = useRef(0)
   const stable = useRef(false)

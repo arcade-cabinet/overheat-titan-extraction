@@ -1,11 +1,12 @@
 import { a, useSprings } from '@react-spring/three'
 import { useFrame } from '@react-three/fiber'
 import { BallCollider, InstancedRigidBodies, RigidBody } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-
 import gameConfig from '../config.json'
-import { useGameStore } from '../store'
+import { GlobalState, Heat, Hopper } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 const RARE_SPAWN_CHANCE = gameConfig.ore.rareSpawnChance
 const DENSE_SPAWN_CHANCE = gameConfig.ore.denseSpawnChance
@@ -55,16 +56,16 @@ export function OreSpawner({
 }: {
   onSparkTrigger?: (pos: [number, number, number]) => void
 }) {
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
-  const isOverheated = useGameStore((s) => s.isOverheated)
-  
-  const addOre = useGameStore((s) => s.addOre)
-  const addHeat = useGameStore((s) => s.addHeat)
-  const rawOre = useGameStore((s) => s.rawOre)
-  const getMaxOre = useGameStore((s) => s.getMaxOre)
-  const getGrindDps = useGameStore((s) => s.getGrindDps)
-  const ejectCube = useGameStore((s) => s.ejectCube)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
+
+  const addOre = gameActions.addOre
+  const addHeat = gameActions.addHeat
+  const rawOre = useTrait(GameStateEntity, Hopper)?.current ?? 0
+  const getMaxOre = gameSelectors.getMaxOre
+  const getGrindDps = gameSelectors.getGrindDps
+  const ejectCube = gameActions.ejectCube
 
   const [cubes, setCubes] = useState<
     { id: number; position: [number, number, number]; isRare: boolean; value: number }[]

@@ -1,11 +1,13 @@
 import { useFrame } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { useGameStore } from '../store'
+import { Heat } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 export function MeltdownExplosion() {
-  const isMelting = useGameStore((s) => s.isMelting)
+  const isMelting = useTrait(GameStateEntity, Heat)?.melting
   const { rapier, world } = useRapier()
   const explodedRef = useRef(false)
 

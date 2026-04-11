@@ -1,11 +1,11 @@
-import { useGameStore } from '../../store'
+import { gameActions } from '../../ecs/actions'
 
 declare global {
   interface Window {
-    __ZUSTAND_STORE__: typeof useGameStore
+    __GAME_ACTIONS__: typeof gameActions
     VITEST: boolean
   }
 }
 
-window.__ZUSTAND_STORE__ = useGameStore
+window.__GAME_ACTIONS__ = gameActions
 window.VITEST = true

@@ -1,14 +1,17 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
+import { useTrait } from 'koota/react'
 import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
-import { useGameStore } from '../store'
+import { gameActions } from '../ecs/actions'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 export function PauseMenu() {
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
-  const setPaused = useGameStore((s) => s.setPaused)
-  const setPhase = useGameStore((s) => s.setPhase)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const setPaused = gameActions.setPaused
+  const setPhase = gameActions.setPhase
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -23,7 +26,7 @@ export function PauseMenu() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [phase, isPaused, setPaused])
+  }, [phase, isPaused])
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>

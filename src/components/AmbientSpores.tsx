@@ -1,17 +1,19 @@
 import { PointMaterial, Points } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import * as random from 'maath/random'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
-import { useGameStore } from '../store'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 export function AmbientSpores() {
   const [sphere] = useState(
     () => random.inSphere(new Float32Array(4500), { radius: 120 }) as Float32Array
   )
   const pointsRef = useRef<THREE.Points>(null)
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return

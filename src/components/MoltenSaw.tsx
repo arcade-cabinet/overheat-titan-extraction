@@ -1,8 +1,10 @@
 import { shaderMaterial } from '@react-three/drei'
 import { extend, useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { useGameStore } from '../store'
+import { Heat } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 // Extend JSX namespace for custom shader material
 declare module '@react-three/fiber' {
@@ -42,8 +44,8 @@ extend({ MoltenSawMaterial })
 export function MoltenSaw() {
   const matRef = useRef<any>(null)
   const meshRef = useRef<any>(null)
-  const heat = useGameStore((s) => s.heat)
-  const isOverheated = useGameStore((s) => s.isOverheated)
+  const heat = useTrait(GameStateEntity, Heat)?.value ?? 0
+  const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
 
   useFrame((_, delta) => {
     if (!matRef.current) return

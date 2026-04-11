@@ -1,16 +1,20 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
+import { useTrait } from 'koota/react'
 import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
-import { useGameStore, ContractType } from '../store'
 import { gameConfig } from '../config'
+import { gameActions } from '../ecs/actions'
+import { Contracts, GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
+import type { ContractType } from '../store'
 
 export function MeltdownScreen() {
-  const phase = useGameStore((s) => s.phase)
-  const sessionCredits = useGameStore((s) => s.sessionCredits)
-  const activeContract = useGameStore((s) => s.activeContract)
-  const contractStatus = useGameStore((s) => s.contractStatus)
-  const resetSession = useGameStore((s) => s.resetSession)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const sessionCredits = useTrait(GameStateEntity, GlobalState)?.sessionCredits ?? 0
+  const activeContract = useTrait(GameStateEntity, Contracts)?.activeContract
+  const contractStatus = useTrait(GameStateEntity, Contracts)?.contractStatus
+  const resetSession = gameActions.resetSession
 
   useEffect(() => {
     if (phase === 'meltdown') {
@@ -18,14 +22,16 @@ export function MeltdownScreen() {
       document.exitPointerLock?.()
       // Auto-advance to report after meltdown animation
       const timer = setTimeout(() => {
-        useGameStore.getState().setPhase('report')
+        gameActions.setPhase('report')
       }, 2500)
       return () => clearTimeout(timer)
     }
   }, [phase])
 
   const isMeltdownPhase = phase === 'meltdown'
-  const contractCfg = activeContract ? gameConfig.contracts[activeContract as NonNullable<ContractType>] : null
+  const contractCfg = activeContract
+    ? gameConfig.contracts[activeContract as NonNullable<ContractType>]
+    : null
 
   return (
     <Html fullscreen zIndexRange={[200, 0]}>
@@ -97,12 +103,12 @@ export function MeltdownScreen() {
                   background: 'rgba(255,255,255,0.05)',
                   padding: '10px 20px',
                   border: `1px solid ${contractStatus === 'completed' ? '#00ffcc' : '#ff0000'}`,
-                  textAlign: 'center'
+                  textAlign: 'center',
                 }}
               >
                 <div>CONTRACT: {activeContract.toUpperCase()}</div>
                 <div style={{ fontSize: '16px', marginTop: '10px' }}>
-                  {contractStatus === 'completed' 
+                  {contractStatus === 'completed'
                     ? `[ SUCCESS ] PAYOUT: +$${contractCfg.reward}`
                     : `[ FAILED ]`}
                 </div>
@@ -112,7 +118,7 @@ export function MeltdownScreen() {
             <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '20px' }}>
               ORE RECOVERED: ${sessionCredits}
             </div>
-            
+
             <div
               style={{
                 color: '#666',

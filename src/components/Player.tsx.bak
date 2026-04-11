@@ -1,11 +1,13 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import gameConfig from '../config.json'
+import { GlobalState, Heat } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 import { inputState } from '../input/InputService'
-import { useGameStore } from '../store'
 
 const SPEED = gameConfig.mech.baseSpeed
 const DASH_SPEED = gameConfig.mech.dashSpeed
@@ -17,14 +19,14 @@ const _dir = new THREE.Vector3()
 export function Player() {
   const bodyRef = useRef<any>(null)
   const { camera } = useThree()
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
-  const isOverheated = useGameStore((s) => s.isOverheated)
-  const heat = useGameStore((s) => s.heat)
-  const coolDown = useGameStore((s) => s.coolDown)
-  const getCoolingRate = useGameStore((s) => s.getCoolingRate)
-  const isMelting = useGameStore((s) => s.isMelting)
-  const lookSensitivity = useGameStore((s) => s.settings.lookSensitivity)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
+  const heat = useTrait(GameStateEntity, Heat)?.value ?? 0
+  const coolDown = gameActions.coolDown
+  const getCoolingRate = gameSelectors.getCoolingRate
+  const isMelting = useTrait(GameStateEntity, Heat)?.melting
+  const lookSensitivity = useTrait(GameStateEntity, GlobalState)?.lookSensitivity ?? 1.0
 
   const yawRef = useRef(0)
   const pitchRef = useRef(0)

@@ -1,12 +1,12 @@
 import { useFrame, useThree } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { useTrait } from 'koota/react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
-import { useGameStore } from '../store'
-import { GameStateEntity } from '../ecs/world'
 import { GlobalState, Upgrades } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
+import { useGameStore } from '../store'
 
 // Console world position — near the silo, facing the spawn point
 const CONSOLE_POSITION: [number, number, number] = [6, 0, -3]
@@ -62,11 +62,11 @@ export function UpgradeConsole() {
 
   const globalState = useTrait(GameStateEntity, GlobalState)
   const upgrades = useTrait(GameStateEntity, Upgrades)
-  
+
   const credits = globalState?.credits ?? 0
   const phase = globalState?.phase
   const isPaused = globalState?.isPaused
-  
+
   const { camera } = useThree()
 
   const inRangeRef = useRef(false)

@@ -1,16 +1,16 @@
 import { Text } from '@react-three/drei'
 import { useTrait } from 'koota/react'
 import gameConfig from '../config.json'
-import { useGameStore } from '../store'
+import { Contracts, GlobalState, Heat, Hopper, Upgrades } from '../ecs/traits'
 import { GameStateEntity } from '../ecs/world'
-import { GlobalState, Heat, Contracts, Upgrades, Hopper } from '../ecs/traits'
+import { useGameStore } from '../store'
 
 const DISPLAY_MAX_HEAT = gameConfig.mech.heat.meltdownThreshold
 const OVERHEAT_THRESHOLD = gameConfig.mech.heat.overheatThreshold
 
 export function Dashboard() {
   const setPaused = useGameStore((s) => s.setPaused)
-  
+
   const globalState = useTrait(GameStateEntity, GlobalState)
   const heatState = useTrait(GameStateEntity, Heat)
   const contractsState = useTrait(GameStateEntity, Contracts)
@@ -26,7 +26,7 @@ export function Dashboard() {
   const isOverheated = heatState.overheated
   const phase = globalState.phase
   const isPaused = globalState.isPaused
-  
+
   const activeContract = contractsState.activeContract
   const contractStatus = contractsState.contractStatus
   const contractTimer = contractsState.contractTimer
@@ -137,11 +137,20 @@ export function Dashboard() {
           >
             <mesh>
               <planeGeometry args={[1.4, 0.35]} />
-              <meshBasicMaterial color={isPaused ? '#00ffcc' : '#1a2a2a'} opacity={0.15} transparent wireframe />
+              <meshBasicMaterial
+                color={isPaused ? '#00ffcc' : '#1a2a2a'}
+                opacity={0.15}
+                transparent
+                wireframe
+              />
             </mesh>
             <mesh position={[0, 0, -0.001]}>
               <planeGeometry args={[1.4, 0.35]} />
-              <meshBasicMaterial color={isPaused ? '#00ffcc' : '#1a2a2a'} opacity={isPaused ? 0.3 : 0.8} transparent />
+              <meshBasicMaterial
+                color={isPaused ? '#00ffcc' : '#1a2a2a'}
+                opacity={isPaused ? 0.3 : 0.8}
+                transparent
+              />
             </mesh>
             <Text
               position={[0, 0, 0.001]}

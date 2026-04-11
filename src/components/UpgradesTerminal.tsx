@@ -1,8 +1,11 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
+import { useTrait } from 'koota/react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
-import { useGameStore } from '../store'
+import { gameActions } from '../ecs/actions'
+import { GlobalState, Upgrades } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 const UPGRADES = [
   {
@@ -26,10 +29,10 @@ const UPGRADES = [
 ]
 
 export function UpgradesTerminal() {
-  const credits = useGameStore((s) => s.credits)
-  const upgrades = useGameStore((s) => s.upgrades)
-  const buyUpgrade = useGameStore((s) => s.buyUpgrade)
-  const setPhase = useGameStore((s) => s.setPhase)
+  const credits = useTrait(GameStateEntity, GlobalState)?.credits ?? 0
+  const upgrades = useTrait(GameStateEntity, Upgrades)
+  const buyUpgrade = gameActions.buyUpgrade
+  const setPhase = gameActions.setPhase
 
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
@@ -76,7 +79,7 @@ export function UpgradesTerminal() {
             CREDITS: ${credits}
           </div>
           {UPGRADES.map((u) => {
-            const level = upgrades[u.key as keyof typeof upgrades]
+            const level = upgrades?.[u.key as keyof typeof upgrades] ?? 1
             const cost = u.baseCost * level
             const canAfford = credits >= cost
             return (

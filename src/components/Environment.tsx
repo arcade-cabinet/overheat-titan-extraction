@@ -1,11 +1,11 @@
 import { Stars } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useRef } from 'react'
 import type * as THREE from 'three'
-import { useTrait } from 'koota/react'
-import { GameStateEntity } from '../ecs/world'
-import { GlobalState } from '../ecs/traits'
 import { gameConfig } from '../config'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 const envCfg = gameConfig.environment
 

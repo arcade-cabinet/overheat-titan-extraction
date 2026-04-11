@@ -20,18 +20,37 @@ export async function loadApp() {
 /** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
   const p = typeof (page as any).evaluate === 'function' ? page : (commands as any)
-  await p.evaluate(`
-    window.__ZUSTAND_STORE__ && window.__ZUSTAND_STORE__.setState({ phase: '${phase}' });
-  `)
+  if (typeof p.evaluate === 'function') {
+    await p.evaluate(`
+      window.__GAME_ACTIONS__ && window.__GAME_ACTIONS__.setPhase('${phase}');
+    `)
+  } else {
+    // If evaluate missing, hit dom if possible
+    (window as any).__GAME_ACTIONS__?.setPhase(phase)
+  }
   await new Promise(resolve => setTimeout(resolve, 400)) // wait for framer-motion transition
 }
 
 /** Set multiple store keys at once (for meltdown etc.) */
 export async function patchStore(patch: Record<string, unknown>) {
   const p = typeof (page as any).evaluate === 'function' ? page : (commands as any)
-  await p.evaluate(`
-    window.__ZUSTAND_STORE__ && window.__ZUSTAND_STORE__.setState(${JSON.stringify(patch)});
-  `)
+  if (typeof p.evaluate === 'function') {
+    await p.evaluate(`
+      const patch = ${JSON.stringify(patch)};
+      const actions = window.__GAME_ACTIONS__;
+      if (actions) {
+        if (patch.phase !== undefined) actions.setPhase(patch.phase)
+        if (patch.isPaused !== undefined) actions.setPaused(patch.isPaused)
+        // ... extend if needed
+      }
+    `)
+  } else {
+    const actions = (window as any).__GAME_ACTIONS__;
+    if (actions) {
+      if (patch.phase !== undefined) actions.setPhase(patch.phase)
+      if (patch.isPaused !== undefined) actions.setPaused(patch.isPaused)
+    }
+  }
   await new Promise(resolve => setTimeout(resolve, 400))
 }
 
