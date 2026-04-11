@@ -238,6 +238,10 @@ export const useGameStore = create<GameState>()(
           isMelting: false,
           sessionCredits: 0,
           isPaused: false,
+          activeContract: null,
+          contractStatus: null,
+          contractProgress: 0,
+          contractTimer: 0,
         }),
     }),
     {

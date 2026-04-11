@@ -3,10 +3,13 @@ import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { useGameStore } from '../store'
+import { gameConfig } from '../config'
 
 export function MeltdownScreen() {
   const phase = useGameStore((s) => s.phase)
   const sessionCredits = useGameStore((s) => s.sessionCredits)
+  const activeContract = useGameStore((s) => s.activeContract)
+  const contractStatus = useGameStore((s) => s.contractStatus)
   const resetSession = useGameStore((s) => s.resetSession)
 
   useEffect(() => {
@@ -22,6 +25,7 @@ export function MeltdownScreen() {
   }, [phase])
 
   const isMeltdownPhase = phase === 'meltdown'
+  const contractCfg = activeContract ? gameConfig.contracts[activeContract] : null
 
   return (
     <Html fullscreen zIndexRange={[200, 0]}>
@@ -82,9 +86,33 @@ export function MeltdownScreen() {
             >
               TITAN LOST
             </div>
+
+            {/* Contract Report */}
+            {activeContract && contractCfg && (
+              <div
+                style={{
+                  color: contractStatus === 'completed' ? '#00ffcc' : '#ff0000',
+                  fontFamily: 'monospace',
+                  fontSize: '24px',
+                  background: 'rgba(255,255,255,0.05)',
+                  padding: '10px 20px',
+                  border: `1px solid ${contractStatus === 'completed' ? '#00ffcc' : '#ff0000'}`,
+                  textAlign: 'center'
+                }}
+              >
+                <div>CONTRACT: {activeContract.toUpperCase()}</div>
+                <div style={{ fontSize: '16px', marginTop: '10px' }}>
+                  {contractStatus === 'completed' 
+                    ? `[ SUCCESS ] PAYOUT: +$${contractCfg.reward}`
+                    : `[ FAILED ]`}
+                </div>
+              </div>
+            )}
+
             <div style={{ color: '#ffaa00', fontFamily: 'monospace', fontSize: '20px' }}>
-              CREDITS RECOVERED: ${sessionCredits}
+              ORE RECOVERED: ${sessionCredits}
             </div>
+            
             <div
               style={{
                 color: '#666',
