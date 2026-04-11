@@ -10,15 +10,17 @@ async function createWebClient() {
   const sqlitePlugin = CapacitorSQLite as any
 
   // Initialize jeep-sqlite web element
-  const { defineCustomElements } = await import('jeep-sqlite/loader')
-  defineCustomElements(window)
-  await customElements.whenDefined('jeep-sqlite')
-
-  const jeepEl = document.querySelector('jeep-sqlite')
-  if (!jeepEl) {
-    const el = document.createElement('jeep-sqlite')
-    document.body.appendChild(el)
+  if (!(window as any).VITEST) {
+    const { defineCustomElements } = await import('jeep-sqlite/loader')
+    defineCustomElements(window)
     await customElements.whenDefined('jeep-sqlite')
+
+    const jeepEl = document.querySelector('jeep-sqlite')
+    if (!jeepEl) {
+      const el = document.createElement('jeep-sqlite')
+      document.body.appendChild(el)
+      await customElements.whenDefined('jeep-sqlite')
+    }
   }
 
   const sqlite = new SQLiteConnection(sqlitePlugin)

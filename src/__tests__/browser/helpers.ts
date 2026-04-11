@@ -1,22 +1,31 @@
-import { page } from '@vitest/browser/context'
-import React from 'react'
-import { render } from 'vitest-browser-react'
-import App from '../../App'
-import { DatabaseProvider } from '../../db/DatabaseProvider'
+import { page, commands } from '@vitest/browser/context'
 
 /** Navigate to the app running in dev/preview mode. */
 export async function loadApp() {
-  // Render the App directly into the Vitest browser iframe
-  render(
-    React.createElement(
-      React.StrictMode,
-      null,
-      React.createElement(DatabaseProvider, null, React.createElement(App, null))
+  if (typeof page.viewport === 'function') {
+    await page.viewport(1920, 1080)
+  }
+  // Try navigating via commands if page.goto is missing
+  if (typeof page.goto === 'function') {
+    await page.goto('http://localhost:5173')
+  } else if (typeof commands?.goto === 'function') {
+    await commands.goto('http://localhost:5173')
+  } else {
+    // If we're using react provider, mount it
+    const { render } = await import('vitest-browser-react')
+    const React = await import('react')
+    const App = (await import('../../App')).default
+    const { DatabaseProvider } = await import('../../db/DatabaseProvider')
+    render(
+      React.createElement(
+        React.StrictMode,
+        null,
+        React.createElement(DatabaseProvider, null, React.createElement(App, null))
+      )
     )
-  )
-
+  }
   // Give Three.js / physics a moment to initialise
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 2000))
 }
 
 /** Set Zustand game phase via the exposed store hook. */
