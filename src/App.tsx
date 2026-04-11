@@ -27,7 +27,7 @@ import { UpgradesTerminal } from './components/UpgradesTerminal'
 import { VisualEffects } from './components/VisualEffects'
 import { useECSFrame, useECSSetup } from './ecs/useECS'
 import { initDesktopInput, resetFrameEvents } from './input/InputService'
-import { useGameStore } from './store'
+import { useGameStore, loadPersistentState } from './store'
 
 function FrameResetter() {
   useFrame(() => {
@@ -36,8 +36,7 @@ function FrameResetter() {
   return null
 }
 
-import { GameStateEntity, ecsWorld } from './ecs/world'
-import { GlobalState, Heat, Contracts as ContractsTrait, Upgrades as UpgradesTrait } from './ecs/traits'
+import { ecsWorld } from './ecs/world'
 
 function Scene() {
   const store = useGameStore()
@@ -52,36 +51,6 @@ function Scene() {
   useFrame(({ camera }, delta) => {
     playerPosRef.current.x = camera.position.x
     playerPosRef.current.z = camera.position.z
-    
-    // Sync store down to ECS Trait layer
-    GameStateEntity.set(GlobalState, {
-      phase: store.phase,
-      isPaused: store.isPaused,
-      credits: store.credits,
-      sessionCredits: store.sessionCredits,
-      masterVolume: store.settings.masterVolume,
-      lookSensitivity: store.settings.lookSensitivity,
-      crtOverlays: store.settings.crtOverlays,
-    })
-    
-    GameStateEntity.set(Heat, {
-      value: store.heat,
-      overheated: store.isOverheated,
-      melting: store.isMelting
-    })
-    
-    GameStateEntity.set(ContractsTrait, {
-      activeContract: store.activeContract,
-      contractStatus: store.contractStatus,
-      contractProgress: store.contractProgress,
-      contractTimer: store.contractTimer
-    })
-    
-    GameStateEntity.set(UpgradesTrait, {
-      cap: store.upgrades.cap,
-      pow: store.upgrades.pow,
-      cool: store.upgrades.cool
-    })
 
     if (store.phase === 'gameplay' && !store.isPaused && !store.isMelting) {
       store.evaluateContracts(delta)
@@ -158,6 +127,7 @@ export default function App() {
   const isPaused = useGameStore((s) => s.isPaused)
 
   useEffect(() => {
+    loadPersistentState()
     if (Capacitor.isNativePlatform()) {
       StatusBar.hide().catch(console.warn)
       ScreenOrientation.lock({ orientation: 'landscape' }).catch(console.warn)

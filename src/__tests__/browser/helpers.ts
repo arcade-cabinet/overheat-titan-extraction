@@ -19,15 +19,17 @@ export async function loadApp() {
 
 /** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
-  const store = (window as any).__ZUSTAND_STORE__;
-  if (store) store.getState().setPhase(phase);
+  await page.evaluate(`
+    window.__ZUSTAND_STORE__ && window.__ZUSTAND_STORE__.setState({ phase: '${phase}' });
+  `)
   await new Promise(resolve => setTimeout(resolve, 400)) // wait for framer-motion transition
 }
 
 /** Set multiple store keys at once (for meltdown etc.) */
 export async function patchStore(patch: Record<string, unknown>) {
-  const store = (window as any).__ZUSTAND_STORE__;
-  if (store) store.setState(patch);
+  await page.evaluate(`
+    window.__ZUSTAND_STORE__ && window.__ZUSTAND_STORE__.setState(${JSON.stringify(patch)});
+  `)
   await new Promise(resolve => setTimeout(resolve, 400))
 }
 

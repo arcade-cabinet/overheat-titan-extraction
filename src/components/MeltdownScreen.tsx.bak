@@ -2,7 +2,7 @@ import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
 import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
-import { useGameStore, ContractType } from '../store'
+import { useGameStore } from '../store'
 import { gameConfig } from '../config'
 
 export function MeltdownScreen() {
@@ -25,7 +25,7 @@ export function MeltdownScreen() {
   }, [phase])
 
   const isMeltdownPhase = phase === 'meltdown'
-  const contractCfg = activeContract ? gameConfig.contracts[activeContract as NonNullable<ContractType>] : null
+  const contractCfg = activeContract ? gameConfig.contracts[activeContract] : null
 
   return (
     <Html fullscreen zIndexRange={[200, 0]}>
