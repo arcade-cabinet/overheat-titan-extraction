@@ -57,7 +57,7 @@ class AudioEngine {
     this._grinderNode = this.ctx.createOscillator()
     this._grinderNode.type = 'sawtooth'
     this._grinderNode.frequency.value = 100
-    
+
     // Add white noise for grit
     const bufferSize = this.ctx.sampleRate * 2
     const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate)
@@ -75,7 +75,7 @@ class AudioEngine {
     this._grinderNode.connect(this._grinderGain)
     this._grinderNoise.connect(this._grinderGain)
     this._grinderGain.connect(this.bgBus)
-    
+
     this._grinderNode.start()
     this._grinderNoise.start()
 
@@ -84,7 +84,7 @@ class AudioEngine {
 
   setGrinding(isActive: boolean, heatPercent: number) {
     if (!this._initialized || !this._grinderGain || !this._grinderNode || !this.ctx) return
-    
+
     const targetGain = isActive ? 0.15 : 0
     const time = this.ctx.currentTime
 
@@ -94,14 +94,14 @@ class AudioEngine {
     } else if (!isActive && this._grinderIsActive) {
       this._grinderGain.gain.setTargetAtTime(0, time, 0.1)
     }
-    
+
     this._grinderIsActive = isActive
 
     // Modulate pitch and filter with heat
     if (isActive) {
       const baseFreq = 120 + heatPercent * 2.5
       this._grinderNode.frequency.setTargetAtTime(baseFreq, time, 0.1)
-      
+
       // Add distortion if very hot
       if (heatPercent > 80 && this.filterNode) {
         this.filterNode.frequency.setTargetAtTime(1000 + Math.random() * 2000, time, 0.05)
@@ -111,13 +111,13 @@ class AudioEngine {
 
   setVolume(v: number) {
     if (!this._initialized || !this.masterGain || !this.ctx) return
-    this.masterGain.gain.setTargetAtTime(v, this.ctx!.currentTime, 0.1)
+    this.masterGain.gain.setTargetAtTime(v, this.ctx?.currentTime, 0.1)
   }
 
   setPauseFilter(paused: boolean) {
     if (!this._initialized || !this.filterNode || !this.ctx) return
     const freq = paused ? 300 : 20000
-    this.filterNode.frequency.setTargetAtTime(freq, this.ctx!.currentTime, 0.3)
+    this.filterNode.frequency.setTargetAtTime(freq, this.ctx?.currentTime, 0.3)
   }
 
   _makeOsc(
@@ -130,22 +130,22 @@ class AudioEngine {
     if (!this._initialized || !this.ctx) return
     const bus = destBus || this.bgBus
     if (!bus) return
-    const osc = this.ctx!.createOscillator()
-    const gain = this.ctx!.createGain()
+    const osc = this.ctx?.createOscillator()
+    const gain = this.ctx?.createGain()
     osc.type = type
     osc.frequency.value = freq
 
     const attack = Math.min(0.02, duration * 0.1)
     const release = duration - attack
 
-    gain.gain.setValueAtTime(0.001, this.ctx!.currentTime)
-    gain.gain.exponentialRampToValueAtTime(gainVal, this.ctx!.currentTime + attack)
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx!.currentTime + attack + release)
+    gain.gain.setValueAtTime(0.001, this.ctx?.currentTime)
+    gain.gain.exponentialRampToValueAtTime(gainVal, this.ctx?.currentTime + attack)
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx?.currentTime + attack + release)
 
     osc.connect(gain)
     gain.connect(bus)
     osc.start()
-    osc.stop(this.ctx!.currentTime + duration + 0.1)
+    osc.stop(this.ctx?.currentTime + duration + 0.1)
   }
 
   playMechStep() {
@@ -171,8 +171,8 @@ class AudioEngine {
 
   playPowerUp() {
     if (!this._initialized || !this.ctx || !this.masterGain) return
-    const osc = this.ctx!.createOscillator()
-    const gain = this.ctx!.createGain()
+    const osc = this.ctx?.createOscillator()
+    const gain = this.ctx?.createGain()
     osc.type = 'sine'
     osc.frequency.setValueAtTime(110, this.ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 1.5)
@@ -188,7 +188,7 @@ class AudioEngine {
   playMeltdown() {
     if (!this._initialized || !this.ctx || !this.masterGain) return
     const osc = this.ctx.createOscillator()
-    const gain = this.ctx!.createGain()
+    const gain = this.ctx?.createGain()
     osc.type = 'square'
     osc.frequency.setValueAtTime(440, this.ctx.currentTime)
     osc.frequency.exponentialRampToValueAtTime(10, this.ctx.currentTime + 2)
@@ -213,25 +213,25 @@ class AudioEngine {
   }
 
   initSiloHum() {
-    if (!this._initialized || this._siloHum) return
+    if (!this._initialized || this._siloHum || !this.ctx || !this.bgBus) return
 
     // Low sine oscillator for hum
-    const humOsc = this.ctx!.createOscillator()
-    const humGain = this.ctx!.createGain()
+    const humOsc = this.ctx.createOscillator()
+    const humGain = this.ctx.createGain()
     humOsc.type = 'sine'
     humOsc.frequency.value = siloConfig.humBaseFrequency
     humGain.gain.value = siloConfig.humBaseGain
 
     // Slow LFO for organic pulsing
-    const lfo = this.ctx!.createOscillator()
-    const lfoGain = this.ctx!.createGain()
+    const lfo = this.ctx.createOscillator()
+    const lfoGain = this.ctx.createGain()
     lfo.frequency.value = siloConfig.humLfoFrequency
     lfoGain.gain.value = siloConfig.humLfoGain
     lfo.connect(lfoGain)
     lfoGain.connect(humGain.gain)
 
     humOsc.connect(humGain)
-    humGain.connect(this.bgBus!)
+    humGain.connect(this.bgBus)
     humOsc.start()
     lfo.start()
     this._siloHum = { osc: humOsc, gain: humGain, lfo, lfoGain }
@@ -245,11 +245,11 @@ class AudioEngine {
   }
 
   initThruster() {
-    if (!this._initialized || this._thrusterGain || !this.ctx) return
+    if (!this._initialized || this._thrusterGain || !this.ctx || !this.bgBus) return
     const bufferSize = 4096
     // createScriptProcessor is deprecated but widely supported; use AudioWorklet in M2
     // eslint-disable-next-line no-undef
-    const node = this.ctx!.createScriptProcessor(bufferSize, 1, 1)
+    const node = this.ctx.createScriptProcessor(bufferSize, 1, 1)
     node.onaudioprocess = (e: any) => {
       const output = e.outputBuffer.getChannelData(0)
       const level = this._thrusterLevel || 0
@@ -265,7 +265,7 @@ class AudioEngine {
     const gain = this.ctx.createGain()
     gain.gain.value = 0
     node.connect(gain)
-    gain.connect(this.bgBus!)
+    gain.connect(this.bgBus)
     this._thrusterGain = gain
     this._thrusterNode = node as any
     this._thrusterLevel = 0
