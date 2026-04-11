@@ -1,9 +1,12 @@
 import { Text } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRef, useState } from 'react'
+import { useTrait } from 'koota/react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
 import { ContractType, useGameStore } from '../store'
+import { GameStateEntity } from '../ecs/world'
+import { GlobalState, Contracts } from '../ecs/traits'
 
 // Console world position — opposite of Upgrade Console
 const CONSOLE_POSITION: [number, number, number] = [-6, 0, -3]
@@ -34,11 +37,16 @@ const CONTRACTS: { key: NonNullable<ContractType>; label: string; desc: string; 
 ]
 
 export function BountyTerminal() {
-  const activeContract = useGameStore((s) => s.activeContract)
-  const contractStatus = useGameStore((s) => s.contractStatus)
   const acceptContract = useGameStore((s) => s.acceptContract)
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+  
+  const globalState = useTrait(GameStateEntity, GlobalState)
+  const contractsState = useTrait(GameStateEntity, Contracts)
+
+  const activeContract = contractsState?.activeContract
+  const contractStatus = contractsState?.contractStatus
+  const phase = globalState?.phase
+  const isPaused = globalState?.isPaused
+
   const { camera } = useThree()
 
   const inRangeRef = useRef(false)

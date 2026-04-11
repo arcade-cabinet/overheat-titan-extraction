@@ -36,37 +36,64 @@ function FrameResetter() {
   return null
 }
 
+import { GameStateEntity, ecsWorld } from './ecs/world'
+import { GlobalState, Heat, Contracts as ContractsTrait, Upgrades as UpgradesTrait } from './ecs/traits'
+
 function Scene() {
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
-  const isMelting = useGameStore((s) => s.isMelting)
-  const isOverheated = useGameStore((s) => s.isOverheated)
-  const upgrades = useGameStore((s) => s.upgrades)
+  const store = useGameStore()
   const sparkTriggerRef = useRef<((pos: [number, number, number]) => void) | null>(null)
 
-  // ECS setup — creates mech + silo entities on mount
-  useECSSetup(upgrades)
+  // ECS setup
+  useECSSetup(store.upgrades)
 
-  // Track camera position each frame for proximity queries (avoids Zustand subscription overhead)
+  // Track camera position each frame
   const playerPosRef = useRef({ x: 0, z: 0 })
-
-  const evaluateContracts = useGameStore((s) => s.evaluateContracts)
 
   useFrame(({ camera }, delta) => {
     playerPosRef.current.x = camera.position.x
     playerPosRef.current.z = camera.position.z
     
-    if (phase === 'gameplay' && !isPaused && !isMelting) {
-      evaluateContracts(delta)
+    // Sync store down to ECS Trait layer
+    GameStateEntity.set(GlobalState, {
+      phase: store.phase,
+      isPaused: store.isPaused,
+      credits: store.credits,
+      sessionCredits: store.sessionCredits,
+      masterVolume: store.settings.masterVolume,
+      lookSensitivity: store.settings.lookSensitivity,
+      crtOverlays: store.settings.crtOverlays,
+    })
+    
+    GameStateEntity.set(Heat, {
+      value: store.heat,
+      overheated: store.isOverheated,
+      melting: store.isMelting
+    })
+    
+    GameStateEntity.set(ContractsTrait, {
+      activeContract: store.activeContract,
+      contractStatus: store.contractStatus,
+      contractProgress: store.contractProgress,
+      contractTimer: store.contractTimer
+    })
+    
+    GameStateEntity.set(UpgradesTrait, {
+      cap: store.upgrades.cap,
+      pow: store.upgrades.pow,
+      cool: store.upgrades.cool
+    })
+
+    if (store.phase === 'gameplay' && !store.isPaused && !store.isMelting) {
+      store.evaluateContracts(delta)
     }
   })
 
   // ECS frame runner — bridges Zustand state into ECS systems
   useECSFrame({
     playerPos: playerPosRef.current,
-    isOverheated,
-    isPaused: isPaused || phase !== 'gameplay',
-    upgrades,
+    isOverheated: store.isOverheated,
+    isPaused: store.isPaused || store.phase !== 'gameplay',
+    upgrades: store.upgrades,
   })
 
   return (
@@ -75,31 +102,31 @@ function Scene() {
       <AmbientSpores />
       <UpgradeConsole />
       <BountyTerminal />
-      <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
+      <Physics gravity={[0, -9.81, 0]} paused={store.phase !== 'gameplay' || store.isPaused}>
         <Terrain />
         <Silo />
         <MeltdownExplosion />
-        {(phase === 'gameplay' || isMelting) && (
+        {(store.phase === 'gameplay' || store.isMelting) && (
           <>
             <OreSpawner onSparkTrigger={(pos) => sparkTriggerRef.current?.(pos)} />
             <Player />
           </>
         )}
-        {phase === 'gameplay' && <Cockpit />}
+        {store.phase === 'gameplay' && <Cockpit />}
       </Physics>
       <Sparks triggerRef={sparkTriggerRef} />
       <VisualEffects />
 
       {/* UI Overlays — conditionally rendered so AnimatePresence sees true mount/unmount */}
       <AnimatePresence mode="wait">
-        {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
-        {phase === 'menu' && <MainMenu key="menu" />}
-        {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
-        {phase === 'settings' && <SettingsMenu key="settings" />}
-        {(phase === 'meltdown' || phase === 'report' || isMelting) && (
+        {(store.phase === 'powered_down' || store.phase === 'boot') && <BootScreen key="boot" />}
+        {store.phase === 'menu' && <MainMenu key="menu" />}
+        {store.phase === 'gameplay' && store.isPaused && <PauseMenu key="pause" />}
+        {store.phase === 'settings' && <SettingsMenu key="settings" />}
+        {(store.phase === 'meltdown' || store.phase === 'report' || store.isMelting) && (
           <MeltdownScreen key="meltdown" />
         )}
-        {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
+        {store.phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
       </AnimatePresence>
     </>
   )
@@ -124,6 +151,8 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+import { WorldProvider } from 'koota/react'
+
 export default function App() {
   const phase = useGameStore((s) => s.phase)
   const isPaused = useGameStore((s) => s.isPaused)
@@ -137,7 +166,7 @@ export default function App() {
   }, [])
 
   return (
-    <>
+    <WorldProvider world={ecsWorld}>
       <ErrorBoundary>
         <Canvas
           shadows
@@ -152,6 +181,6 @@ export default function App() {
         </Canvas>
       </ErrorBoundary>
       {phase === 'gameplay' && !isPaused && <MobileControls />}
-    </>
+    </WorldProvider>
   )
 }

@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
 import { useGameStore } from '../store'
@@ -10,7 +10,7 @@ import {
   HopperSystem,
   VFXCleanupSystem,
 } from './systems'
-import { Heat, Hopper, MechStats, SiloMarker } from './traits'
+import { SiloMarker } from './traits'
 import { ecsWorld } from './world'
 
 /**
@@ -20,24 +20,7 @@ import { ecsWorld } from './world'
  * @returns {React.RefObject} ref to the mech entity
  */
 export function useECSSetup(_upgrades: any) {
-  const mechEntityRef = useRef<any>(null)
-
   useEffect(() => {
-    const mechEntity = ecsWorld.spawn(
-      Heat({ value: 0, overheated: false, melting: false }),
-      Hopper({
-        current: 0,
-        max: gameConfig.mech.hopper.baseCapacity,
-      }),
-      MechStats({
-        speed: gameConfig.mech.baseSpeed,
-        dashSpeed: gameConfig.mech.dashSpeed,
-        grindDps: gameConfig.mech.grind.baseDps,
-        coolingRate: gameConfig.mech.heat.baseCoolingRate,
-      })
-    )
-    mechEntityRef.current = mechEntity
-
     const siloEntity = ecsWorld.spawn(
       SiloMarker({
         posX: gameConfig.silo.position[0],
@@ -47,12 +30,9 @@ export function useECSSetup(_upgrades: any) {
     )
 
     return () => {
-      mechEntity.destroy()
       siloEntity.destroy()
     }
   }, [])
-
-  return mechEntityRef
 }
 
 /**

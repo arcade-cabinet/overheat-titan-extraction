@@ -1,23 +1,35 @@
 import { Text } from '@react-three/drei'
+import { useTrait } from 'koota/react'
 import gameConfig from '../config.json'
 import { useGameStore } from '../store'
+import { GameStateEntity } from '../ecs/world'
+import { GlobalState, Heat, Contracts, Upgrades, Hopper } from '../ecs/traits'
 
 const DISPLAY_MAX_HEAT = gameConfig.mech.heat.meltdownThreshold
 const OVERHEAT_THRESHOLD = gameConfig.mech.heat.overheatThreshold
 
 export function Dashboard() {
-  const rawOre = useGameStore((s) => s.rawOre)
-  const heat = useGameStore((s) => s.heat)
-  const credits = useGameStore((s) => s.credits)
-  const isOverheated = useGameStore((s) => s.isOverheated)
-  const maxOre = useGameStore((s) => 100 * s.upgrades.cap)
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
   const setPaused = useGameStore((s) => s.setPaused)
   
-  const activeContract = useGameStore((s) => s.activeContract)
-  const contractStatus = useGameStore((s) => s.contractStatus)
-  const contractTimer = useGameStore((s) => s.contractTimer)
+  const globalState = useTrait(GameStateEntity, GlobalState)
+  const heatState = useTrait(GameStateEntity, Heat)
+  const contractsState = useTrait(GameStateEntity, Contracts)
+  const upgradesState = useTrait(GameStateEntity, Upgrades)
+  const hopperState = useTrait(GameStateEntity, Hopper)
+
+  if (!globalState || !heatState || !contractsState || !upgradesState || !hopperState) return null
+
+  const rawOre = hopperState.current
+  const maxOre = hopperState.max
+  const heat = heatState.value
+  const credits = globalState.credits
+  const isOverheated = heatState.overheated
+  const phase = globalState.phase
+  const isPaused = globalState.isPaused
+  
+  const activeContract = contractsState.activeContract
+  const contractStatus = contractsState.contractStatus
+  const contractTimer = contractsState.contractTimer
 
   const hopperPct = Math.min(1, rawOre / maxOre)
   const heatPct = Math.min(1, heat / DISPLAY_MAX_HEAT)

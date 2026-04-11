@@ -1,7 +1,32 @@
 import { trait } from 'koota'
 import { gameConfig } from '../config'
+import type { GamePhase, ContractType, ContractStatus } from '../store'
 
 const { mech } = gameConfig
+
+// Global Game State (Replaces Zustand)
+export const GlobalState = trait({
+  phase: 'boot' as GamePhase,
+  isPaused: false,
+  credits: 0,
+  sessionCredits: 0,
+  masterVolume: gameConfig.audio.defaultMasterVolume,
+  lookSensitivity: 1.0,
+  crtOverlays: false,
+})
+
+export const Contracts = trait({
+  activeContract: null as ContractType,
+  contractStatus: null as ContractStatus,
+  contractProgress: 0,
+  contractTimer: 0,
+})
+
+export const Upgrades = trait({
+  cap: 1,
+  pow: 1,
+  cool: 1,
+})
 
 export const Heat = trait({
   value: 0,

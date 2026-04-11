@@ -1,9 +1,12 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
+import { useTrait } from 'koota/react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
 import { useGameStore } from '../store'
+import { GameStateEntity } from '../ecs/world'
+import { GlobalState, Upgrades } from '../ecs/traits'
 
 // Console world position — near the silo, facing the spawn point
 const CONSOLE_POSITION: [number, number, number] = [6, 0, -3]
@@ -55,11 +58,15 @@ function makeButtonZones() {
 const BUTTON_ZONES = makeButtonZones()
 
 export function UpgradeConsole() {
-  const credits = useGameStore((s) => s.credits)
-  const upgrades = useGameStore((s) => s.upgrades)
   const buyUpgrade = useGameStore((s) => s.buyUpgrade)
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+
+  const globalState = useTrait(GameStateEntity, GlobalState)
+  const upgrades = useTrait(GameStateEntity, Upgrades)
+  
+  const credits = globalState?.credits ?? 0
+  const phase = globalState?.phase
+  const isPaused = globalState?.isPaused
+  
   const { camera } = useThree()
 
   const inRangeRef = useRef(false)
@@ -118,7 +125,7 @@ export function UpgradeConsole() {
     for (let i = 0; i < UPGRADES.length; i++) {
       const u = UPGRADES[i]
       const zone = BUTTON_ZONES[i]
-      const level = upgrades[u.key as keyof typeof upgrades]
+      const level = upgrades?.[u.key as keyof typeof upgrades] ?? 1
       const cost = u.baseCost * level
       const canAfford = credits >= cost
       const rowY = 78 + i * 52
@@ -165,7 +172,7 @@ export function UpgradeConsole() {
       if (uv.x >= zone.uMin && uv.x <= zone.uMax && uv.y >= zone.vMin && uv.y <= zone.vMax) {
         const u = UPGRADES.find((u) => u.key === zone.key)
         if (!u) return
-        const level = upgrades[u.key as keyof typeof upgrades]
+        const level = upgrades?.[u.key as keyof typeof upgrades] ?? 1
         const cost = u.baseCost * level
         if (credits >= cost) {
           audioManager.playSell()
