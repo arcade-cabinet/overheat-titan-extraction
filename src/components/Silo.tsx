@@ -1,16 +1,19 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { CuboidCollider, RigidBody } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { audioManager } from '../audio/AudioEngine'
 import gameConfig from '../config.json'
-import { useGameStore } from '../store'
+import { gameActions } from '../ecs/actions'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 const SILO_POSITION = new THREE.Vector3(0, 0, 0)
 
 export function Silo() {
-  const addCredits = useGameStore((s) => s.addCredits)
-  const phase = useGameStore((s) => s.phase)
+  const addCredits = gameActions.addCredits
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
   const soldBodiesRef = useRef(new Set())
   const { camera } = useThree()
 

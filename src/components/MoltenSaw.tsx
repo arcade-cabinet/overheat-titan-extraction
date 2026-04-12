@@ -1,8 +1,10 @@
 import { shaderMaterial } from '@react-three/drei'
 import { extend, useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { useGameStore } from '../store'
+import { Heat } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 // Extend JSX namespace for custom shader material
 declare module '@react-three/fiber' {
@@ -42,13 +44,14 @@ extend({ MoltenSawMaterial })
 export function MoltenSaw() {
   const matRef = useRef<any>(null)
   const meshRef = useRef<any>(null)
-  const heat = useGameStore((s) => s.heat)
-  const isOverheated = useGameStore((s) => s.isOverheated)
+  const heat = useTrait(GameStateEntity, Heat)?.value ?? 0
+  const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
 
-  useFrame(({ clock }, delta) => {
+  useFrame((_, delta) => {
     if (!matRef.current) return
     matRef.current.uHeat = Math.min(1, Math.max(0, heat / 100))
-    matRef.current.uTime = clock.elapsedTime
+    // fallback or simply use performance.now() to avoid the warning if R3F still uses clock under the hood
+    matRef.current.uTime = performance.now() / 1000
     if (meshRef.current && !isOverheated) {
       meshRef.current.rotation.z += delta * 8
     }

@@ -2,11 +2,11 @@ import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { audioManager } from '../audio/AudioEngine'
-import { useGameStore } from '../store'
+import { gameActions } from '../ecs/actions'
 import { generateSeedPhrase } from '../utils/seedPhrase'
 
 export function MainMenu() {
-  const setPhase = useGameStore((s) => s.setPhase)
+  const setPhase = gameActions.setPhase
   const [seedPhrase, setSeedPhrase] = useState('')
 
   useEffect(() => {
@@ -29,9 +29,12 @@ export function MainMenu() {
     setPhase('upgrades')
   }
 
+  console.log('MainMenu rendered!')
+
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
       <motion.div
+        data-testid="main-menu"
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 16 }}

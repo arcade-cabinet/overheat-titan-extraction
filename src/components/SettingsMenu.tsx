@@ -1,13 +1,16 @@
 import { Html } from '@react-three/drei'
 import { motion } from 'framer-motion'
+import { useTrait } from 'koota/react'
 import { audioManager } from '../audio/AudioEngine'
-import { useGameStore } from '../store'
+import { gameActions } from '../ecs/actions'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 export function SettingsMenu() {
-  const isPaused = useGameStore((s) => s.isPaused)
-  const setPhase = useGameStore((s) => s.setPhase)
-  const settings = useGameStore((s) => s.settings)
-  const updateSetting = useGameStore((s) => s.updateSetting)
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const setPhase = gameActions.setPhase
+  const settings = useTrait(GameStateEntity, GlobalState)
+  const updateSetting = gameActions.updateSetting
 
   const back = () => {
     audioManager.playBlip()
@@ -61,7 +64,7 @@ export function SettingsMenu() {
               min="0"
               max="1"
               step="0.05"
-              value={settings.masterVolume}
+              value={settings?.masterVolume ?? 1.0}
               onChange={(e) => {
                 updateSetting('masterVolume', parseFloat(e.target.value))
                 audioManager.setVolume(parseFloat(e.target.value))
@@ -77,17 +80,17 @@ export function SettingsMenu() {
               min="0.2"
               max="3"
               step="0.1"
-              value={settings.lookSensitivity}
+              value={settings?.lookSensitivity ?? 1.0}
               onChange={(e) => updateSetting('lookSensitivity', parseFloat(e.target.value))}
               style={{ accentColor: '#00ffcc' }}
             />
           </label>
 
-          <label style={{ ...labelStyle, flexDirection: 'row', gap: '12px' }}>
+          <label style={{ ...(labelStyle as any), flexDirection: 'row', gap: '12px' }}>
             <span style={{ color: '#00ffcc', fontFamily: 'monospace' }}>CRT OVERLAYS</span>
             <input
               type="checkbox"
-              checked={settings.crtOverlays}
+              checked={settings?.crtOverlays ?? false}
               onChange={(e) => updateSetting('crtOverlays', e.target.checked)}
             />
           </label>

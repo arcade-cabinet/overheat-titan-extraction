@@ -1,33 +1,39 @@
 import { Stars } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useRef } from 'react'
 import type * as THREE from 'three'
-import { useGameStore } from '../store'
+import { gameConfig } from '../config'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
+
+const envCfg = gameConfig.environment
 
 export function Environment() {
-  const phase = useGameStore((s) => s.phase)
+  const globalState = useTrait(GameStateEntity, GlobalState)
+  const phase = globalState?.phase
   const ambRef = useRef<THREE.AmbientLight>(null)
 
   useFrame(() => {
     if (!ambRef.current) return
     if (phase === 'powered_down' || phase === 'boot') {
-      ambRef.current.intensity = 0.01
+      ambRef.current.intensity = envCfg.bootAmbient
     } else {
-      ambRef.current.intensity = 0.15
+      ambRef.current.intensity = envCfg.baseAmbient
     }
   })
 
   return (
     <>
-      <ambientLight ref={ambRef} intensity={0.15} color="#220a33" />
+      <ambientLight ref={ambRef} intensity={envCfg.baseAmbient} color="#220a33" />
       <directionalLight
         position={[-50, 30, -50]}
-        intensity={0.8}
+        intensity={envCfg.directionalLightIntensity}
         color="#ffaa55"
         castShadow
         shadow-mapSize={[2048, 2048]}
       />
-      <fog attach="fog" args={['#020406', 60, 200]} />
+      <fog attach="fog" args={['#020406', envCfg.fogNear, envCfg.fogFar]} />
       <Stars radius={200} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
     </>
   )

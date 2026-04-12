@@ -1,11 +1,13 @@
 import { Line } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
 import { RigidBody, useSpringJoint } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import gameConfig from '../config.json'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 import { inputState } from '../input/InputService'
-import { useGameStore } from '../store'
 
 const REEL_SPEED = gameConfig.tractor.reelSpeed
 const SPRING_STIFFNESS = gameConfig.tractor.springStiffness
@@ -26,8 +28,8 @@ function SpringJoint({ anchorRef, targetRef }: any) {
 
 export function TractorBeam() {
   const { camera, scene } = useThree()
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
 
   const anchorRef = useRef<any>(null)
   const grabbedRef = useRef(null) // Rapier RigidBody of grabbed cube

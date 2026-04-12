@@ -8,10 +8,12 @@ import {
   Vignette,
   wrapEffect,
 } from '@react-three/postprocessing'
+import { useTrait } from 'koota/react'
 import { BlendFunction, Effect, GlitchMode } from 'postprocessing'
 import { useRef } from 'react'
 import * as THREE from 'three'
-import { useGameStore } from '../store'
+import { GlobalState, Heat } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 class CRTEffectImpl extends Effect {
   constructor() {
@@ -49,26 +51,26 @@ class CRTEffectImpl extends Effect {
 const CRTEffect = wrapEffect(CRTEffectImpl)
 
 export function VisualEffects() {
-  const heat = useGameStore((s) => s.heat)
-  const isOverheated = useGameStore((s) => s.isOverheated)
-  const isMelting = useGameStore((s) => s.isMelting)
-  const isPaused = useGameStore((s) => s.isPaused)
-  const crtOverlays = useGameStore((s) => s.settings.crtOverlays)
+  const heat = useTrait(GameStateEntity, Heat)?.value ?? 0
+  const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
+  const isMelting = useTrait(GameStateEntity, Heat)?.melting
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const crtOverlays = useTrait(GameStateEntity, GlobalState)?.crtOverlays
 
   // The ChromaticAberration effect component doesn't expose the offset prop in its Ref type properly in all versions
   const chromRef = useRef<any>(null)
 
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!chromRef.current?.offset) return
+    const t = performance.now() / 1000
     if (isMelting) {
       // Extreme aberration during meltdown
-      const t = clock.elapsedTime
       const tear = 0.02 + Math.sin(t * 30) * 0.015
       chromRef.current.offset.set(new THREE.Vector2(tear, tear * 0.7))
       return
     }
     const heatFactor = Math.max(0, (heat - 50) / 50)
-    const pulse = isOverheated ? Math.sin(clock.elapsedTime * Math.PI * 20) * 0.005 : 0
+    const pulse = isOverheated ? Math.sin(t * Math.PI * 20) * 0.005 : 0
     const offset = 0.001 + heatFactor * 0.004 + pulse
     chromRef.current.offset.set(new THREE.Vector2(offset, offset))
   })

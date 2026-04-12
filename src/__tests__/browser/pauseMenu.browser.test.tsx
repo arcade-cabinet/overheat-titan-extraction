@@ -1,5 +1,5 @@
-import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { page } from 'vitest/browser'
 import { loadApp, patchStore, screenshot, setPhase } from './helpers'
 
 describe('PauseMenu phase', () => {

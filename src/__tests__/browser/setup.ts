@@ -1,10 +1,22 @@
-// Expose Zustand store on window for Maestro JS injection
-import { useGameStore } from '../../store'
+import { gameActions } from '../../ecs/actions'
 
 declare global {
   interface Window {
-    __ZUSTAND_STORE__: typeof useGameStore
+    __GAME_ACTIONS__: typeof gameActions
+    VITEST: boolean
   }
 }
 
-window.__ZUSTAND_STORE__ = useGameStore
+window.__GAME_ACTIONS__ = gameActions
+window.VITEST = true
+
+const originalWarn = console.warn
+console.warn = (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    args[0].includes('using deprecated parameters for the initialization function')
+  ) {
+    return
+  }
+  originalWarn(...args)
+}

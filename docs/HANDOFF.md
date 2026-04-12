@@ -66,11 +66,11 @@ last_updated: 2026-04-10
 | **M3: Virtual Joystick / Touch action UI** | ✅ Complete |
 | **M3: Haptic Feedback / Aim Assist** | ✅ Complete |
 | **M3: Landscape Lock / Safe Area** | ✅ Complete |
-| Meltdown radial impulse (rigid body explosion) | ✅ Complete |
-| **M3: Mobile Controls / InputService** | ✅ Complete |
-| **M3: Virtual Joystick / Touch action UI** | ✅ Complete |
-| **M3: Haptic Feedback / Aim Assist** | ✅ Complete |
-| **M3: Landscape Lock / Safe Area** | ✅ Complete |
+| **M4: Continuous Grinder Synth Audio** | ✅ Complete |
+| **M4: Lowpass Overdrive Audio Distortion** | ✅ Complete |
+| **M5: Contracts / Timed Objectives** | ✅ Complete |
+| **M5: Bounty Board 3D Terminal** | ✅ Complete |
+| **M5: End-of-run Reward Evaluation** | ✅ Complete |
 
 ---
 
@@ -127,19 +127,12 @@ All screens use `@react-three/drei` `<Html fullscreen>`. Phase gating in each co
 
 ## §2 — Next implementation priority
 
-All M1, M2, and M3 (Mobile / Capacitor) priorities are fully completed and shipped. 
+All M1 through M5 milestones are conceptually complete and integrated.
 
-The project has entered M4 (Visual / Audio Polish) and M5 (Content / Progression).
-
-Next logical steps for **M4**:
-1. Final cockpit dashboard art pass
-2. Ore shrink animation via react-spring
-3. AudioEngine mixing pass
-
-Next logical steps for **M5**:
-1. Contracts / timed objectives
-2. Additional ore variety
-3. Environmental variation
+We are currently executing **M1 / M6 Polish & Refactoring**:
+1. **Koota ECS Migration (In Progress):** Zustand `useGameStore` holds duplicate state. We are actively migrating global game state (Phase, Credits, Contracts, Heat) into Koota `GlobalState`, `Heat`, `Contracts`, and `Upgrades` Traits to make the ECS the canonical source of truth.
+2. **Environmental Variation:** (Deferred M5 task) Add crater seeds, storms, or eclipse lighting.
+3. **Telemetry & A/B Configs:** (M6 task) Hook up event logging and Zod variants for live balancing.
 
 ---
 
@@ -213,7 +206,13 @@ Cross-reference with the master problem statement sections.
 - [x] Dash FOV burst (§8.2)
 - [x] Spark emitter on grind (§8.3) — instanced mesh CPU sim (PR #13), hot-white→orange fade, max 5/s throttle
 
-### From §10 Expanded Tech Stack (Supplemental)
+### From §5 Content / Progression (M5)
+- [x] Contracts / timed objectives (quota, thermal cap, survival)
+- [x] Diegetic bounty board terminal in Silo
+- [x] Reward payout on end-of-run evaluation
+- [x] Meta progression (upgrades terminal)
+- [x] Additional ore variety (rare, dense)
+- [ ] Environmental variation / Cosmetic Cockpit Skins
 - [x] @react-three/postprocessing (§10)
 - [x] framer-motion — all overlays have fade/slide transitions (§10)
 - [x] maath — official `random.inSphere` (§10)
@@ -304,3 +303,5 @@ Cross-reference with the master problem statement sections.
 | 2026-04-09 | claude-sonnet-4-6 | PR #1 review remediation — all 43 threads addressed and replied. Critical: fixed A/D strafing (right-left), made meltdown reachable (split heat from ore-gated grinding in OreSpawner), fixed terrain mesh/collider half-cell offset (size-1)/2. Major: true 10Hz chromatic aberration pulse, ore ejection idempotency guard (ejectionPendingRef), spatial audio routes through AudioEngine singleton, BootScreen blink interval scoped to powered_down phase + boot timeout cleanup. Minor: uHeat uniform clamped [0,1], ESC key-repeat guard, blur key latch clear, CanvasTexture dispose on unmount, phase enum comment fix, pnpm/npm command consistency, repo URL slug fix, MD022 heading spacing in docs, upgrades phase added to architecture diagram, useFrame store rule refined. Squash merged to main. |
 | 2026-04-09 | claude-sonnet-4-6 | Stream A gameplay polish — implemented: tractor beam (spring joint + reel-in + throw + cyan Line), ore health + depletion shrink + destruction + InstancedRigidBodies debris + 15s respawn, rare isotopes (15% chance, magenta, 3× heat, $2500 cube value), sparks (physics bodies + TTL), hit-stop (50ms freeze on first grind), headlamp SpotLight with boot flicker, GlitchEffect during meltdown, HueSaturation grayscale during pause, CRT scanline+barrel shader (toggleable), isMelting chromAberr fix, official maath/random.inSphere, spatial audio (silo hum + thruster volume), framer-motion fade/slide on all overlay screens, settings back restores pointer lock. |
 | 2026-04-10 | claude-sonnet-4-6 | PR #10 CodeRabbit CHANGES_REQUESTED remediation — AnimatePresence fix (conditional rendering at App.jsx level so exit animations fire), AmbientSpores maath import + pause guard, MeltdownScreen single motion wrapper, Silo useFrame phase guard, AudioEngine LFO ref stored for cleanup, Player thruster silence effect, SettingsMenu/MainMenu/UpgradesTerminal stale phase subscriptions removed. §5 checklist reconciled with §1 snapshot. |
+| 2026-04-10 | gemini-cli | TypeScript migration + Strict type safety enforcement. Refactored Dashboard/HUD to use `@react-three/drei` declarative components (abandoning `CanvasTexture` hack). Fixed Vitest browser WebGL issues by persistently rendering `App` into `react-dom/client` roots. Implemented M4 continuous sawtooth Grinding Synth audio and 80°C lowpass distortion overdrive. |
+| 2026-04-10 | gemini-cli | M5 Progression/Content implemented — Zod contracts schema (`quota`, `thermal`, `survival`), `BountyTerminal.tsx` 3D contract board, delta-time contract evaluation loop added to `evaluateContracts`, and `MeltdownScreen` configured to grant payout dynamically if a contract was satisfied before powering down or melting. |

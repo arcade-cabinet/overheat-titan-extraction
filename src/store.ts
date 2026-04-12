@@ -1,9 +1,7 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { gameConfig } from './config'
-import { hapticManager } from './haptics/HapticEngine'
-
-const { mech } = gameConfig
+import { useTrait } from 'koota/react'
+import { gameActions, gameSelectors, loadPersistentState } from './ecs/actions'
+import { Contracts, GlobalState, Heat, Hopper, Upgrades } from './ecs/traits'
+import { GameStateEntity } from './ecs/world'
 
 export type GamePhase =
   | 'powered_down'
@@ -15,7 +13,10 @@ export type GamePhase =
   | 'meltdown'
   | 'report'
 
-export interface Upgrades {
+export type ContractType = 'quota' | 'thermal' | 'survival' | null
+export type ContractStatus = 'active' | 'completed' | 'failed' | null
+
+export interface UpgradesType {
   cap: number
   pow: number
   cool: number
@@ -27,146 +28,82 @@ export interface Settings {
   crtOverlays: boolean
 }
 
-export interface GameState {
-  phase: GamePhase
-  isPaused: boolean
-  credits: number
-  rawOre: number
-  heat: number
-  isOverheated: boolean
-  isMelting: boolean
-  upgrades: Upgrades
-  settings: Settings
-  sessionCredits: number
+// Temporary facade bridging the Zustand hook signature to Koota traits!
+export const useGameStore = <T = any>(selector?: (state: any) => T): T => {
+  const global = useTrait(GameStateEntity, GlobalState)
+  const heat = useTrait(GameStateEntity, Heat)
+  const hopper = useTrait(GameStateEntity, Hopper)
+  const contracts = useTrait(GameStateEntity, Contracts)
+  const upgrades = useTrait(GameStateEntity, Upgrades)
 
-  getMaxOre: () => number
-  getGrindDps: () => number
-  getCoolingRate: () => number
+  if (!global || !heat || !hopper || !contracts || !upgrades) {
+    // This will only happen if GameStateEntity isn't loaded (it's synchronous, so shouldn't happen)
+    throw new Error('Missing ECS traits for GameStateEntity')
+  }
 
-  setPhase: (phase: GamePhase) => void
-  setPaused: (isPaused: boolean) => void
-  addOre: (amount: number) => void
-  addHeat: (amount: number) => void
-  coolDown: (amount: number) => void
-  ejectCube: () => void
-  addCredits: (amount: number) => void
-  buyUpgrade: (type: keyof Upgrades, cost: number) => void
-  updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void
-  triggerMeltdown: () => void
-  resetSession: () => void
+  const state = {
+    ...global,
+    settings: {
+      masterVolume: global.masterVolume,
+      lookSensitivity: global.lookSensitivity,
+      crtOverlays: global.crtOverlays,
+    },
+    heat: heat.value,
+    isOverheated: heat.overheated,
+    isMelting: heat.melting,
+    ...contracts,
+    upgrades: {
+      cap: upgrades.cap,
+      pow: upgrades.pow,
+      cool: upgrades.cool,
+    },
+    rawOre: hopper.current,
+    ...gameActions,
+    ...gameSelectors,
+  }
+
+  return (selector ? selector(state) : state) as T
 }
 
-export const useGameStore = create<GameState>()(
-  persist(
-    (set, get) => ({
-      phase: 'powered_down',
-      isPaused: false,
-      credits: 0,
-      rawOre: 0,
-      heat: 0,
-      isOverheated: false,
-      isMelting: false,
-      upgrades: { cap: 1, pow: 1, cool: 1 },
-      settings: {
-        masterVolume: gameConfig.audio.defaultMasterVolume,
-        lookSensitivity: 1.0,
-        crtOverlays: false,
-      },
-      sessionCredits: 0,
+useGameStore.setState = (patch: Record<string, any>) => {
+  if (patch.phase !== undefined) gameActions.setPhase(patch.phase)
+  if (patch.isPaused !== undefined) gameActions.setPaused(patch.isPaused)
+  if (patch.isMelting !== undefined) GameStateEntity.set(Heat, { melting: patch.isMelting })
+  if (patch.isOverheated !== undefined)
+    GameStateEntity.set(Heat, { overheated: patch.isOverheated })
+  if (patch.heat !== undefined) GameStateEntity.set(Heat, { value: patch.heat })
+  if (patch.rawOre !== undefined) GameStateEntity.set(Hopper, { current: patch.rawOre })
+  if (patch.credits !== undefined) GameStateEntity.set(GlobalState, { credits: patch.credits })
+}
 
-      getMaxOre: () =>
-        mech.hopper.baseCapacity + (get().upgrades.cap - 1) * mech.hopper.capacityPerUpgrade,
+useGameStore.getState = () => {
+  // Returns raw state snapshot via trait .get() calls so imperatve usage works
+  const global = GameStateEntity.get(GlobalState)!
+  const heat = GameStateEntity.get(Heat)!
+  const hopper = GameStateEntity.get(Hopper)!
+  const contracts = GameStateEntity.get(Contracts)!
+  const upgrades = GameStateEntity.get(Upgrades)!
 
-      getGrindDps: () =>
-        mech.grind.baseDps * (1 + (get().upgrades.pow - 1) * mech.grind.dpsPerUpgrade),
+  return {
+    ...global,
+    settings: {
+      masterVolume: global.masterVolume,
+      lookSensitivity: global.lookSensitivity,
+      crtOverlays: global.crtOverlays,
+    },
+    heat: heat.value,
+    isOverheated: heat.overheated,
+    isMelting: heat.melting,
+    ...contracts,
+    upgrades: {
+      cap: upgrades.cap,
+      pow: upgrades.pow,
+      cool: upgrades.cool,
+    },
+    rawOre: hopper.current,
+    ...gameActions,
+    ...gameSelectors,
+  }
+}
 
-      getCoolingRate: () =>
-        mech.heat.baseCoolingRate *
-        (1 + (get().upgrades.cool - 1) * mech.heat.coolingRatePerUpgrade),
-
-      setPhase: (phase) => set({ phase }),
-      setPaused: (isPaused) => set({ isPaused }),
-
-      addOre: (amount) =>
-        set((state) => ({ rawOre: Math.min(state.getMaxOre(), state.rawOre + amount) })),
-
-      addHeat: (amount) =>
-        set((state) => {
-          const newHeat = state.heat + amount
-          if (newHeat >= mech.heat.meltdownThreshold) {
-            if (!state.isMelting) hapticManager.playMeltdown()
-            return {
-              heat: mech.heat.meltdownThreshold,
-              isOverheated: true,
-              isMelting: true,
-              phase: 'meltdown',
-              isPaused: false,
-            }
-          }
-          if (newHeat >= mech.heat.overheatThreshold) {
-            if (!state.isOverheated) hapticManager.playOverheat()
-            return { heat: mech.heat.overheatThreshold, isOverheated: true }
-          }
-          return { heat: newHeat }
-        }),
-
-      coolDown: (amount) =>
-        set((state) => {
-          const newHeat = Math.max(0, state.heat - amount)
-          if (newHeat < mech.heat.coolingSafeThreshold && state.isOverheated)
-            return { heat: newHeat, isOverheated: false, isMelting: false }
-          return { heat: newHeat }
-        }),
-
-      ejectCube: () => {
-        hapticManager.playCubeEject()
-        set({ rawOre: 0 })
-      },
-
-      addCredits: (amount) => {
-        hapticManager.playCubeSell()
-        set((state) => ({
-          credits: state.credits + amount,
-          sessionCredits: state.sessionCredits + amount,
-        }))
-      },
-
-      buyUpgrade: (type, cost) =>
-        set((state) => {
-          if (!Object.hasOwn(state.upgrades, type)) return state
-          if (state.credits < cost) return state
-          return {
-            credits: state.credits - cost,
-            upgrades: { ...state.upgrades, [type]: state.upgrades[type] + 1 },
-          }
-        }),
-
-      updateSetting: (key, value) =>
-        set((state) => ({ settings: { ...state.settings, [key]: value } })),
-
-      triggerMeltdown: () => {
-        hapticManager.playMeltdown()
-        set({ isMelting: true, phase: 'meltdown' })
-      },
-
-      resetSession: () =>
-        set({
-          phase: 'menu',
-          rawOre: 0,
-          heat: 0,
-          isOverheated: false,
-          isMelting: false,
-          sessionCredits: 0,
-          isPaused: false,
-        }),
-    }),
-    {
-      name: 'overheat-titan-storage',
-      partialize: (state) => ({
-        credits: state.credits,
-        upgrades: state.upgrades,
-        settings: state.settings,
-      }),
-    }
-  )
-)
+export { gameActions, gameSelectors, loadPersistentState }

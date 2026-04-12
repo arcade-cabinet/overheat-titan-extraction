@@ -84,6 +84,7 @@ See `docs/design/mobile-controls.md` for the full control spec.
 ### Tasks
 - [x] Final cockpit dashboard art pass — material detail, instrument bezels, LED strip lighting
 - [x] Spatial audio — silo hum (`THREE.PositionalAudio`), dash thruster volume mapped to velocity magnitude
+- [x] Continuous synth audio — grinder sawtooth + noise mapped to heat percentage
 - [x] CRT scanlines + barrel distortion shader (toggleable via `settings.crtOverlays`)
 - [x] Ore shrink animation via react-spring — smooth depletion instead of toggle-off
 - [x] Ambient spore density and drift tuning
@@ -97,10 +98,11 @@ See `docs/design/mobile-controls.md` for the full control spec.
 **Goal:** Sessions have macro goals; players have reasons to return.
 
 ### Tasks
-- [ ] Contracts / timed objectives (delivery quotas, thermal discipline, economy targets)
-- [ ] Meta progression — permanent chassis upgrades, cosmetic cockpit skins
-- [ ] Additional ore variety — new vein types with unique heat/value profiles
+- [x] Contracts / timed objectives (delivery quotas, thermal discipline, endurance)
+- [x] Meta progression — permanent chassis upgrades via terminal
+- [x] Additional ore variety — rare (magenta) and dense (high health) veins
 - [ ] Environmental variation — crater layout seeds, dust storm weather, eclipse lighting
+- [ ] Cosmetic cockpit skins
 - [ ] Economy tuning pass based on M6 telemetry (if M6 is available), otherwise paper estimates
 
 ---

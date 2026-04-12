@@ -30,6 +30,21 @@ const DashSchema = z.object({
   stepIntervalS: z.number(),
 })
 
+const ContractSchema = z.object({
+  target: z.number(),
+  reward: z.number(),
+  desc: z.string(),
+  timeLimitS: z.number(),
+})
+
+const EnvironmentSchema = z.object({
+  baseAmbient: z.number(),
+  bootAmbient: z.number(),
+  directionalLightIntensity: z.number(),
+  fogNear: z.number(),
+  fogFar: z.number(),
+})
+
 const GameConfigSchema = z.object({
   mech: z.object({
     baseSpeed: z.number(),
@@ -42,6 +57,7 @@ const GameConfigSchema = z.object({
     grind: GrindSchema,
     dash: DashSchema,
   }),
+  environment: EnvironmentSchema,
   ore: z.object({
     count: z.number(),
     maxHealth: z.number(),
@@ -55,6 +71,11 @@ const GameConfigSchema = z.object({
     cubeValue: z.number(),
     rareCubeValue: z.number(),
     denseCubeValue: z.number(),
+  }),
+  contracts: z.object({
+    quota: ContractSchema,
+    thermal: ContractSchema,
+    survival: ContractSchema,
   }),
   upgrades: z.record(z.string(), z.object({ baseCost: z.number() })),
   sparks: z.object({

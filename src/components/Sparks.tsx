@@ -1,8 +1,10 @@
 import { useFrame } from '@react-three/fiber'
+import { useTrait } from 'koota/react'
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import gameConfig from '../config.json'
-import { useGameStore } from '../store'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
 
 const MAX_SPARKS = gameConfig.sparks.maxLive
 const TTL = gameConfig.sparks.ttlMs / 1000
@@ -28,8 +30,8 @@ function randVel() {
 export function Sparks({ triggerRef }: any) {
   const meshRef = useRef<any>(null)
   const sparks = useRef<any[]>([]) // { pos: THREE.Vector3, vel: THREE.Vector3, ttl: number, life: number }
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
 
   // Expose spawn function via ref — called from OreSpawner during grind
   useEffect(() => {

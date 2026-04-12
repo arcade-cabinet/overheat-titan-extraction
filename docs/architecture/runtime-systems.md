@@ -164,6 +164,14 @@ OscillatorNode → GainNode → masterGain → filterNode (BiquadFilter lowpass)
 
 | System | Planned milestone |
 |---|---|
+| Environmental variation (seeds, storms) | M5 |
+| Telemetry & Analytics | M6 |
+| A/B config variants | M6 |
+
+## Systems completed
+
+| System | Milestone |
+|---|---|
 | Tractor beam spring-joint + throw | M2 |
 | Pause grayscale + tactical diagnostic | M2 |
 | Meltdown glitch / corruption pass | M2 |
@@ -174,3 +182,5 @@ OscillatorNode → GainNode → masterGain → filterNode (BiquadFilter lowpass)
 | Zod config pipeline | M1 |
 | Mobile Input Service + virtual joysticks | M3 |
 | Capacitor shell builds | M3 |
+| Continuous synth audio | M4 |
+| Contracts & Bounty Terminal | M5 |
