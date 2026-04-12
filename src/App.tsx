@@ -150,17 +150,17 @@ export default function App() {
             <FrameResetter />
             <Suspense fallback={null}>
               <Scene />
-              <AnimatePresence mode="wait">
-                {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
-                {phase === 'menu' && <MainMenu key="menu" />}
-                {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
-                {phase === 'settings' && <SettingsMenu key="settings" />}
-                {(phase === 'meltdown' || phase === 'report' || isMelting) && (
-                  <MeltdownScreen key="meltdown" />
-                )}
-                {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
-              </AnimatePresence>
             </Suspense>
+            <AnimatePresence mode="wait">
+              {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
+              {phase === 'menu' && <MainMenu key="menu" />}
+              {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
+              {phase === 'settings' && <SettingsMenu key="settings" />}
+              {(phase === 'meltdown' || phase === 'report' || isMelting) && (
+                <MeltdownScreen key="meltdown" />
+              )}
+              {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
+            </AnimatePresence>
           </WorldProvider>
         </Canvas>
       </ErrorBoundary>
