@@ -54,7 +54,6 @@ export function Dashboard() {
           position={[-1.8, 0.25, 0]}
           fontSize={0.15}
           color={hopperPct >= 1 ? '#ffaa00' : '#00ffcc'}
-
           anchorX="left"
           anchorY="middle"
         >
@@ -74,7 +73,6 @@ export function Dashboard() {
           position={[-1.8, -0.1, 0]}
           fontSize={0.15}
           color={isOverheated ? '#ff0000' : '#ff4400'}
-
           anchorX="left"
           anchorY="middle"
         >
@@ -99,7 +97,6 @@ export function Dashboard() {
           position={[1.8, 0.25, 0]}
           fontSize={0.25}
           color="#ffaa00"
-
           anchorX="right"
           anchorY="middle"
         >
@@ -112,7 +109,6 @@ export function Dashboard() {
             position={[1.8, 0.05, 0]}
             fontSize={0.1}
             color="#ff00ff"
-  
             anchorX="right"
             anchorY="middle"
           >
@@ -156,7 +152,6 @@ export function Dashboard() {
               position={[0, 0, 0.001]}
               fontSize={0.12}
               color={isPaused ? '#00ffcc' : '#446655'}
-    
               anchorX="center"
               anchorY="middle"
             >
@@ -171,7 +166,6 @@ export function Dashboard() {
             position={[0, -0.3, 0.01]}
             fontSize={0.15}
             color="#ff0000"
-  
             anchorX="center"
             anchorY="middle"
           >

@@ -22,7 +22,8 @@ export const gameActions = {
     const hopper = GameStateEntity.get(Hopper)!
     const upgrades = GameStateEntity.get(Upgrades)!
     const maxCapacity =
-      gameConfig.mech.hopper.baseCapacity + (upgrades.cap - 1) * gameConfig.mech.hopper.capacityPerUpgrade
+      gameConfig.mech.hopper.baseCapacity +
+      (upgrades.cap - 1) * gameConfig.mech.hopper.capacityPerUpgrade
     GameStateEntity.set(Hopper, { current: Math.min(maxCapacity, hopper.current + amount) })
   },
 
