@@ -38,7 +38,8 @@ export async function loadApp() {
       null,
       React.createElement(
         WorldProvider,
-        { world: ecsWorld, children: React.createElement(DatabaseProvider, null, React.createElement(App, null)) }
+        { world: ecsWorld },
+        React.createElement(DatabaseProvider, null, React.createElement(App, null))
       )
     )
   )

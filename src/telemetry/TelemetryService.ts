@@ -12,30 +12,30 @@ class TelemetryService {
   private sessionStartTime = 0
   private _variantId = 'default'
   private hasOverheatedThisRun = false
-  
+
   startRun(variantId: string) {
     this._variantId = variantId
     this.sessionStartTime = Date.now()
     this.hasOverheatedThisRun = false
     this.log({ name: 'run_started', variantId })
   }
-  
+
   log(event: TelemetryEvent) {
     if (event.name === 'first_overheat' && this.hasOverheatedThisRun) return
     if (event.name === 'first_overheat') this.hasOverheatedThisRun = true
 
     const fullEvent = { ...event, timestamp: Date.now() }
     this.events.push(fullEvent)
-    
+
     // In a real game, this would batch send to an analytics endpoint.
     // For now, we output to console for M6 validation.
     console.debug(`[Telemetry] ${fullEvent.name}:`, fullEvent)
   }
-  
+
   getRunTimeMs() {
     return Date.now() - this.sessionStartTime
   }
-  
+
   getVariantId() {
     return this._variantId
   }
