@@ -17,12 +17,14 @@ export function VisualEffects() {
   const heat = useTrait(GameStateEntity, Heat)?.value ?? 0
   const isOverheated = useTrait(GameStateEntity, Heat)?.overheated
   const isMelting = useTrait(GameStateEntity, Heat)?.melting
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
   const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
 
   // Stable offset vector — mutated in useFrame, avoids JSON.stringify issues
   const chromOffset = useMemo(() => new THREE.Vector2(0.001, 0.001), [])
 
   useFrame(() => {
+    if (phase !== 'gameplay') return
     const t = performance.now() / 1000
     if (isMelting) {
       const tear = 0.02 + Math.sin(t * 30) * 0.015
