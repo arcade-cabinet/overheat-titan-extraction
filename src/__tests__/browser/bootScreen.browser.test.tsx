@@ -10,7 +10,7 @@ describe('BootScreen phase', () => {
 
   it('shows boot screen in powered_down phase', async () => {
     await setPhase('powered_down')
-    const el = page.getByTestId('boot-screen-mesh')
+    const el = page.getByTestId('boot-screen')
     await expect.element(el).toBeInTheDocument()
     await screenshot('01-powered-down')
   })

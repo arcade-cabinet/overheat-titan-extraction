@@ -9,7 +9,7 @@ describe('MainMenu phase', () => {
   })
 
   it('shows main menu in menu phase', async () => {
-    const el = page.getByTestId('main-menu')
+    const el = page.getByTestId('main-menu').first()
     await expect.element(el).toBeInTheDocument()
     await screenshot('03-main-menu')
   })

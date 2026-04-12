@@ -18,8 +18,8 @@ describe('SettingsMenu phase', () => {
     await expect.element(page.getByText(/MASTER VOLUME/i)).toBeVisible()
   })
 
-  it('shows MOUSE SENSITIVITY label', async () => {
-    await expect.element(page.getByText(/MOUSE SENSITIVITY/i)).toBeVisible()
+  it('shows LOOK SENSITIVITY label', async () => {
+    await expect.element(page.getByText(/LOOK SENSITIVITY/i)).toBeVisible()
   })
 
   it('settings hidden during gameplay', async () => {
