@@ -24,7 +24,7 @@ describe('production build smoke tests', () => {
     for (const match of srcMatches) {
       const url = match[1]
       if (url.startsWith('http') || url.startsWith('data:')) continue
-      expect(url).toMatch(new RegExp(`^${basePath.replace(/\//g, '\\/')}`))
+      expect(url.startsWith(basePath)).toBe(true)
     }
   })
 
