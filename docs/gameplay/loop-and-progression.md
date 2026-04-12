@@ -3,31 +3,29 @@ title: Gameplay Loop and Progression
 doc_type: gameplay
 status: active
 owner: design
-last_updated: 2026-04-09
+last_updated: 2026-04-12
 ---
 
 # Gameplay Loop and Progression
 
-## Creative pillars
+This document defines the core mechanical loop, progression systems, and meta-game flow for **OVERHEAT: Titan Extraction**.
 
-1. **Industrial Gravitas** — everything feels heavy, dangerous, and engineered.
-2. **Diegetic Clarity** — all critical information is physically present in the cockpit.
-3. **Risk Through Heat** — heat is the heartbeat of the game; overheating is the primary tension driver, not health bars.
-4. **Tactile Physics** — the world is solid; cubes, debris, and ore behave believably.
-5. **Alien Familiarity** — the world feels alien but readable; no visual noise that obscures gameplay.
+## 1. Core Loop: Extraction
 
-## Core loop
-
-> **Current implementation status:** See [`docs/HANDOFF.md`](../HANDOFF.md) for what is built and what remains.
+The economy always passes through physical space. Credits are never just UI numbers — the player converts ore into a physics object and physically throws it into the silo.
 
 ```text
 Survey → Approach ore → Grind → Build heat → Fill hopper → Eject cube
       → Transport cube to silo → Sell for credits → Upgrade mech → Repeat
 ```
 
-The economy always passes through physical space. Credits are never just UI numbers — the player converts ore into a physics object and physically throws it into the silo.
+1. **Harvest:** Drive your mech directly into procedurally spawned Ore veins. The massive industrial saw protruding from your dashboard automatically spins up, grinding the ore and generating **Heat**.
+2. **Compress:** When your hopper hits 100%, the mech ejects a **Compressed Physics Cube** from the hopper.
+3. **Transport:** You use a pointer-based Tractor Beam to drag these cubes, reel them in, and physically *throw* them by flicking the cursor. 
+4. **Economy:** Throw the cubes into the central glowing Silo beam to earn Credits. 
+5. **Progression:** Spend credits at the OS Terminal to upgrade Hopper Capacity, Grind Power, and Cooling Systems.
 
-## Resource model
+## 2. Resource Model
 
 | Resource | Meaning | Source | Sink |
 |---|---|---|---|
@@ -35,36 +33,63 @@ The economy always passes through physical space. Credits are never just UI numb
 | Credits | persistent metagame currency | selling cubes at silo | upgrades |
 | Heat | risk meter | grinding, rare isotope collision | cooling system |
 
-## Heat model
+## 3. The Heat System (Risk/Reward)
+
+You can no longer hold the grinder down forever. A **Heat Gauge** dominates the right holographic HUD. As you grind, heat builds up and the saw blade visibly glows red-hot.
 
 | Threshold | Effect |
 |---|---|
-| 0–99 | saw operates normally |
-| 100 | overheat lockout, forced cooling, alarm state |
-| < 20 (after overheat) | saw becomes available again |
-| 120 | critical meltdown — run failure |
+| 0–99% | Saw operates normally. |
+| 100% | **Overheat:** The system overheats, disables the tool, vents steam, and triggers a warning siren until it cools down below the safe threshold. |
+| 120% | **Critical Meltdown:** Triggered by grinding while overheated or volatile damage. Results in immediate run failure. |
 
-**Heat escalation:** Heat rises at `gameConfig.mech.heat.perSecondGrinding` (default 15 units/s) while grinding. It cools at `getCoolingRate()` units/s. Grinding while overheated, or colliding with a rare isotope, can push heat past 100 toward 120.
+## 4. Rare Isotopes
 
-## Rare isotopes
-
-15% of all ore deposits spawn as **Rare Isotopes** (magenta — `#ff00ff`).
+15% of all ore deposits spawn as highly volatile **Magenta Isotopes**. 
 
 | Property | Standard ore | Rare isotope |
 |----------|-------------|--------------|
 | Visual | Cyan emissive | Magenta emissive — distinct at a glance |
-| Cube value | 50 credits | **2,500 credits** |
+| Cube value | 50 credits | **2,500 credits** (Volatile Isotope Cube) |
 | Heat multiplier | 1× | **3× heat per second** |
 | Grind time | 1× | **3× longer** |
-| Risk | Low | High — can push heat toward meltdown |
 
-**Rare isotope rules:**
-- Spawn chance: `gameConfig.ore.rareSpawnChance` (default 0.15 = 15%)
-- Distinct audio cue at spawn (dissonant interval)
-- Ejected rare cube shows "+$2,500 VOLATILE CUBE" text on sell event
-- Rare cube has a distinct magenta emissive glow
+*Risk:* They take 3x longer to mine and generate massive heat, pushing you much closer to meltdown for the payout.
 
-## Upgrade tracks
+## 5. Metagame State Flow
+
+The complete user journey wraps the core loop in an immersive meta-game structure with a functional main menu, pause state, and a high-stakes "Game Over" condition.
+
+### The Diegetic Main Menu (Boot Sequence)
+
+The Main Menu is an integrated part of the 3D scene to maintain unbroken immersion.
+When the app loads, the 3D canvas renders pitch black. The headlamp is off, ambient light is 0.01, and the vignette is at maximum darkness. A blinking retro terminal cursor displays: `AWAITING PILOT INPUT...`
+
+When the user clicks:
+1. Audio plays a low, rising sine wave (powering up).
+2. The headlamp flickers on (rapid intensity multiplier) before stabilizing.
+3. The Diegetic Dashboard boots up, displaying options: `[ NEW EXCAVATION ]` and `[ OS CONFIG ]`.
+
+### System Diagnostics (Pause Menu)
+
+Pressing `ESC` or the pause button triggers **Diagnostics Mode**. The game does not simply stop:
+- **Time Freeze:** Physics step and player movement logic halt.
+- **Audio Filter:** A BiquadFilterNode smoothly muffles all game sounds down to 300Hz.
+- **Shader Shift:** The scene desaturates entirely (Grayscale) and a glowing cyan wireframe renders over all meshes to simulate a tactical freeze-frame.
+- **UI Overlay:** An HTML CRT-styled menu appears: `[ RESUME ]`, `[ SETTINGS ]`, `[ ABORT MISSION ]`.
+
+### Critical Meltdown (Game Over State)
+
+If the player hits 120% heat:
+1. **Physics Explosion:** A massive radial impulse is applied to all rigid bodies near the player, scattering ore and cubes.
+2. **Visual Corruption:** ChromaticAberration offset shoots to extreme levels. The screen tears using a Glitch shader pass.
+3. **Audio Death:** The synth generates a harsh, clipping square wave that violently pitches down to 0Hz.
+4. **Ejection:** The camera rapidly lerps straight up into the sky (simulating the pilot ejecting).
+5. **Report Screen:** An HTML screen fades in: `TITAN LOST. ORE RECOVERED: $X. REBOOTING...`
+
+## 6. Progression & Upgrades
+
+Tap the "SYS UPGRD" button to open the OS terminal. If you've sold enough cubes, you can permanently upgrade your mech chassis:
 
 | Upgrade | Store key | Effect |
 |---|---|---|
@@ -72,70 +97,7 @@ The economy always passes through physical space. Credits are never just UI numb
 | Grind Power | `pow` | Increases `getGrindDps()` = `50 * (1 + (upgrades.pow - 1) * 0.5)` |
 | Cooling System | `cool` | Increases `getCoolingRate()` = `20 * (1 + (upgrades.cool - 1) * 0.5)` |
 
-**Tuning target:** Each upgrade tier should require approximately 3–5 good runs to save up for. The player should feel a meaningful capability shift, not just a small percentage increase.
-
-## Onboarding missions
-
-The game's mechanics (heat, tractor beam, upgrades) are non-trivial. Staged missions introduce them safely:
-
-### Mission 0 — Boot Sequence
-- Static cockpit, no movement.
-- Teach: look around, read the dashboard, understand the heat bar concept.
-- Constraint: no heat buildup possible.
-
-### Mission 1 — First Grind
-- Limited area with one ore vein.
-- **No rare isotopes** in this mission.
-- Teach: move + grind. Overheat warning shows but is forgiving (heat rate reduced).
-- Success condition: fill hopper to 100%, eject one cube.
-
-### Mission 2 — Cube and Silo
-- Introduce hopper capacity and cube ejection mechanics.
-- Teach: tractor beam grab → throw into silo.
-- First experience of credit reward ("CUBE SOLD: +50").
-
-### Mission 3 — Upgrades
-- Introduce the Titan OS Terminal.
-- Player is given enough starting credits for exactly one upgrade.
-- Teach: upgrade selection and how it immediately changes capability (read dashboard to see new max).
-- First appearance of a rare isotope — optional, but rewards curious players.
-
-After Mission 3, the full game loop is unlocked with no restrictions.
-
-## Contracts (M5)
-
-Timed objectives that give each session a macro goal and prevent the loop from feeling endless:
-
-| Contract type | Example |
-|---|---|
-| Delivery quota | "Sell 5 rare cubes within 5 minutes" |
-| Thermal discipline | "Complete a full run keeping heat below 60%" |
-| Economy target | "Earn 10,000 credits in a single session" |
-| Speed run | "Fill hopper and sell cube in under 2 minutes" |
-
-Contracts provide bonus credits on completion and appear as an overlay in the cockpit (diegetic — printed on a mission screen in the OS terminal).
-
-## Current shipped flow
-
-- Ore is harvested by proximity (distance < 5 units triggers grinding).
-- Hopper auto-ejects a cube when full.
-- Silo sensor awards credits when a cube intersects it (`onIntersectionEnter`).
-- Credits persist between sessions via Zustand `persist` middleware.
-- Meltdown transitions to a report screen showing recovered credits.
-
-## Planned flow upgrades
-
-| Feature | Milestone |
-|---|---|
-| Tractor beam drag / throw interaction | M2 |
-| Ore health, destruction, and debris chunks | M2 |
-| Sparks and hit-stop when saw bites rock | M2 |
-| Rare isotope hazard (3× heat) | M2 |
-| Onboarding missions 0–3 | M2 |
-| Contracts / timed objectives | M5 |
-| Meta progression (permanent upgrades, cosmetics) | M5 |
-| Environmental variation (crater layouts, weather) | M5 |
-
-## Design note
-
-The economy should always feel like it passes through physical space. Whenever a feature risks turning credits or ore into abstract UI-only numbers, prefer a world-space solution first.
+**Contracts (M5):** Timed objectives that give each session a macro goal, accepted via the Bounty Board.
+- **Quota Run:** Earn $X within a time limit.
+- **Thermal Cap:** Keep heat below X°C for a duration.
+- **Endurance:** Survive for X minutes without melting down.
