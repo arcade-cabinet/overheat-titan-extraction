@@ -34,13 +34,16 @@ function FrameResetter() {
   return null
 }
 
-import { ecsWorld } from './ecs/world'
+import { useTrait } from 'koota/react'
+import { GlobalState, Heat } from './ecs/traits'
+import { ecsWorld, GameStateEntity } from './ecs/world'
 
 function Scene() {
   const store = useGameStore()
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const isMelting = useTrait(GameStateEntity, Heat)?.melting
   const sparkTriggerRef = useRef<((pos: [number, number, number]) => void) | null>(null)
-
-  console.log('App Scene rendered with phase:', store?.phase)
 
   // ECS setup
   useECSSetup(store.upgrades)
@@ -52,7 +55,7 @@ function Scene() {
     playerPosRef.current.x = camera.position.x
     playerPosRef.current.z = camera.position.z
 
-    if (store.phase === 'gameplay' && !store.isPaused && !store.isMelting) {
+    if (phase === 'gameplay' && !isPaused && !isMelting) {
       store.evaluateContracts(delta)
     }
   })
@@ -61,7 +64,7 @@ function Scene() {
   useECSFrame({
     playerPos: playerPosRef.current,
     isOverheated: store.isOverheated,
-    isPaused: store.isPaused || store.phase !== 'gameplay',
+    isPaused: isPaused || phase !== 'gameplay',
     upgrades: store.upgrades,
   })
 
@@ -71,30 +74,20 @@ function Scene() {
       <AmbientSpores />
       <UpgradeConsole />
       <BountyTerminal />
-      <Physics gravity={[0, -9.81, 0]} paused={store.phase !== 'gameplay' || store.isPaused}>
+      <Physics gravity={[0, -9.81, 0]} paused={phase !== 'gameplay' || isPaused}>
         <Terrain />
         <Silo />
         <MeltdownExplosion />
-        {(store.phase === 'gameplay' || store.isMelting) && (
+        {(phase === 'gameplay' || isMelting) && (
           <>
             <OreSpawner onSparkTrigger={(pos) => sparkTriggerRef.current?.(pos)} />
             <Player />
           </>
         )}
-        {store.phase === 'gameplay' && <Cockpit />}
+        {phase === 'gameplay' && <Cockpit />}
       </Physics>
       <Sparks triggerRef={sparkTriggerRef} />
       <VisualEffects />
-
-      {/* UI Overlays — conditionally rendered */}
-      {(store.phase === 'powered_down' || store.phase === 'boot') && <BootScreen key="boot" />}
-      {store.phase === 'menu' && <MainMenu key="menu" />}
-      {store.phase === 'gameplay' && store.isPaused && <PauseMenu key="pause" />}
-      {store.phase === 'settings' && <SettingsMenu key="settings" />}
-      {(store.phase === 'meltdown' || store.phase === 'report' || store.isMelting) && (
-        <MeltdownScreen key="meltdown" />
-      )}
-      {store.phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
     </>
   )
 }
@@ -118,11 +111,13 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+import { AnimatePresence } from 'framer-motion'
 import { WorldProvider } from 'koota/react'
 
 export default function App() {
-  const phase = useGameStore((s) => s.phase)
-  const isPaused = useGameStore((s) => s.isPaused)
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase ?? 'boot'
+  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+  const isMelting = useTrait(GameStateEntity, Heat)?.melting
 
   useEffect(() => {
     loadPersistentState()
@@ -139,13 +134,32 @@ export default function App() {
         <Canvas
           shadows
           camera={{ fov: 75, near: 0.1, far: 500, position: [0, 5, 10] }}
-          style={{ background: '#020406', touchAction: 'none', width: '100vw', height: '100vh' }}
+          style={{
+            background: '#020406',
+            touchAction: 'none',
+            width: '100vw',
+            height: '100vh',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            zIndex: 0,
+          }}
           gl={{ antialias: true, toneMapping: 0 }}
         >
           <WorldProvider world={ecsWorld}>
             <FrameResetter />
             <Suspense fallback={null}>
               <Scene />
+              <AnimatePresence mode="wait">
+                {(phase === 'powered_down' || phase === 'boot') && <BootScreen key="boot" />}
+                {phase === 'menu' && <MainMenu key="menu" />}
+                {phase === 'gameplay' && isPaused && <PauseMenu key="pause" />}
+                {phase === 'settings' && <SettingsMenu key="settings" />}
+                {(phase === 'meltdown' || phase === 'report' || isMelting) && (
+                  <MeltdownScreen key="meltdown" />
+                )}
+                {phase === 'upgrades' && <UpgradesTerminal key="upgrades" />}
+              </AnimatePresence>
             </Suspense>
           </WorldProvider>
         </Canvas>

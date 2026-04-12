@@ -38,11 +38,17 @@ const ContractSchema = z.object({
 })
 
 const EnvironmentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
   baseAmbient: z.number(),
   bootAmbient: z.number(),
+  ambientColor: z.string(),
   directionalLightIntensity: z.number(),
+  directionalColor: z.string(),
+  fogColor: z.string(),
   fogNear: z.number(),
   fogFar: z.number(),
+  sporeColor: z.string(),
 })
 
 const GameConfigSchema = z.object({
@@ -57,7 +63,7 @@ const GameConfigSchema = z.object({
     grind: GrindSchema,
     dash: DashSchema,
   }),
-  environment: EnvironmentSchema,
+  environments: z.array(EnvironmentSchema),
   ore: z.object({
     count: z.number(),
     maxHealth: z.number(),

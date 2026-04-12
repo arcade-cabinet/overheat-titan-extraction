@@ -95,6 +95,8 @@ export const gameActions = {
       phase: 'menu',
       sessionCredits: 0,
       isPaused: false,
+      envIndex: Math.floor(Math.random() * gameConfig.environments.length),
+      terrainSeed: Math.random() * 10000,
     })
     GameStateEntity.set(Hopper, { current: 0 })
     GameStateEntity.set(Heat, { value: 0, overheated: false, melting: false })

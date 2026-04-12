@@ -4,6 +4,7 @@ import { useTrait } from 'koota/react'
 import * as random from 'maath/random'
 import { useRef, useState } from 'react'
 import * as THREE from 'three'
+import { gameConfig } from '../config'
 import { GlobalState } from '../ecs/traits'
 import { GameStateEntity } from '../ecs/world'
 
@@ -12,8 +13,12 @@ export function AmbientSpores() {
     () => random.inSphere(new Float32Array(4500), { radius: 120 }) as Float32Array
   )
   const pointsRef = useRef<THREE.Points>(null)
-  const phase = useTrait(GameStateEntity, GlobalState)?.phase
-  const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
+
+  const globalState = useTrait(GameStateEntity, GlobalState)
+  const phase = globalState?.phase
+  const isPaused = globalState?.isPaused
+  const envIndex = globalState?.envIndex ?? 0
+  const sporeColor = gameConfig.environments[envIndex % gameConfig.environments.length].sporeColor
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return
@@ -27,7 +32,7 @@ export function AmbientSpores() {
       <Points ref={pointsRef} positions={sphere} stride={3} frustumCulled={false}>
         <PointMaterial
           transparent
-          color="#00ffcc"
+          color={sporeColor}
           size={0.25}
           sizeAttenuation
           depthWrite={false}
