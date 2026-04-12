@@ -152,3 +152,6 @@ vite.config.ts.timestamp-*
 .claude/state/
 .claude/worktrees/
 .vitest-attachments/
+
+# Playwright MCP screenshots
+.playwright-mcp/

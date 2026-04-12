@@ -115,7 +115,7 @@ import { AnimatePresence } from 'framer-motion'
 import { WorldProvider } from 'koota/react'
 
 export default function App() {
-  const phase = useTrait(GameStateEntity, GlobalState)?.phase ?? 'boot'
+  const phase = useTrait(GameStateEntity, GlobalState)?.phase ?? 'powered_down'
   const isPaused = useTrait(GameStateEntity, GlobalState)?.isPaused
   const isMelting = useTrait(GameStateEntity, Heat)?.melting
 

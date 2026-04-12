@@ -3,7 +3,7 @@ title: Handoff
 doc_type: handoff
 status: active
 owner: engineering
-last_updated: 2026-04-10
+last_updated: 2026-04-12
 ---
 
 # HANDOFF.md — OVERHEAT: Titan Extraction
@@ -71,6 +71,12 @@ last_updated: 2026-04-10
 | **M5: Contracts / Timed Objectives** | ✅ Complete |
 | **M5: Bounty Board 3D Terminal** | ✅ Complete |
 | **M5: End-of-run Reward Evaluation** | ✅ Complete |
+| **GitHub Pages deployment (base path fix)** | ✅ Fixed (PR #33) |
+| **jeep-sqlite WASM path + wasmpath attr** | ✅ Fixed (PR #33) |
+| **Zod config schema coverage (silo+audio fields)** | ✅ Fixed (PR #33) |
+| **EffectComposer circular JSON crash** | ✅ Fixed (PR #33) |
+| **Boot screen phase initialization** | ✅ Fixed (PR #33) |
+| **Test suite: build smoke + config + ECS** | ✅ Added (PR #33) |
 
 ---
 

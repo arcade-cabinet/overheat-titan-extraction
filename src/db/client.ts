@@ -15,11 +15,16 @@ async function createWebClient() {
     defineCustomElements(window)
     await customElements.whenDefined('jeep-sqlite')
 
-    const jeepEl = document.querySelector('jeep-sqlite')
+    const wasmPath = `${import.meta.env.BASE_URL}assets`
+    let jeepEl = document.querySelector('jeep-sqlite')
     if (!jeepEl) {
       const el = document.createElement('jeep-sqlite')
+      el.setAttribute('wasmpath', wasmPath)
       document.body.appendChild(el)
-      await customElements.whenDefined('jeep-sqlite')
+      jeepEl = el
+    }
+    if (!jeepEl.getAttribute('wasmpath')) {
+      jeepEl.setAttribute('wasmpath', wasmPath)
     }
   }
 
