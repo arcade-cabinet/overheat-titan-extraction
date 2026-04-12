@@ -1,6 +1,6 @@
 import { createWorld } from 'koota'
-import { GlobalState, Contracts, Upgrades, Heat, Hopper, MechStats } from './traits'
 import { gameConfig } from '../config'
+import { Contracts, GlobalState, Heat, Hopper, MechStats, Upgrades } from './traits'
 
 // Singleton ECS world — one per app lifetime
 export const ecsWorld = createWorld()

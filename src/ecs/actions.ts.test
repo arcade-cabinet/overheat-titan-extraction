@@ -1,0 +1,2 @@
+import { gameActions } from './ecs/actions'
+console.log(gameActions.setPhase)

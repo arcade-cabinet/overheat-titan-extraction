@@ -36,5 +36,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['@capacitor-community/sqlite', 'jeep-sqlite'],
+    include: ['@react-three/rapier', '@react-three/fiber', '@react-three/drei', 'three']
   }
 })

@@ -1,6 +1,6 @@
 import { gameConfig } from '../config'
 import { hapticManager } from '../haptics/HapticEngine'
-import { ContractType, GamePhase, Settings } from '../store'
+import type { ContractType, GamePhase, Settings } from '../store'
 import { Contracts, GlobalState, Heat, Hopper, Upgrades } from './traits'
 import { GameStateEntity } from './world'
 
@@ -13,24 +13,28 @@ export const gameActions = {
   setPhase(phase: GamePhase) {
     GameStateEntity.set(GlobalState, { phase })
   },
-  
+
   setPaused(isPaused: boolean) {
     GameStateEntity.set(GlobalState, { isPaused })
   },
-  
+
   addOre(amount: number) {
     const hopper = GameStateEntity.get(Hopper)!
     const upgrades = GameStateEntity.get(Upgrades)!
     const maxCapacity = hopper.max + (upgrades.cap - 1) * gameConfig.mech.hopper.capacityPerUpgrade
     GameStateEntity.set(Hopper, { current: Math.min(maxCapacity, hopper.current + amount) })
   },
-  
+
   addHeat(amount: number) {
     const heat = GameStateEntity.get(Heat)!
     const newHeat = heat.value + amount
     if (newHeat >= mech.heat.meltdownThreshold) {
       if (!heat.melting) hapticManager.playMeltdown()
-      GameStateEntity.set(Heat, { value: mech.heat.meltdownThreshold, overheated: true, melting: true })
+      GameStateEntity.set(Heat, {
+        value: mech.heat.meltdownThreshold,
+        overheated: true,
+        melting: true,
+      })
       GameStateEntity.set(GlobalState, { phase: 'meltdown', isPaused: false })
     } else if (newHeat >= mech.heat.overheatThreshold) {
       if (!heat.overheated) hapticManager.playOverheat()
@@ -39,7 +43,7 @@ export const gameActions = {
       GameStateEntity.set(Heat, { value: newHeat })
     }
   },
-  
+
   coolDown(amount: number) {
     const heat = GameStateEntity.get(Heat)!
     const newHeat = Math.max(0, heat.value - amount)
@@ -49,12 +53,12 @@ export const gameActions = {
       GameStateEntity.set(Heat, { value: newHeat })
     }
   },
-  
+
   ejectCube() {
     hapticManager.playCubeEject()
     GameStateEntity.set(Hopper, { current: 0 })
   },
-  
+
   addCredits(amount: number) {
     hapticManager.playCubeSell()
     const state = GameStateEntity.get(GlobalState)!
@@ -64,28 +68,28 @@ export const gameActions = {
     })
     savePersistentState()
   },
-  
+
   buyUpgrade(type: keyof UpgradesType, cost: number) {
     const state = GameStateEntity.get(GlobalState)!
     const upgrades = GameStateEntity.get(Upgrades)!
-    
+
     if (state.credits < cost) return
     GameStateEntity.set(GlobalState, { credits: state.credits - cost })
     GameStateEntity.set(Upgrades, { [type]: (upgrades as any)[type] + 1 })
     savePersistentState()
   },
-  
+
   updateSetting<K extends keyof Settings>(key: K, value: Settings[K]) {
     GameStateEntity.set(GlobalState, { [key]: value })
     savePersistentState()
   },
-  
+
   triggerMeltdown() {
     hapticManager.playMeltdown()
     GameStateEntity.set(Heat, { melting: true })
     GameStateEntity.set(GlobalState, { phase: 'meltdown' })
   },
-  
+
   resetSession() {
     GameStateEntity.set(GlobalState, {
       phase: 'menu',
@@ -101,7 +105,7 @@ export const gameActions = {
       contractTimer: 0,
     })
   },
-  
+
   acceptContract(type: ContractType) {
     if (!type) {
       GameStateEntity.set(Contracts, {
@@ -126,11 +130,11 @@ export const gameActions = {
     const contract = GameStateEntity.get(Contracts)!
     const state = GameStateEntity.get(GlobalState)!
     const heat = GameStateEntity.get(Heat)!
-    
+
     if (contract.contractStatus !== 'active' || !contract.activeContract) return
-    
+
     const cfg = gameConfig.contracts[contract.activeContract]
-    let newTimer = contract.contractTimer - deltaTime
+    const newTimer = contract.contractTimer - deltaTime
     let newStatus: ContractStatus = contract.contractStatus
     let newProgress = contract.contractProgress
 
@@ -176,7 +180,7 @@ export const gameActions = {
       contractStatus: newStatus,
       contractProgress: newProgress,
     })
-  }
+  },
 }
 
 // Handle LocalStorage Persistence
@@ -188,7 +192,7 @@ export function loadPersistentState() {
     if (!saved) return
     const parsed = JSON.parse(saved)
     const state = parsed.state || {}
-    
+
     if (state.credits !== undefined) {
       GameStateEntity.set(GlobalState, { credits: state.credits })
     }
@@ -214,7 +218,7 @@ export function loadPersistentState() {
 function savePersistentState() {
   const globalState = GameStateEntity.get(GlobalState)!
   const upgrades = GameStateEntity.get(Upgrades)!
-  
+
   const payload = {
     state: {
       credits: globalState.credits,
@@ -227,11 +231,11 @@ function savePersistentState() {
         cap: upgrades.cap,
         pow: upgrades.pow,
         cool: upgrades.cool,
-      }
+      },
     },
-    version: 0
+    version: 0,
   }
-  
+
   localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
 }
 
@@ -248,5 +252,5 @@ export const gameSelectors = {
   getCoolingRate: () => {
     const upgrades = GameStateEntity.get(Upgrades)!
     return mech.heat.baseCoolingRate * (1 + (upgrades.cool - 1) * mech.heat.coolingRatePerUpgrade)
-  }
+  },
 }

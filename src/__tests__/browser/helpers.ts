@@ -1,4 +1,12 @@
-import { page, commands } from '@vitest/browser/context'
+import { WorldProvider } from 'koota/react'
+import React from 'react'
+import { createRoot } from 'react-dom/client'
+import { page } from 'vitest/browser'
+import App from '../../App'
+import { DatabaseProvider } from '../../db/DatabaseProvider'
+import { gameActions } from '../../ecs/actions'
+import { Heat } from '../../ecs/traits'
+import { ecsWorld, GameStateEntity } from '../../ecs/world'
 
 let isAppLoaded = false
 
@@ -9,45 +17,57 @@ export async function loadApp() {
   }
 
   if (isAppLoaded) {
-    const p = typeof (page as any).evaluate === 'function' ? page : (commands as any)
-    await p.evaluate(`
-      window.__GAME_ACTIONS__ && window.__GAME_ACTIONS__.resetSession();
-    `)
+    gameActions.resetSession()
     await new Promise((resolve) => setTimeout(resolve, 500))
     return
   }
 
-  const p = typeof (page as any).goto === 'function' ? page : (commands as any)
-  if (typeof p.goto === 'function') {
-    await p.goto('http://localhost:5173')
+  let rootEl = document.getElementById('test-root')
+  if (!rootEl) {
+    rootEl = document.createElement('div')
+    rootEl.id = 'test-root'
+    rootEl.style.width = '100vw'
+    rootEl.style.height = '100vh'
+    document.body.appendChild(rootEl)
   }
 
+  const root = createRoot(rootEl)
+  root.render(
+    React.createElement(
+      React.StrictMode,
+      null,
+      React.createElement(
+        WorldProvider,
+        { world: ecsWorld },
+        React.createElement(DatabaseProvider, null, React.createElement(App, null))
+      )
+    )
+  )
+
   // Give Three.js / physics a moment to initialise
-  await new Promise((resolve) => setTimeout(resolve, 3000))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
   isAppLoaded = true
 }
 
 /** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
-  const p = typeof (page as any).evaluate === 'function' ? page : (commands as any)
-  await p.evaluate(`
-    window.__GAME_ACTIONS__ && window.__GAME_ACTIONS__.setPhase('${phase}');
-  `)
-  await new Promise((resolve) => setTimeout(resolve, 1000)) // wait for framer-motion transition
+  gameActions.setPhase(phase as any)
+  await new Promise((resolve) => setTimeout(resolve, 400)) // wait for framer-motion transition
 }
 
 /** Set multiple store keys at once (for meltdown etc.) */
 export async function patchStore(patch: Record<string, any>) {
-  const p = typeof (page as any).evaluate === 'function' ? page : (commands as any)
-  await p.evaluate(`
-    const patch = ${JSON.stringify(patch)};
-    const actions = window.__GAME_ACTIONS__;
-    if (actions) {
-      if (patch.phase !== undefined) actions.setPhase(patch.phase)
-      if (patch.isPaused !== undefined) actions.setPaused(patch.isPaused)
-    }
-  `)
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  if (patch.phase !== undefined) gameActions.setPhase(patch.phase)
+  if (patch.isPaused !== undefined) gameActions.setPaused(patch.isPaused)
+
+  if (patch.heat !== undefined) {
+    GameStateEntity.set(Heat, { value: patch.heat })
+  }
+  if (patch.isMelting !== undefined) {
+    GameStateEntity.set(Heat, { melting: patch.isMelting })
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 400))
 }
 
 /** Take a named screenshot and return the path. */

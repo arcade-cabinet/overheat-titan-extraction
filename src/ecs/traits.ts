@@ -1,6 +1,6 @@
 import { trait } from 'koota'
 import { gameConfig } from '../config'
-import type { GamePhase, ContractType, ContractStatus } from '../store'
+import type { ContractStatus, ContractType, GamePhase } from '../store'
 
 const { mech } = gameConfig
 

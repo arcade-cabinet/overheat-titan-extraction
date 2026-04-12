@@ -1,7 +1,7 @@
 import { useTrait } from 'koota/react'
-import { GameStateEntity } from './ecs/world'
-import { GlobalState, Heat, Contracts, Upgrades, Hopper } from './ecs/traits'
 import { gameActions, gameSelectors, loadPersistentState } from './ecs/actions'
+import { Contracts, GlobalState, Heat, Hopper, Upgrades } from './ecs/traits'
+import { GameStateEntity } from './ecs/world'
 
 export type GamePhase =
   | 'powered_down'
@@ -38,7 +38,7 @@ export const useGameStore = <T = any>(selector?: (state: any) => T): T => {
 
   if (!global || !heat || !hopper || !contracts || !upgrades) {
     // This will only happen if GameStateEntity isn't loaded (it's synchronous, so shouldn't happen)
-    throw new Error("Missing ECS traits for GameStateEntity")
+    throw new Error('Missing ECS traits for GameStateEntity')
   }
 
   const state = {
@@ -59,7 +59,7 @@ export const useGameStore = <T = any>(selector?: (state: any) => T): T => {
     },
     rawOre: hopper.current,
     ...gameActions,
-    ...gameSelectors
+    ...gameSelectors,
   }
 
   return (selector ? selector(state) : state) as T
@@ -69,7 +69,8 @@ useGameStore.setState = (patch: Record<string, any>) => {
   if (patch.phase !== undefined) gameActions.setPhase(patch.phase)
   if (patch.isPaused !== undefined) gameActions.setPaused(patch.isPaused)
   if (patch.isMelting !== undefined) GameStateEntity.set(Heat, { melting: patch.isMelting })
-  if (patch.isOverheated !== undefined) GameStateEntity.set(Heat, { overheated: patch.isOverheated })
+  if (patch.isOverheated !== undefined)
+    GameStateEntity.set(Heat, { overheated: patch.isOverheated })
   if (patch.heat !== undefined) GameStateEntity.set(Heat, { value: patch.heat })
   if (patch.rawOre !== undefined) GameStateEntity.set(Hopper, { current: patch.rawOre })
   if (patch.credits !== undefined) GameStateEntity.set(GlobalState, { credits: patch.credits })
@@ -82,7 +83,7 @@ useGameStore.getState = () => {
   const hopper = GameStateEntity.get(Hopper)!
   const contracts = GameStateEntity.get(Contracts)!
   const upgrades = GameStateEntity.get(Upgrades)!
-  
+
   return {
     ...global,
     settings: {
@@ -101,7 +102,7 @@ useGameStore.getState = () => {
     },
     rawOre: hopper.current,
     ...gameActions,
-    ...gameSelectors
+    ...gameSelectors,
   }
 }
 

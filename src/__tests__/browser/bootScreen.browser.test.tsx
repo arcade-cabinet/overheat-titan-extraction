@@ -1,5 +1,5 @@
-import { page } from '@vitest/browser/context'
 import { beforeEach, describe, expect, it } from 'vitest'
+import { page } from 'vitest/browser'
 import { loadApp, screenshot, setPhase } from './helpers'
 
 describe('BootScreen phase', () => {
@@ -10,7 +10,7 @@ describe('BootScreen phase', () => {
 
   it('shows boot screen in powered_down phase', async () => {
     await setPhase('powered_down')
-    const el = page.getByTestId('boot-screen')
+    const el = page.getByTestId('boot-screen-mesh')
     await expect.element(el).toBeInTheDocument()
     await screenshot('01-powered-down')
   })
