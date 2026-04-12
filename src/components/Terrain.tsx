@@ -1,14 +1,28 @@
 import { HeightfieldCollider, RigidBody } from '@react-three/rapier'
+import { useTrait } from 'koota/react'
 import { useMemo } from 'react'
 import { createNoise2D } from 'simplex-noise'
 import * as THREE from 'three'
+import { GlobalState } from '../ecs/traits'
+import { GameStateEntity } from '../ecs/world'
+
+// Simple seeded PRNG to feed simplex noise
+function seededRandom(s: number) {
+  return () => {
+    s = Math.sin(s) * 10000
+    return s - Math.floor(s)
+  }
+}
 
 export function Terrain() {
   const size = 64
   const scale = 5
 
+  const terrainSeed = useTrait(GameStateEntity, GlobalState)?.terrainSeed ?? 0
+
   const { heights, geometry } = useMemo(() => {
-    const noise2D = createNoise2D()
+    const randomFn = seededRandom(terrainSeed + 42)
+    const noise2D = createNoise2D(randomFn)
     const heights = []
 
     for (let i = 0; i < size; i++) {
@@ -46,7 +60,7 @@ export function Terrain() {
     geo.setIndex(indices)
     geo.computeVertexNormals()
     return { heights, geometry: geo }
-  }, [])
+  }, [terrainSeed])
 
   return (
     <RigidBody type="fixed" colliders={false}>

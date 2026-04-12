@@ -152,11 +152,45 @@
       "timeLimitS": 180
     }
   },
-  "environment": {
-    "baseAmbient": 0.15,
-    "bootAmbient": 0.01,
-    "directionalLightIntensity": 0.8,
-    "fogNear": 60,
-    "fogFar": 200
-  }
+  "environments": [
+    {
+      "id": "void",
+      "name": "Sector 0: The Void",
+      "baseAmbient": 0.15,
+      "bootAmbient": 0.01,
+      "ambientColor": "#220a33",
+      "directionalLightIntensity": 0.8,
+      "directionalColor": "#ffaa55",
+      "fogColor": "#020406",
+      "fogNear": 60,
+      "fogFar": 200,
+      "sporeColor": "#00ffcc"
+    },
+    {
+      "id": "dust",
+      "name": "Sector 1: Dust Storm",
+      "baseAmbient": 0.4,
+      "bootAmbient": 0.05,
+      "ambientColor": "#4a2c1a",
+      "directionalLightIntensity": 1.2,
+      "directionalColor": "#ff6622",
+      "fogColor": "#4a1f0d",
+      "fogNear": 15,
+      "fogFar": 80,
+      "sporeColor": "#ffbb55"
+    },
+    {
+      "id": "eclipse",
+      "name": "Sector 2: Eclipse",
+      "baseAmbient": 0.05,
+      "bootAmbient": 0,
+      "ambientColor": "#0a0a0a",
+      "directionalLightIntensity": 2,
+      "directionalColor": "#88aaff",
+      "fogColor": "#000000",
+      "fogNear": 80,
+      "fogFar": 300,
+      "sporeColor": "#ffffff"
+    }
+  ]
 }

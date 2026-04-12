@@ -13,6 +13,8 @@ export const GlobalState = trait({
   masterVolume: gameConfig.audio.defaultMasterVolume,
   lookSensitivity: 1.0,
   crtOverlays: false,
+  envIndex: 0,
+  terrainSeed: 0,
 })
 
 export const Contracts = trait({

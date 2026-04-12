@@ -38,21 +38,20 @@ export async function loadApp() {
       null,
       React.createElement(
         WorldProvider,
-        { world: ecsWorld },
-        React.createElement(DatabaseProvider, null, React.createElement(App, null))
+        { world: ecsWorld, children: React.createElement(DatabaseProvider, null, React.createElement(App, null)) }
       )
     )
   )
 
   // Give Three.js / physics a moment to initialise
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise((resolve) => setTimeout(resolve, 2000))
   isAppLoaded = true
 }
 
 /** Set Zustand game phase via the exposed store hook. */
 export async function setPhase(phase: string) {
   gameActions.setPhase(phase as any)
-  await new Promise((resolve) => setTimeout(resolve, 400)) // wait for framer-motion transition
+  await new Promise((resolve) => setTimeout(resolve, 1000)) // wait for framer-motion transition
 }
 
 /** Set multiple store keys at once (for meltdown etc.) */
@@ -67,7 +66,7 @@ export async function patchStore(patch: Record<string, any>) {
     GameStateEntity.set(Heat, { melting: patch.isMelting })
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 400))
+  await new Promise((resolve) => setTimeout(resolve, 1000))
 }
 
 /** Take a named screenshot and return the path. */
