@@ -3,13 +3,7 @@ import { useEffect } from 'react'
 import { audioManager } from '../audio/AudioEngine'
 import { gameConfig } from '../config'
 import { useGameStore } from '../store'
-import {
-  DebrisCleanupSystem,
-  GrindingSystem,
-  HeatSystem,
-  HopperSystem,
-  VFXCleanupSystem,
-} from './systems'
+import { DebrisCleanupSystem, GrindingSystem, HopperSystem, VFXCleanupSystem } from './systems'
 import { SiloMarker } from './traits'
 import { ecsWorld } from './world'
 
@@ -45,18 +39,14 @@ export function useECSFrame({ playerPos, isOverheated, isPaused, upgrades }: any
     if (isPaused) return
 
     // Run grinding system
-    const { grindingCount, grindingRare } = GrindingSystem(ecsWorld, delta, {
+    const { grindingCount } = GrindingSystem(ecsWorld, delta, {
       playerPos,
       upgradePow: upgrades.pow,
       isOverheated,
     })
 
-    // Run heat system
-    HeatSystem(ecsWorld, delta, {
-      isGrinding: grindingCount > 0,
-      grindIsRare: grindingRare,
-      upgradeCool: upgrades.cool,
-    })
+    // Heat is managed by OreSpawner (addHeat) and Player (coolDown) directly
+    // via gameActions — ECS HeatSystem is NOT called here to avoid double-processing.
 
     // Update continuous audio
     const heat = useGameStore.getState().heat

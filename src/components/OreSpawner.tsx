@@ -308,14 +308,26 @@ export function OreSpawner({
 
     if (rawOre >= getMaxOre() && !ejectionPendingRef.current) {
       ejectionPendingRef.current = true
-      const hasRare = ORE_POSITIONS.some(({ id, pos }) => {
-        if (!oreStateRef.current[id]) return false
+      // Determine the best ore type being actively ground for cube value
+      let cubeType: 'normal' | 'rare' | 'dense' = 'normal'
+      for (const { id, pos } of ORE_POSITIONS) {
+        if (!oreStateRef.current[id]) continue
         const dx = camera.position.x - pos[0]
         const dz = camera.position.z - pos[2]
-        return (
-          Math.sqrt(dx * dx + dz * dz) < GRIND_RADIUS && oreStateRef.current[id].type === 'rare'
-        )
-      })
+        if (Math.sqrt(dx * dx + dz * dz) >= GRIND_RADIUS) continue
+        const t = oreStateRef.current[id].type
+        if (t === 'rare') {
+          cubeType = 'rare'
+          break
+        }
+        if (t === 'dense') cubeType = 'dense'
+      }
+      const cubeValue =
+        cubeType === 'rare'
+          ? gameConfig.economy.rareCubeValue
+          : cubeType === 'dense'
+            ? gameConfig.economy.denseCubeValue
+            : gameConfig.economy.cubeValue
       const cubePos: [number, number, number] = [
         camera.position.x + (Math.random() - 0.5) * 4,
         camera.position.y,
@@ -327,8 +339,8 @@ export function OreSpawner({
           {
             id: Date.now(),
             position: cubePos,
-            isRare: hasRare,
-            value: hasRare ? gameConfig.economy.rareCubeValue : gameConfig.economy.cubeValue,
+            isRare: cubeType === 'rare',
+            value: cubeValue,
           },
         ])
         ejectCube()
