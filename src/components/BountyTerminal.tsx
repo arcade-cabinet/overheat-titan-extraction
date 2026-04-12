@@ -99,7 +99,7 @@ export function BountyTerminal() {
           position={[-0.75, 0.3, 0]}
           fontSize={0.06}
           color="#ff00ff"
-          font="monospace"
+
           anchorX="left"
           anchorY="middle"
         >
@@ -110,7 +110,7 @@ export function BountyTerminal() {
           position={[-0.75, 0.22, 0]}
           fontSize={0.04}
           color="#ffaa00"
-          font="monospace"
+
           anchorX="left"
           anchorY="middle"
         >
@@ -133,7 +133,7 @@ export function BountyTerminal() {
                 position={[-0.75, 0, 0]}
                 fontSize={0.04}
                 color={isActive ? '#ffffff' : '#ff00ff'}
-                font="monospace"
+      
                 anchorX="left"
                 anchorY="middle"
               >
@@ -144,7 +144,7 @@ export function BountyTerminal() {
                 position={[-0.75, -0.05, 0]}
                 fontSize={0.03}
                 color="#775566"
-                font="monospace"
+      
                 anchorX="left"
                 anchorY="middle"
               >
@@ -183,7 +183,7 @@ export function BountyTerminal() {
                   position={[0, 0, 0.001]}
                   fontSize={0.035}
                   color={canAccept ? '#ff00ff' : isActive ? '#ffffff' : '#444444'}
-                  font="monospace"
+        
                   anchorX="center"
                   anchorY="middle"
                 >
@@ -198,7 +198,7 @@ export function BountyTerminal() {
           position={[0, -0.35, 0]}
           fontSize={0.03}
           color={inRange ? '#552244' : '#aa3333'}
-          font="monospace"
+
           anchorX="center"
           anchorY="middle"
         >

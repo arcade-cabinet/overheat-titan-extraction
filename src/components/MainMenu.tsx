@@ -29,8 +29,6 @@ export function MainMenu() {
     setPhase('upgrades')
   }
 
-  console.log('MainMenu rendered!')
-
   return (
     <Html fullscreen zIndexRange={[100, 0]}>
       <motion.div

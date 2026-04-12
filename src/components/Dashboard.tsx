@@ -54,7 +54,7 @@ export function Dashboard() {
           position={[-1.8, 0.25, 0]}
           fontSize={0.15}
           color={hopperPct >= 1 ? '#ffaa00' : '#00ffcc'}
-          font="monospace"
+
           anchorX="left"
           anchorY="middle"
         >
@@ -74,7 +74,7 @@ export function Dashboard() {
           position={[-1.8, -0.1, 0]}
           fontSize={0.15}
           color={isOverheated ? '#ff0000' : '#ff4400'}
-          font="monospace"
+
           anchorX="left"
           anchorY="middle"
         >
@@ -99,7 +99,7 @@ export function Dashboard() {
           position={[1.8, 0.25, 0]}
           fontSize={0.25}
           color="#ffaa00"
-          font="monospace"
+
           anchorX="right"
           anchorY="middle"
         >
@@ -112,7 +112,7 @@ export function Dashboard() {
             position={[1.8, 0.05, 0]}
             fontSize={0.1}
             color="#ff00ff"
-            font="monospace"
+  
             anchorX="right"
             anchorY="middle"
           >
@@ -156,7 +156,7 @@ export function Dashboard() {
               position={[0, 0, 0.001]}
               fontSize={0.12}
               color={isPaused ? '#00ffcc' : '#446655'}
-              font="monospace"
+    
               anchorX="center"
               anchorY="middle"
             >
@@ -171,7 +171,7 @@ export function Dashboard() {
             position={[0, -0.3, 0.01]}
             fontSize={0.15}
             color="#ff0000"
-            font="monospace"
+  
             anchorX="center"
             anchorY="middle"
           >

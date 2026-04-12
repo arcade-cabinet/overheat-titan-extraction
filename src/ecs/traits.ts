@@ -6,7 +6,7 @@ const { mech } = gameConfig
 
 // Global Game State (Replaces Zustand)
 export const GlobalState = trait({
-  phase: 'boot' as GamePhase,
+  phase: 'powered_down' as GamePhase,
   isPaused: false,
   credits: 0,
   sessionCredits: 0,

@@ -100,7 +100,10 @@ const GameConfigSchema = z.object({
   silo: z.object({
     position: z.tuple([z.number(), z.number(), z.number()]),
     humBaseFrequency: z.number(),
+    humBaseGain: z.number(),
     humLfoFrequency: z.number(),
+    humLfoGain: z.number(),
+    humMaxVol: z.number(),
     humMaxDistance: z.number(),
   }),
   postFx: z.object({
@@ -120,6 +123,14 @@ const GameConfigSchema = z.object({
     defaultMasterVolume: z.number(),
     pauseFilterHz: z.number(),
     normalFilterHz: z.number(),
+    thrusterNoiseLevel: z.number(),
+    thrusterGainLevel: z.number(),
+    thrusterSmoothTime: z.number(),
+    rareSell: z.object({
+      oscillators: z.array(
+        z.object({ frequency: z.number(), gain: z.number(), duration: z.number() })
+      ),
+    }),
   }),
   hitStop: z.object({ durationMs: z.number() }),
   debris: z.object({ count: z.number(), ttlMs: z.number() }),
